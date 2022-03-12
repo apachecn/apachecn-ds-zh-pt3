@@ -1,0 +1,1529 @@
+<html xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lang="en" xml:lang="en" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2/ http://www.w3.org/MarkUp/SCHEMA/xhtml2.xsd">
+<head>
+    <title>Unknown</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+© Joshua Cook 2017
+Joshua CookDocker for Data Science<a href="09.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">https://doi.org/10.1007/978-1-4842-3012-1_9</a>
+
+<!--Begin Abstract--><h1 class="chaptertitle" xml:lang="en">9.复合坞站</h1>
+
+Joshua Cook<sup class="calibre5">1 </sup>
+(1)Santa Monica, California, USA
+
+ 
+
+
+<!--End Abstract-->Thus far, I have focused the discussion on single containers or individually managed pairs of containers running on the same system. In this chapter, you’ll extend your ability to develop applications comprised of multiple containers using the Docker Compose tool.
+The provisioning of systems refers to installation of necessary libraries, the configuration of resource allocation and network connections, and the management of persistent and state-specific data. In the past, the provisioning and maintenance of a system might have been done manually by a system administrator or operations engineer
+        
+      . In recent years, the DevOps community has thrived around a concept for building software applications called “infrastructure as code” (IaC)
+            
+          . IaC is the practice of using software developed for the specific purpose of provisioning systems, as opposed to doing this manually.
+You have already seen how the Docker toolset
+        
+       can be used to provision systems. Using a Dockerfile, it is possible to use code to provision the system libraries and Python libraries required by a specific container. In this chapter, you will explore how to use the Docker Compose tool to configure resource allocation, connections between multiple containers, environment variables, and other state-specific data, in addition to persistent data. Having mastered these concepts, you will begin to think about the multi-container systems
+        
+       you design as single, containerized applications. Furthermore, using Docker Compose you will be able to start, stop, and scale your applications using a simple command line interface.
+As you proceed, I will discuss what all of this means to the data scientist. Specifically, I will emphasize three powerful advantages to working in this way, namely the ability to
+<ol class="calibre7"><li class="listitem">1.在本地开发，在任何地方部署</li>
+<li class="listitem">2.快速轻松地与利益相关方共享复杂的应用程序</li>
+<li class="listitem">3.亲自管理基础架构，无需依赖 IT 资源</li>
+</ol>
+
+    
+<h2 class="heading2">安装坞站-合成</h2>
+If you’re running Docker for Linux, docker-compose can be installed using the instructions provided here: <a href="https://github.com/docker/compose/releases" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                https://github.com/docker/compose/releases
+              </a>. This will include those of you who have been following along using the recommended best practice of installing on a disposable cloud-based system. Those using Docker for Linux will want to follow these instructions. If you’re using Docker for Mac, Docker for Windows, or Docker Toolbox, you may skip this next section, as docker-compose is installed by default upon Docker installation.
+As of the writing of this text, the process is as outlined. The first set of commands (Listing <a href="#Par11" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-1</a>) retrieves the latest compiled binary from GitHub<a href="#Fn1" id="Fn1_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">1</sup></a> and then moves the binary to an appropriate location on your system. The second command (Listing <a href="#Par12" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-2</a>) allows the binary to be executed by the local system.
+
+            $ sudo curl -L https://github.com/docker/compose/releases/download/1.15.0/docker-compose-`uname -s`-`uname -m` &gt; docker-compose
+sudo mv docker-compose /usr/local/bin/docker-compose
+  % Total   % Received % Xferd Average Speed   Time   Time     Time  Current
+                               Dload  Upload   Total  Spent    Left  Speed
+100   600   0   600   0   0     2327      0 --:--:-- --:--:-- --:--:--  2334
+100 8066k 100 8066k   0   0    1122k      0  0:00:07  0:00:07 --:--:-- 1556k
+Listing 9-1.Download the docker-compose Binary
+
+
+
+          
+
+            $ sudo chmod +x /usr/local/bin/docker-compose
+Listing 9-2.Grant Execute Permissions to the docker-compose Binary
+
+
+
+          
+In Listing <a href="#Par14" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-3</a>, you test your docker-compose installation.
+
+            $ docker-compose --version
+docker-compose version 1.12.0, build b31ff33
+Listing 9-3.Test docker-compose 
+                      
+                      
+                    
+              
+
+
+
+          
+
+<h2 class="heading2">什么是坞站-堆肥？</h2>
+Docker Compose is a tool for managing a multi-container application with Docker. An application is defined by Compose using a single docker-compose.yml file. The developer maintains a directory of source code defining an application. This directory may include a library of Python or C files; zero or more Dockerfiles defining containers; raw data files such as CSVs, feather,
+        <a href="#Fn2" id="Fn2_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">2</sup></a> or JSON files; and other provisioning scripts such as a 
+          requirements.txt file
+         for a Python project
+          
+        . The docker-compose.yml file sits at the top level of this directory. The application is built, run, stopped, and removed using a single docker-compose command. The 
+          docker-compose tool
+          
+         refers to the file as it communicates with the Docker engine, as if the entire application were a single Docker container.
+<h3 class="heading3">坞站生成版本</h3>
+The Docker Compose file syntax is currently on Version 3. For new projects, Docker recommends using the most recent version. That said, all versions are backward-compatible and many docker-compose.yml files found on the Internet use earlier versions. A version is specified as the first value in a docker-compose.yml file, as shown in Listing <a href="#Par18" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-4</a>. If no version is specified, Version 1 will be used.
+
+              version: '3'
+services:
+  db:
+    image: postgres
+    volumes:
+      - data:/var/lib/postgresql/data
+  volumes:
+    data:
+      driver: mydriver
+Listing 9-4.A docker-compose.yml File Showing a Version Specification
+
+
+
+            
+
+
+<h2 class="heading2">构建简单坞站复合应用程序</h2>
+You will build your first Docker Compose application
+          
+         to be a Jupyter Notebook Server running in conjunction with a Redis server (Figure <a href="#Fig1" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-1</a>).<img src="Images/A439726_1_En_9_Fig1_HTML.jpg" alt="A439726_1_En_9_Fig1_HTML.jpg" class="calibre81"/>
+Figure 9-1.A simple Docker Compose application
+                  
+                
+              
+
+
+
+      
+You will first create a directory to hold your project (Listing <a href="#Par21" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-5</a>).
+
+            $ mkdir ch_9_jupyter_redis
+$ cd ch_9_jupyter_redis
+Listing 9-5.Create a Directory
+                  
+                 to Hold the Project
+
+
+
+          
+Next (Listing <a href="#Par24" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-6</a>), you will use the command line text editor vim
+        <a href="#Fn3" id="Fn3_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">3</sup></a> to create a docker-compose.yml file (Listing <a href="#Par25" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-7</a>) to define this application.
+
+            $ vim docker-compose.yml
+Listing 9-6.Create docker-compose.yml
+                  
+                
+              
+
+
+
+          
+
+            version: '3'
+services:
+  this_jupyter:
+    image: jupyter/scipy-notebook
+    ports:
+     - 8888:8888
+    volumes:
+      - .:/home/jovyan
+  this_redis:
+    image: redis:alpine
+Listing 9-7.
+                jupyter_redis docker-compose.yml File
+
+
+
+          
+You use the Compose file to define two services, this_jupyter and this_redis. The 
+          this_jupyter service
+          
+        
+<ul class="unorderedlistmarkbullet"><li class="calibre15">按照 image:关键字的指定，使用 Docker Hub 注册表中的 jupyter/scipy-notebook。</li>
+<li class="calibre15">附加本地目录(。)到(希望熟悉)jupyter WORKDIR，/home/jovyan，<a href="#Fn4" id="Fn4_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> <sup class="calibre6"> 4 </sup> </a>，如 volumes: keyword 所指定的。</li>
+<li class="calibre15">按照 ports:关键字的指定，将公开的端口 8888 转发到主机上的端口 8888。</li>
+<li class="calibre15">按照 Links:参数的指定，将容器链接到 Redis 容器。</li>
+</ul>
+
+      
+The redis service uses the redis image with tag alpine
+        <a href="#Fn5" id="Fn5_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">5</sup></a> from the Docker Hub registry
+          
+        .
+Note
+The definition of every container defined in a docker-compose.yml file must begin with either the image: argument or the build: argument. I will discuss the build: argument in the next section of this chapter.
+
+<h3 class="heading3">使用 Compose 运行应用程序</h3>
+You used the docker-compose.yml file to define your application. Now (Listing <a href="#Par36" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-8</a>), you use the docker-compose command line tool to start the application. You will use the -d argument to specify that you wish to launch the application in detached mode.
+
+              $ docker-compose up
+Creating network "ch9jupyterredis_default" with the default driver
+Creating ch9jupyterredis_this_redis_1
+Creating ch9jupyterredis_this_jupyter_1
+Listing 9-8.Start the Compose Application 
+                        jupyter_redis
+                        
+                        
+                      
+                
+
+
+
+            
+The docker-compose up command first instructs the Docker Engine
+            
+           to either
+<ol class="calibre7"><li class="listitem">1.如果容器定义以 image:关键字开头，请检查指定图像的本地图像缓存。</li>
+<li class="listitem">2.如果容器定义以 Build:关键字开始，则从引用的 Dockerfile 文件构建映像。</li>
+</ol>
+
+        
+Here, you have passed an image: keyword for both containers. In this case, both images with which you are working are currently in your image cache. Were they not in the cache, the Docker engine would pull them from Docker Hub.
+Next, the docker-compose up command instructs the Docker engine to create a network over which the application’s containers can communicate. Here, a network called 
+                ch9jupyterredis_default
+                
+              
+          
+                
+                
+               was created. Listing <a href="#Par56" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-14</a> shows how to use this network.
+Finally, the docker-compose up command instructs the Docker engine to create the containers defined in the docker-compose.yml file. This is equivalent to running the two commands in Listing <a href="#Par44" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-9</a>, with one exception: the connection created by docker-compose is superior to the link created by a --link flag, as you will see in a moment.
+Warning
+Don’t execute Listing <a href="#Par44" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-9</a>. It is included here to show what you would run were you to instantiate these two containers manually.
+
+
+              $ docker run --name ch9jupyterredis_this_redis_1 redis
+$ docker run -v `pwd`:/home/jovyan -p 8888:8888 --name ch9jupyterredis_this_jupyter_1 --link ch9jupyterredis_this_redis_1 jupyter/scipy-notebook
+Listing 9-9.Manually Instantiate Two Containers as Defined in docker-compose.yml
+                
+
+
+
+            
+This method is a mouthful and I hope that readers can see the superficial benefits of using docker-compose immediately in terms of making the definition of command line options much more straightforward.
+In Listing <a href="#Par47" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-10</a>, you use docker-compose ps to display process information for the containers associated with the current docker-compose.yml file.
+
+              $ docker-compose ps
+Name                              Command      
+----------------------------------------------------------------------------
+ch9jupyterredis_this_jupyter_1     tini -- start-notebook.sh
+ch9jupyterredis_this_redis_1       docker-entrypoint.sh redis ...
+State     Ports
+----------------------------------------------------------------------------
+Up         0.0.0.0:8888-&gt;8888/tcp
+Up         6379/tcp
+Listing 9-10.Display Containers for Current docker-compose.yml
+                
+
+
+
+            
+This command will not show information for other containers as docker ps will. In Listing <a href="#Par49" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-11</a>, you change directories to go up a level. When you have done that, you have no docker-compose.yml file that can be referenced by the docker-compose command. When you request docker-compose ps information in a directory with no docker-compose.yml file, you receive an error. Following receiving the error, you return to your project directory.
+
+              $ cd ..
+$ ls
+ch_9_jupyter_redis
+$ docker-compose ps
+ERROR:
+        Can't find a suitable configuration file in this directory or any
+        parent. Are you in the right directory?
+
+        Supported filenames: docker-compose.yml, docker-compose.yaml
+$ cd ch_9_jupyter_redis
+
+Listing 9-11.Request docker-compose ps Information in a Directory with No docker-compose.yml
+                
+
+
+
+            
+You can operate on the containers you have created as you would any other Docker container. In Listing <a href="#Par51" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-12</a>, you use docker exec to connect to your Jupyter container. From there you check env and pipe (|) this to a grep for the term redis, so that you can examine the environment variables associated with the Jupyter container’s link to the Redis container.
+
+              $ docker exec ch9jupyterredis_this_jupyter_1 bash
+jovyan@63f28e183a88:∼$ env | grep redis
+Listing 9-12.Examine 
+                    jupyter Environment Variables
+                    
+                   for redis
+                
+
+
+
+            
+Note that nothing is displayed. In Listing <a href="#Par53" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-13</a>, you verify that this is true by displaying
+            
+           the full environment.
+
+              jovyan@db36cb53ea93:∼$ env
+HOSTNAME=db36cb53ea93
+NB_USER=jovyan
+SHELL=/bin/bash
+TERM=xterm
+LC_ALL=en_US.UTF-8
+LS_COLORS= ...
+PWD=/home/jovyan
+LANG=en_US.UTF-8
+SHLVL=1
+HOME=/home/jovyan
+LANGUAGE=en_US.UTF-8
+XDG_CACHE_HOME=/home/jovyan/.cache/
+DEBIAN_FRONTEND=noninteractive
+CONDA_DIR=/opt/conda
+NB_UID=1000
+_=/usr/bin/env
+Listing 9-13.Examine jupyter Environment Variables
+
+
+
+            
+In Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, Listing <a href="08.html#Par42" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8-12</a>, you did much the same thing. You created a link to a running Redis container, although in that case you did so using the --link flag passed to the docker run argument. You then connected to the running Jupyter container via a bash shell and grepped the environment variables for THIS_REDIS. If you recall, you found several variables that could be used in place of referring to the Redis container by its local IP address. As can be seen, this is not the case when you created an application comprised of Jupyter and Redis via docker-compose. You are going to need to connect to Redis in a different way. Fortunately, as you will see in a moment, it is much, much easier.
+While you’re here, grab the security token for your Jupyter container so that you will be able to access Jupyter through your browser (Listing <a href="#Par56" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-14</a>).
+
+              jovyan@63f28e183a88:∼$ jupyter notebook list
+Currently running servers:
+http://localhost:8888/?token=bca81e140ba43b4a3b20591812a6af32289fc66131e8e5e0 :: /home/jovyan
+Listing 9-14.Obtain the jupyter Security Token via bash Shell Connected to the Container
+
+
+
+            
+As before, you will use this to access Jupyter in your browser, substituting localhost for the appropriate IP address, if necessary. In Figure <a href="#Fig2" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-2</a>, you navigate to your Jupyter site on a remote AWS t2.micro. You can see that the -v flag has made the lone file in your local directory, the docker-compose.yml file, available to the Jupyter Notebook server
+            
+          .<img src="Images/A439726_1_En_9_Fig2_HTML.jpg" alt="A439726_1_En_9_Fig2_HTML.jpg" class="calibre82"/>
+Figure 9-2.Jupyter running on a t2.micro
+                    
+                  .
+
+
+
+        
+Listing <a href="#Par59" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-15</a> shows a trivial connection to the Redis container from a Jupyter Notebook. Here, you make use of the link created by docker-compose. The link quite simply is the name of the service defined in the docker-compose.yml file, namely, this_redis.
+
+              In [1]: !pip install redis
+        Collecting redis
+          Downloading redis-2.10.5-py2.py3-none-any.whl (60kB)
+            100% |████████████████████████████████| 61kB 2.7MB/s ta 0:00:011
+        Installing collected packages: redis
+        Successfully installed redis-2.10.5
+        You are using pip version 8.1.2, however version 9.0.1 is available.
+        You should consider upgrading via the 'pip install --upgrade pip' command.
+In [2]: import redis
+In [3]: REDIS = redis.Redis(host='this_redis')
+In [4]: REDIS.incr('my_incrementor')
+Out[4]: 1
+In [5]: REDIS.get('my_incrementor')
+Out[5]: b'1'
+Listing 9-15.Connect to 
+                        redis
+                        
+                        
+                       from jupyter
+                
+
+
+
+            
+Finally, in Listing <a href="#Par61" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-16</a>, you tear your simple application down using the
+            
+           docker-compose down command.
+
+              $ docker-compose down
+Stopping ch9jupyterredis_this_jupyter_1 ... done
+Stopping ch9jupyterredis_this_redis_1 ... done
+Removing ch9jupyterredis_this_jupyter_1 ... done
+Removing ch9jupyterredis_this_redis_1 ... done
+Removing network ch9jupyterredis_default
+Listing 9-16.Tear Down Application via 
+                        docker-compose down
+                        
+                        
+                      
+                
+
+
+
+            
+Note that not only does docker-compose down stop your containers, it removes them, before removing the customer network defined to connect your containers.
+
+
+<h2 class="heading2">坚持不懈的 Jupyter 和 Mongo</h2>
+In Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, you configured a two-container system consisting of a Jupyter container and a MongoDB container running on two separate host systems on AWS. Here, you create the functionally equivalent system using Docker Compose. One advantage of using Docker Compose to build the system is that you will be able to run both services from the same host system without putting significant effort into managing your network configuration. You saw previously when configuring your simple Compose application that you were able to access Redis simply by using the name you had given to the service in your docker-compose.yml file. You will take advantage of this simple method for configuring networks and use two new Docker Compose techniques available: the configuration of data volumes and the definition of environment variables. Figure <a href="#Fig3" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-3</a> shows a diagram of the system you will be configuring.<img src="Images/A439726_1_En_9_Fig3_HTML.jpg" alt="A439726_1_En_9_Fig3_HTML.jpg" class="calibre83"/>
+Figure 9-3.A Docker Compose application with two service and a data volume
+                  
+                
+              
+
+
+
+      
+Once more, you begin by creating a directory to hold your project (Listing <a href="#Par65" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-17</a>). Recall that docker-compose uses the docker-compose.yml file to communicate with the Docker engine, and as such it is a best practice to create a new directory for each project and give it its own docker-compose.yml file. In Listing <a href="#Par66" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-18</a>, you create the new docker-compose.yml file (Listing <a href="#Par67" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-19</a>).
+
+            $ mkdir ch_9_jupyter_mongo
+$ cd ch_9_jupyter_mongo
+Listing 9-17.Create a Directory to Hold the Project
+
+
+
+          
+
+            $ vim docker-compose.yml
+Listing 9-18.
+                Create
+                  
+                 the docker-compose.yml file
+
+
+
+          
+
+            version: '3'
+services:
+  this_jupyter:
+    build: docker/jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan
+    env_file:
+      - config/jupyter.env
+this_mongo:
+    image: mongo
+    volumes:
+      - mongo_data:/data/db
+volumes:
+  mongo_data:
+Listing 9-19.
+                ch_9_jupyter_mongo/docker-compose.yml file
+
+
+
+          
+While you once more use the Compose file to define two services, this_jupyter and this_mongo, you have done quite a bit more with this file as compared to your previous application. To begin with, the this_jupyter service is defined not by an image: keyword, but rather using the build: keyword. Listing <a href="#Par73" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-22</a> shows the Dockerfile you will be using for your build. Additionally, you add the env_file: keyword. Listing <a href="#Par77" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-24</a> shows the environment file you will be using. In your definition of this_mongo, you add a volumes: keyword that makes reference to a mongo_data volume defined later in the Compose file.
+<h3 class="heading3">指定构建上下文</h3>
+Here, you have specified the build keyword by providing a string that is a path to your desired build context. In Chapter <a href="05.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">5</a>, you noted that the build context refers to the collection of files that will be used to build the specific image. In other words, a build context is a directory that contains the Dockerfile to be used as well as any other files required by the build. Here, you specify a build context of docker/jupyter. In Listing <a href="#Par70" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-20</a>, you create this directory relative to the location of your docker-compose.yml file. Note that the -p flag passed to the mkdir command allows you to create the nested directory structure. In this nested directory structure, you are using a best practice that will be discussed in Chapter <a href="10.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10</a>.
+
+              $ mkdir -p docker/jupyter
+$ tree
+.
+├── docker
+│   └── jupyter
+└── docker-compose.yml
+Listing 9-20.Create this_jupyter Build Context
+
+
+
+            
+Next (Listing <a href="#Par72" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-21</a>), you are going to need
+            
+           to create the Dockerfile (Listing <a href="#Par73" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-22</a>) that will define your new image. In defining your Dockerfile you are using the best practices defined in Chapter <a href="07.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">7</a>.
+
+              $ vim docker/jupyter/Dockerfile
+Listing 9-21.Create docker/jupyter/Dockerfile
+                
+
+
+
+            
+
+              FROM jupyter/scipy-notebook
+USER root
+RUN conda install --yes --name root spacy pymongo
+RUN ["bash", "-c", "source activate root &amp;&amp; pip install twitter"]
+RUN python -m spacy download en
+USER jovyan
+Listing 9-22.
+                      docker/jupyter/Dockerfile
+                    
+
+
+
+            
+Note
+Since you don’t intend on running any code using the Python 2 kernel, it is not necessary to install the libraries in the python2 environment. Instead, you only install to the root environment which, as you recall from Chapter <a href="06.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">6</a>, is the Python 3 environment.
+
+
+<h3 class="heading3">指定环境文件</h3>
+In Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, you obtained a set of OAuth credentials that could be used to stream tweets directly from Twitter’s Streaming API. It is a best practice in terms of security to store these credentials in a separate file. Here, you will store those credentials in an environment file called 
+                jupyter.env
+                
+              . You have told Docker Compose to use this file using the env_file: keyword. In Listing <a href="#Par76" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-23</a>, you create the config directory to hold this file and then create the new file shown in Listing <a href="#Par77" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-24</a>. As before, replace the dummy strings in the environment file with your actual API credentials.
+
+              $ mkdir config
+$ vim config/jupyter.env
+Listing 9-23.Create the config Directory and config/jupyter.env
+                
+
+
+
+            
+
+              CONSUMER_KEY=dummy_consumer_key
+CONSUMER_SECRET=dummy_consumer_secrete
+ACCESS_TOKEN=dummy_access_token
+ACCESS_SECRET=dummy_access_secret
+Listing 9-24.
+                      config/jupyter.env
+                    
+
+
+
+            
+Warning
+The config/jupyter.env file should be treated as a bash script. This means that the variable definition requires no spaces on either side of the equal sign. In bash, var=1 is a variable assignment,<a href="#Fn6" id="Fn6_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">6</sup></a> while var = 1 is a Boolean comparison that will first try to execute var1.
+            <a href="#Fn7" id="Fn7_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">7</sup></a>
+          
+
+In Listing <a href="#Par82" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-25</a>, you use the tree tool to share the final status of your application directory.
+
+              $ tree
+.
+├── config
+│   └── jupyter.env
+├── docker
+│   └── jupyter
+│       └── Dockerfile
+└── docker-compose.yml
+Listing 9-25.Use tree to Show the Application Directory
+                        
+                        
+                      
+                
+
+
+
+            
+
+<h3 class="heading3">数据持久性</h3>
+In Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, you used Docker data volumes to persist data beyond the lifespan of a container. You did this using the docker volume tool, which in the context of infrastructure as code, you should think of as a manual method. Using a docker-compose.yml file, it is possible to define a volume in much the same way that a service is defined (that is, to specify the creation of a volume using code). Furthermore, you can define how the volume will be used by the application (that is, you can specify an attachment to a specific service). In Listing <a href="#Par67" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-19</a>, you define a single volume called 
+                mongo_data
+                
+               and then link that volume to your mongo service.
+
+<h3 class="heading3">使用 Compose 构建应用程序</h3>
+Before running your application, you will need to build it. This is because at least one of your defined services uses the build: keyword as opposed to be image: keyword in order to define the image that will be used to instantiate its container. In Listing <a href="#Par85" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-26</a>, you perform this build. It is worth noting that this command will only affect those services that are defined using the build: keyword. You can see that the build process skips this_mongo because it uses an image.
+
+              $ docker-compose build
+this_mongo uses an image, skipping
+Building this_jupyter
+Step 1/6 : FROM jupyter/scipy-notebook
+ ---&gt; 3dc12029099d
+Step 2/6 : USER root
+ ---&gt; Using cache
+ ---&gt; d0fe6db71e0b
+Step 3/6 : RUN conda install --yes --name root spacy pymongo
+ ---&gt; Running in 26e516e316c3
+...
+Step 4/6 : RUN bash -c source activate root &amp;&amp; pip install twitter
+ ---&gt; Running in 5a07f7033056
+...
+Step 5/6 : RUN python -m spacy download en
+ ---&gt; Running in 319588ae94c6
+... 
+                    
+                    
+                  
+            
+Step 6/6 : USER jovyan
+ ---&gt; Running in 5c0f78fd96f2
+ ---&gt; d928c6dcf4fd
+Removing intermediate container 5c0f78fd96f2
+Successfully built d928c6dcf4fd
+Successfully tagged ch9jupytermongo_this_jupyter:latest
+Listing 9-26.Build the Application Using 
+                        docker-compose build
+                        
+                        
+                      
+                
+
+
+
+            
+Warning
+When docker-compose up is run, the Docker client checks the local image cache to see if the images associated with each defined service are present in the cache. For a service defined using the build: keyword, if the image is not in the cache, then the image will be built. This is to say that docker-compose build will be implicitly called. This will only happen if the image is not in the local image cache.
+The implications of this are that if changes have been made to a Dockerfile or other application files, the docker-compose up command has no mechanism for picking up on the changes and triggering a build. To the uninitiated, it may seem as though a build is implicitly called by docker-compose up, but truthfully this only happens if the image is not in the cache. It is for this reason that it is a recommended best practice to always run docker-compose build before running docker-compose up.
+
+Finally, having completed your build, you run your application, again using the docker-compose up command (Listing <a href="#Par89" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-27</a>).
+
+              $ docker-compose up -d
+Starting ch9jupytermongo_this_mongo_1
+Starting ch9jupytermongo_this_jupyter_1
+ubuntu@LOCAL:∼/ch_9_jupyter_mongo
+Listing 9-27.Start the Compose Application 
+                        jupyter_mongo
+                        
+                        
+                      
+                
+
+
+
+            
+In Listing <a href="#Par91" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-28</a>, you again use the docker-compose ps tool to display process information for the containers associated with your current application.
+
+              $ docker-compose ps
+Name                           Command         
+-----------------------------------------------------------
+ch9jupytermongo_this_jupyter_1 tini -- start-notebook.sh   
+ch9jupytermongo_this_mongo_1   docker-entrypoint.sh mongod
+State      Ports
+-----------------------------------------------------------
+Up         0.0.0.0:8888-&gt;8888/tcp
+Up         27017/tcp
+Listing 9-28.Display Containers for Current 
+                        docker-compose.yml
+                        
+                        
+                      
+                
+
+
+
+            
+Next (Listing <a href="#Par93" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-29</a>), you obtain the security token for your Jupyter container so that you will be able to access Jupyter through your browser.
+
+              $ docker exec ch9jupytermongo_this_jupyter_1 jupyter notebook list
+Currently running servers:
+http://localhost:8888/?token=0029b465c514ce18856a5a2751a95466504fac18b43531ce :: /home/jovyan
+Listing 9-29.Obtain jupyter Security Token via a Shell Call to the Container
+
+
+
+            
+Finally, in Figure <a href="#Fig4" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-4</a>, you navigate to a browser and, using the IP associated with your host system, you access Jupyter.<img src="Images/A439726_1_En_9_Fig4_HTML.jpg" alt="A439726_1_En_9_Fig4_HTML.jpg" class="calibre25"/>
+Figure 9-4.Jupyter running on a 
+                        t2.micro
+                        
+                        
+                      
+                
+
+
+
+        
+In order to test your system, you will once more stream tweets using a location-based filter. As in Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, you will insert each tweet you collect into MongoDB. To add a level of complexity, prior to inserting the tweet into MongoDB, you will use the spaCy library to encode that tweet text as a numpy vector. In order to store the vector in MongoDB, you will need to serialize the vector as a binary bytestream. You did this with Redis in Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a> and here you do the same with MongoDB.
+You first configure your Twitter authentication
+            
+          . You import the environ object from the os module and the OAuth class from the twitter module. The environ object<a href="#Fn8" id="Fn8_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">8</sup></a> is a mapping<a href="#Fn9" id="Fn9_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">9</sup></a> object representing the operating system’s string environment. It is captured at the time of import. Here, you will use it to reference to the environment variables containing your credentials as defined in the docker-compose.yml and config/jupyter.env files; see Listing <a href="#Par99" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-30</a>.
+
+              In [1]: from os import environ
+        from twitter import OAuth
+Listing 9-30.Import Modules Necessary to Configure Twitter Authentication
+                    
+                  
+                
+
+
+
+            
+In Listing <a href="#Par101" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-31</a>, you instantiate an OAuth object using the stored credentials. Note that each value is accessed using its key similar to a dictionary.
+
+              In [2]: oauth = OAuth(environ['ACCESS_TOKEN'],
+                      environ['ACCESS_SECRET'],
+                      environ['CONSUMER_KEY'],
+                      environ['CONSUMER_SECRET'])
+Listing 9-31.Instantiate the 
+                    OAuth Object
+                    
+                  
+                
+
+
+
+            
+In Listing <a href="#Par103" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-32</a>, you import the TwitterStream class and instantiate an object of that class using your defined authentication.
+
+              In [3]: from twitter import TwitterStream
+
+        los_angeles_bbox = "-118.55, 33.97, -118.44, 34.05"
+        twitterator = (TwitterStream(auth=oauth)
+                       .statuses
+                       .filter(locations=los_angeles_bbox))
+
+Listing 9-32.Instantiate 
+                        TwitterStream
+                        
+                        
+                      
+                
+
+
+
+            
+Finally, in Listing <a href="#Par105" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-33</a>, you pull a single tweet from the stream and then display its keys.
+
+              In [4]: this_tweet = next(twitterator)
+        this_tweet.keys()
+Listing 9-33.Pull a Single Tweet and Display Its keys
+                
+
+
+
+            
+You now have a tweet in memory and can insert it into MongoDB. Prior to insertion you will use the spaCy library to encode the tweet as a vector. You will add the encoded vector to the dictionary containing your tweet as a binary bytestream. First (Listing <a href="#Par107" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-34</a>), you import spacy and load the en model. In doing so, on your t2.micro, you receive a memory error.
+
+              In [5]: import spacy
+        nlp = spacy.load('en')
+        --------------------------------------------------------------------
+        MemoryError                        Traceback (most recent call last)
+        &lt;ipython-input-8-e0448d429293&gt; in &lt;module&gt;()
+              1 import spacy
+              2
+        ----&gt; 3 nlp = spacy.load('en')
+Listing 9-34.Import spacy and Load the en Language Model
+                  
+                
+
+
+
+            
+Well, at first such an error might be annoying or even daunting, but being able to efficiently deal with issues like this is a primary reason why you are learning this technology in the first place. In Listing <a href="#Par109" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-35</a>, you use the docker stats tool to diagnose your error. Note that docker-compose does not have its own docker stats tool so you simply use the standard tool you have been using previously.
+
+              CONTAINER     CPU %   MEM USAGE / LIMIT     MEM %    
+698ba3322462  0.02%   539.2MiB / 990.7MiB   54.43%   
+a37b17785360  0.37%   49.77MiB / 990.7MiB   5.02%    
+NET I/O           BLOCK I/O         PIDS
+1.26MB / 1.88MB   89.1GB / 1.42MB   15
+21.8kB / 28.9kB   184GB / 15.5MB    22
+Listing 9-35.Use 
+                        docker stats
+                        
+                        
+                       to Diagnose a Memory Error
+
+
+
+            
+It is of note that there are two containers running on your system and that docker stats does not give them human-readable names. You can intuit from the memory usage that 698ba3322462 is the Jupyter container. You can kill the docker stats tool with Ctrl+C and use docker ps to verify this, as in Listing <a href="#Par111" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-36</a>.
+
+              CONTAINER ID IMAGE                        ... NAMES
+698ba3322462 ch9jupytermongo_this_jupyter ... ch9jupytermongo_this_jupyter_1
+a37b17785360 mongo                        ... ch9jupytermongo_this_mongo_1
+Listing 9-36.Use 
+                        docker ps
+                        
+                        
+                       to Diagnose a Memory Error
+
+
+
+            
+Sure enough, it is the Jupyter container that is using more than half of the system memory … and in a failed state! It did not even finish loading the model. According the spaCy docs on their particular models,<a href="#Fn10" id="Fn10_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">10</sup></a> it appears that loading the English model requires 1GB of RAM. Considering that this is the entirety of the RAM on your t2.micro, you will not be able to load the spaCy English model on a t2.micro.
+Let’s set the solution of this problem aside for a moment. First, you simply insert the tweet into MongoDB (Listing <a href="#Par115" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-37</a>) as you did in Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>. You do so by importing the pymongo module and instantiating a client to the database, before using that client to insert this_tweet. In Listing <a href="#Par116" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-38</a>, you count the number of tweets in your tweet_collection to verify its insertion.
+
+              In [6]: import pymongo
+
+        mongo_cli = pymongo.MongoClient('this_mongo')
+        result = (mongo_cli
+                  .twitter_database
+                  .tweet_collection
+                  .insert_one(this_tweet) 
+                      
+                      
+                    )
+
+Listing 9-37.Insert a Single Tweet
+                    
+                   into MongoDB
+
+
+
+            
+
+              
+                  In [6]: (mongo_cli
+                
+         .twitter_database
+            
+         .tweets_collection.count())
+Out[6]: 1
+Listing 9-38.
+                  Count Tweets
+                    
+                   in tweet_collection
+                
+
+
+
+            
+
+
+<h2 class="heading2">通过实例类型扩展 AWS 应用程序</h2>
+In Chapter <a href="01.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1</a>, you explored memory usage for various sized datasets, models, and model fitting procedures. The purpose of this was to examine memory constraints on an AWS t2.micro, the recommended system for working through this text. At the time, this examination was thoroughly academic. Here, you have hit an actual system constraint. You wish to load a language model available through the spaCy library that simply can’t fit on your t2.micro. Using Docker, Docker-Compose, and AWS, you will create an efficient method for solving this problem. To do this, you
+<ol class="calibre7"><li class="listitem">1.关闭 Docker Compose 应用程序，但保留您的数据量。</li>
+<li class="listitem">2.关闭您的 AWS 实例。</li>
+<li class="listitem">3.将 AWS 实例的实例类型更改为能够满足您需求的类型，t2.medium</li>
+<li class="listitem">4.重新启动 AWS 实例，记下生成的新 IP 地址。</li>
+<li class="listitem">5.重新启动坞站合成应用程序。</li>
+<li class="listitem">6.进行你的计算。</li>
+</ol>
+
+      
+In Listing <a href="#Par125" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-39</a>, you prepare to make the changes to your AWS instance by shutting down your application. Because you issue only a basic docker-compose down command, your Docker volume will persist through the entire process and you will not lose your MongoDB
+          
+         of tweets. It contains only one tweet, but this is sufficient for demonstration purposes.
+
+            $ docker-compose down Stopping ch9jupytermongo_this_jupyter_1 ... done
+Stopping ch9jupytermongo_this_mongo_1 ... done
+Removing ch9jupytermongo_this_jupyter_1 ... done
+Removing ch9jupytermongo_this_mongo_1 ... done
+Removing network ch9jupytermongo_default
+Listing 9-39.Shut Down the Docker Compose Application
+
+
+
+          
+In Figure <a href="#Fig5" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-5</a>, you navigate to the EC2 control panel and shut down your running instance. To do this, you select “Stop” from the “Instance State” menu item on the Actions Menu. This is the first step in changing the instance type. The instance must be stopped in order to make the changes.<img src="Images/A439726_1_En_9_Fig5_HTML.jpg" alt="A439726_1_En_9_Fig5_HTML.jpg" class="calibre84"/>
+Figure 9-5.Stop the AWS instance
+
+
+
+      
+You have been working on a t2.
+        
+              micro
+              
+              
+            . Figure <a href="#Fig6" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-6</a> shows the on-demand instance pricing and technical specs for instances launched in the US West (Oregon) region. As is shown, AWS t2.micro has 1GB of RAM, insufficient to load the spaCy library you wish to use. To play it safe, change your instance type to a t2.medium, which has 4GB of RAM. This should be more than enough to load the 1GB spaCy model. In Figure <a href="#Fig7" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-7</a>, you change your AWS instance type. Select “Change Instance Type” from the “Instance Settings” menu item on the Actions menu.<img src="Images/A439726_1_En_9_Fig6_HTML.jpg" alt="A439726_1_En_9_Fig6_HTML.jpg" class="calibre85"/>
+Figure 9-6.On-demand instance pricing and specs for US West (Oregon)
+
+
+
+        <img src="Images/A439726_1_En_9_Fig7_HTML.jpg" alt="A439726_1_En_9_Fig7_HTML.jpg" class="calibre86"/>
+Figure 9-7.Change instance type
+
+
+
+      
+Having changed the instance type
+          
+        , in Figure <a href="#Fig8" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-8</a>, you start the instance again using “Start” from the “Instance State” menu item in the Actions menu.<img src="Images/A439726_1_En_9_Fig8_HTML.jpg" alt="A439726_1_En_9_Fig8_HTML.jpg" class="calibre87"/>
+Figure 9-8.Start the AWS instance
+
+
+
+      
+Warning
+Stopping your AWS instance will release the IP address you have been using. When the instance is started again, you will need to obtain the new IP address assigned to your system.
+
+In Figure <a href="#Fig9" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-9</a>, you identify the new IP address assigned to your instance.<img src="Images/A439726_1_En_9_Fig9_HTML.jpg" alt="A439726_1_En_9_Fig9_HTML.jpg" class="calibre88"/>
+Figure 9-9.The new IP address
+
+
+
+      
+
+<h2 class="heading2">重新启动坞站合成应用程序</h2>
+You have successfully modified the virtual hardware associated with your EC2 instance. You now restart your Docker Compose application. Because of your use of a Docker volume to persist your data, you should have no data loss during the process. In Listing <a href="#Par132" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-40</a>, you reconnect to your AWS instance and navigate to the application directory.
+
+            (local) $ ssh ubuntu@ 54.244.99.222
+  (AWS) $ cd ch_9_jupyter_mongo/
+Listing 9-40.Reconnect to the AWS Instance and Navigate to the Application Directory
+
+
+
+          
+In Listing <a href="#Par134" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-41</a>, you start the application in detached mode.
+
+            $ docker-compose up -d
+Listing 9-41.Start the Docker Compose Application in Detached Mode
+
+
+
+          
+In Listing <a href="#Par136" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-42</a>, you obtain the new security token for your Jupyter Notebook Server.
+
+            $ docker exec ch9jupytermongo_this_jupyter_1 jupyter notebook list
+Currently running servers:
+http://localhost:8888/?token=981014c28f5c8f694fd0321f418fddce6904f46857ace0bc :: /home/jovyan
+Listing 9-42.Obtain Jupyter Notebook Server Security Token
+
+
+
+          
+
+<h2 class="heading2">完成计算</h2>
+Having modified your system’s virtual hardware, you return to the task at hand. In Listing <a href="#Par138" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-43</a>, you walk through the steps of your work.
+
+            In [1]: from os import environ
+        from twitter import OAuth
+
+        oauth = OAuth(environ['ACCESS_TOKEN'],
+                      environ['ACCESS_SECRET'],
+                      environ['CONSUMER_KEY'],
+                      environ['CONSUMER_SECRET'])
+
+In [2]: from twitter import TwitterStream
+
+        los_angeles_bbox = "-118.55, 33.97, -118.44, 34.05"
+        twitterator = (TwitterStream(auth=oauth)
+                       .statuses
+                       .filter(locations=los_angeles_bbox))
+
+In [3]: tw = next(twitterator)
+
+In [4]: tw.keys()
+Out[4]: dict_keys(['text', 'source', 'in_reply_to_status_id_str', 'favorited',
+        'is_quote_status', 'in_reply_to_status_id', 'lang', 'filter_level', 'geo',
+        'favorite_count', 'created_at', 'entities', 'coordinates', 'in_reply_to_user_id_str',
+        'retweeted', 'truncated', 'retweet_count', 'id', 'contributors', 'in_reply_to_user_id',
+        'user', 'place', 'in_reply_to_screen_name', 'id_str', 'timestamp_ms'])
+
+In [5]: import pymongo
+                
+              
+            
+
+        mongo_server = pymongo.MongoClient('this_mongo')
+
+In [6]: mongo_server.twitter.tweets.count()
+Out[6]: 1
+
+In [7]: result = (mongo_server
+                  .twitter
+                  .tweets
+                  .insert_one(tw))
+
+In [8]: mongo_server.twitter.tweets.count()
+Out[8]: 2
+
+Listing 9-43.Rerun Preliminary Work
+
+
+
+          
+Note that in Listing <a href="#Par138" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-43</a>, Out[6], you receive an output of 1 for the count of tweets stored in your MongoDB. This verifies that the tweet you inserted into your MongoDB prior to changing your instance type has persisted through the change.
+<h3 class="heading3">将推文编码为文档向量</h3>
+In Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, you looked at serializing numpy vectors for insertion into both Redis and PostgreSQL. Here, you add an additional step to the process, before inserting a serialized numpy vector into MongoDB. Previously, these vectors were merely demonstration vectors and had no meaning. Now, you use the spacy.nlp English model to encode the tweets you have collected as numpy vectors representing the tweets, that is, as document vectors. In Listing <a href="#Par142" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-44</a>, you load the spacy.nlp English model. This time the load is successful.
+Note
+I am purposefully avoiding an in-depth discussion of the spaCy library because it’s beyond the scope of this text. Readers interested in its use are referred to the library’s documentation at <a href="http://spacy.io" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    http://spacy.io
+                  </a>.
+
+
+              In [9]: import spacy
+
+        nlp = spacy.load('en')
+
+Listing 9-44.Import spacy and Load the English Model
+
+
+
+            
+In Listing <a href="#Par144" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-45</a>, you perform
+            
+           a search of all tweet documents. The search returns not the results themselves, but a cursor you can use to iterate through the documents one by one. This will be useful, as you will never have more than one document in memory at a time. You use the .next() class function to retrieve the first tweet.
+
+              In [10]: cursor = mongo_server.twitter.tweets.find()
+         stored_tweet = cursor.next()
+Listing 9-45.Create a Cursor for a Search of All Tweets and Retrieve a Single Tweet
+
+
+
+            
+In Listing <a href="#Par146" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-46</a>, you display the text of the tweet.
+
+              In [11]: stored_tweet['text']
+Out[11]: 'Amazing day exploring the Sunken City.  #California is unbelievable....
+         https://t.co/INl0o1znc7'
+Listing 9-46.Display Text of a Single Tweet
+
+
+
+            
+In Listing <a href="#Par148" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-47</a>, you use the spacy.nlp English model to create a document object using the text from the tweet. This document object contains the associated document vector as the attribute .vector. In Listing <a href="#Par149" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-48</a>, you display the dimension of this vector using the .shape attribute.
+
+              In [12]: doc = nlp(stored_tweet['text'])
+Listing 9-47.Create Document Vector from Tweet Text
+
+
+
+            
+
+              In [13]: doc.vector.shape
+Out[13]: (300,)
+Listing 9-48.Display Shape of Document Vector
+
+
+
+            
+In Listing <a href="#Par151" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-49</a>, you update
+            
+           your tweet document in MongoDB. The .update_one() function takes two dictionary arguments. The first argument is a dictionary used to search for the document you wish to update. Here, you specify that you wish to update a document with an _id matching your stored_tweet. The second argument specifies the value(s) you wish to update. In this case, you wish to set the key 'document_vector' to the serialized value of your document vector. Note that you use the .tostring() function to serialize your document vector for storage.
+
+              In [14]: mongo_server.twitter.tweets.update_one(
+             {'_id': stored_tweet['_id']},
+             {'$set': {'document_vector': doc.vector.tostring()}})
+Out[14]: &lt;pymongo.results.UpdateResult at 0x7f2796c6d750&gt;
+Listing 9-49.Update MongoDB tweet Document with Serialized Document Vector
+
+
+
+            
+You then repeat the process for the second tweet. In Listing <a href="#Par153" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-50</a>, you retrieve the second tweet and display its text. In Listing <a href="#Par154" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-51</a>, you create the document vector. In Listing <a href="#Par155" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-52</a>, you update the tweet document in MongoDB.
+
+              In [15]: stored_tweet = cursor.next()
+         stored_tweet['text']
+Out[15]: "Idk what's so soothing about their fingers changing"    
+Listing 9-50.Retrieve Next Tweet and Display Text
+
+
+
+            
+
+              In [16]: doc = nlp(stored_tweet['text'])
+Listing 9-51.Create Document Vector from Tweet Text
+                    
+                  
+                
+
+
+
+            
+
+              In [17]: mongo_server.twitter.tweets.update_one(
+             {'_id': stored_tweet['_id']},
+             {'$set': {'document_vector': doc.vector.tostring()}})
+Out[17]: &lt;pymongo.results.UpdateResult at 0x7f2796c48fc0&gt;
+Listing 9-52.Update MongoDB tweet Document with Serialized Document Vector
+
+
+
+            
+
+
+<h2 class="heading2">将 AWS 实例类型切换到 t2.micro</h2>
+Having encoded the two tweets, you have completed the resource-intensive component of your task and no longer need the spacy.nlp English model. This means that you can switch your AWS instance type back to a t2.micro. This is done in the exact same fashion as switching to a t2.medium. Because you have written your results to MongoDB and used a Docker volume to persist data in MongoDB, your work will persist during the change. To make the change, you
+<ol class="calibre7"><li class="listitem">1.停止坞站合成应用程序。</li>
+<li class="listitem">2.关闭您的 AWS 实例。</li>
+<li class="listitem">3.将 AWS 实例的实例类型改回 t2.micro。</li>
+<li class="listitem">4.重新启动 AWS 实例，记下生成的新 IP 地址。</li>
+<li class="listitem">5.重新启动坞站合成应用程序。</li>
+</ol>
+
+      
+<h3 class="heading3">从 MongoDB 检索 Tweets 并进行比较</h3>
+Using your t2.micro you can perform
+            
+           some comparisons of your tweet vectors. To do this, you create a new Jupyter Notebook. In Listing <a href="#Par163" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-53</a>, you connect to MongoDB.
+
+              In [1]: import pymongo
+        mongo_server = pymongo.MongoClient('this_mongo')
+Listing 9-53.Connnect to MongoDB
+
+
+
+            
+In Listing <a href="#Par165" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-54</a>, you search all tweets in MongoDB using .find(). This time, you do not work with a cursor; rather you cast the returned cursor to a list. Without going too far into the Python of what you are doing, the effect is to create a list of tweets pulled from MongoDB. Because you have used the keyword argument projection to request document_vector, the list will contain only the _id and document_vector for each tweet.
+
+              In [2]: tweet_vectors = list(mongo_server.twitter.tweets.find(projection=['document_vector']))
+Listing 9-54.Retrieve a List of Document Vectors from MongoDB
+
+
+
+            
+In Listing <a href="#Par167" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-55</a>, you deserialize the bytestream document vectors into numpy vectors so that you can use them for a calculation. You do this, as you did in Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, using the .fromstring() function.
+
+              In [3]: import numpy as np
+        tweet_vectors_np = [tw['document_vector'] for tw in tweet_vectors]
+        tweet_vectors_np = [np.fromstring(tw) for tw in tweet_vectors_np]
+Listing 9-55.Create a List of numpy Document Vectors
+
+
+
+            
+In Listing <a href="#Par169" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-56</a>, you perform a cosine similarity calculation between your two tweet document vectors. The results show that these two tweets are very similar, at least according to their spacy.nlp English model encoding.
+
+              In [4]: from sklearn.metrics.pairwise import cosine_similarity
+        cosine_similarity(tweet_vectors_np[0].reshape(1, -1),
+                          tweet_vectors_np[1].reshape(1, -1))
+Out[4]: array([[ 0.99992551]])
+Listing 9-56.Calculate Cosine Similarity of the Two Tweets
+                    
+                  
+                
+
+
+
+            
+
+
+<h2 class="heading2">坞站组成网络</h2>
+In Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, you launched and configured a PostgreSQL database on the same system as your Jupyter Notebook Server using a manually configured Docker Network. Although the process is non-trivial, working through that section can provide meaningful insights into how Docker configures networks internal to Docker to be used by containers to connect to each other. With Docker Compose there is an easier way.
+Note
+Networking in Docker Compose is significantly different for docker-compose.yml files using Version 2 or higher. I continue to recommend the use of Version 3 and state this for completeness. This is to say that I will continue to operate as if you are working with Version 3 but you should be aware of the significant upgrades to networking in Docker Compose between Version 1 and Version 2.
+
+At runtime, Docker Compose automatically sets up a single network for the application. Service containers defined in the docker-compose.yml file join this network by default, and are immediately available to other containers in the application and are discoverable by the name used to define the service. Consider the application defined
+          
+         in the sample docker-compose.yml file in Listing <a href="#Par173" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-57</a>, presumed to be in a directory named ch_9_sample.
+
+            version: "3"
+services:
+  this_jupyter:
+    image: jupyter/scipy-notebook
+    ports:
+      - "8888:8888"
+  this_redis:
+    image: redis:alpine
+  this_posstgres:
+    image: postgres:alpine
+Listing 9-57.Sample docker-compose.yml File
+
+
+
+          
+When you run docker-compose up, docker-compose instructs the Docker Engine to
+<ol class="calibre7"><li class="listitem">1.创建一个名为 ch9sample_default 的网络。</li>
+<li class="listitem">2.创建一个名为 ch9sample_this_jupyter 的容器，容器中的端口 8888 通过主机上的端口 8888 公开。</li>
+<li class="listitem">3.指示 ch9sample_this_jupyter 使用名称 this_jupyter 加入 ch9sample_default。</li>
+<li class="listitem">4.创建一个名为 ch9sample_this_redis 的容器。</li>
+<li class="listitem">5.指示 ch9sample_this_redis 使用名称 this_redis 加入 ch9sample_default。</li>
+<li class="listitem">6.创建一个名为 ch9sample_this_postgres 的容器。</li>
+<li class="listitem">7.指示 ch9sample_this_ postgres 使用名称 this_ postgres 加入 ch9sample_default。</li>
+</ol>
+
+      
+Now each container in the application
+          
+         can access every other container using the container’s name on the network, such as this_jupyter, this_redis, or this_postgres (Figure <a href="#Fig10" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-10</a>).<img src="Images/A439726_1_En_9_Fig10_HTML.jpg" alt="A439726_1_En_9_Fig10_HTML.jpg" class="calibre89"/>
+Figure 9-10.A sample default Docker Compose network configuration
+
+
+
+      
+
+<h2 class="heading2">坚持不懈的朱庇特和波斯特格雷</h2>
+For your final application in this chapter, you will build a Jupyter Notebook and PostgreSQL application (Figure <a href="#Fig11" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-11</a>). You will configure PostgreSQL to work with a data volume for persistence. You will also set up Postgres to use a build rather than an image.<img src="Images/A439726_1_En_9_Fig11_HTML.jpg" alt="A439726_1_En_9_Fig11_HTML.jpg" class="calibre90"/>
+Figure 9-11.A Docker Compose application with two services and a data volume
+
+
+
+      
+In Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, I mentioned that PostgreSQL has a natural aptitude for working with CSV files
+          
+        . Additionally, the public image for PostgreSQL has several build hooks to aid in initializing the database at runtime. Per the postgres documentation on Docker Hub<a href="#Fn11" id="Fn11_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">11</sup></a>:
+<blockquote class="blockquote">在入口点调用 initdb 创建默认 postgres 用户和数据库之后，它将运行任何*。sql 文件和源代码。在该目录中找到的 sh 脚本在启动服务之前做进一步的初始化。</blockquote>
+      
+What this means is that you can add SQL files and shell scripts as part of the image build process that will execute automatically at runtime and set up your database for you.
+Again, you begin by creating
+          
+         a directory to hold your project (Listing <a href="#Par189" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-58</a>). In Listing <a href="#Par190" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-59</a>, you create the new docker-compose.yml file (Listing <a href="#Par191" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-60</a>).
+
+            $ mkdir ch_9_jupyter_postgres
+$ cd ch_9_jupyter_postgres
+Listing 9-58.Create a Directory to Hold the Project
+
+
+
+          
+
+            $ vim docker-compose.yml
+Listing 9-59.Create docker-compose.yml File
+
+
+
+          
+
+            version: '3'
+services:
+  this_jupyter:
+    build: docker/jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan
+  this_postgres:
+    build: docker/postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+Listing 9-60.
+                ch_9_jupyter_postgres/docker-compose.yml file
+
+
+
+          
+<h3 class="heading3">指定构建上下文</h3>
+Readers will note that both services you define here use the build: keyword rather than the image: keyword. This means that your project will require two build contexts, one for each image. In Listing <a href="#Par193" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-61</a>, you create two build contexts and then display your current project using tree.
+
+              $ mkdir -p docker/jupyter
+$ mkdir -p docker/postgres
+$ tree
+.
+├── docker
+│   ├── jupyter
+│   └── postgres
+└── docker-compose.yml
+Listing 9-61.Create Two Build Contexts
+
+
+
+            
+Next, in Listing <a href="#Par195" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-62</a>, you create the first Dockerfile (Listing <a href="#Par196" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-63</a>) for your this_jupyter service. You use this Dockerfile only to install
+            
+           the psycopg2 module you will be using to access PostgreSQL.
+
+              $ vim docker/jupyter/Dockerfile
+Listing 9-62.Create docker/jupyter/Dockerfile
+                
+
+
+
+            
+
+              FROM jupyter/scipy-notebook
+USER root
+RUN conda install --yes --name root psycopg2
+USER jovyan
+Listing 9-63.
+                      docker/jupyter/Dockerfile
+                    
+
+
+
+            
+In Listing <a href="#Par198" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-64</a>, you create the second Dockerfile (Listing <a href="#Par199" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-65</a>) for your this_postgres service. In this Dockerfile, you use the postgres:alpine image as a base image and copy two files from the build context to the image, get_data.sh (Listing <a href="#Par203" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-66</a>) and initdb.sql (Listing <a href="#Par204" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-67</a>). As noted above, because you add these files to /docker-entrypoint-initdb.d/, at runtime the shell script will be executed by bash and the SQL file by PostgreSQL. You will use this to create a table in your database and populate it with data.
+
+              $ vim docker/postgres/Dockerfile
+Listing 9-64.Create docker/postgres/Dockerfile
+                
+
+
+
+            
+
+              FROM postgres:alpine
+COPY get_data.sh /docker-entrypoint-initdb.d/get_data.sh
+COPY initdb.sql /docker-entrypoint-initdb.d/initdb.sql
+Listing 9-65.
+                      docker/postgres/Dockerfile
+                    
+
+
+
+            
+Note
+You obtain the CSV file
+              
+             you use to populate the database from the UCI Machine Repository.<a href="#Fn12" id="Fn12_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">12</sup></a> There is an issue with this data in that some values are missing and have been replace with a ‘?’ character. In order to deal with this, I have used the stream editor tool sed
+            <a href="#Fn13" id="Fn13_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">13</sup></a> to replace all instances of the ‘?’ character with nothing (i.e. remove the ‘?’ character from the file altogether).
+
+
+              #!/bin/bash
+wget -P /tmp/ http://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data
+sed 's/?//' /tmp/breast-cancer-wisconsin.data &gt; /tmp/bcdata-clean.csv
+Listing 9-66.
+                      docker/postgres/get_data.sh
+                    
+
+
+
+            
+
+              CREATE TABLE bc_data (
+    sample_id INTEGER UNIQUE PRIMARY KEY,
+    clump_thickness INTEGER,
+    uniformity_of_cell_size INTEGER,
+    uniformity_of_cell_shape INTEGER,
+    marginal_adhesion INTEGER,
+    single_epithelial_cell_size INTEGER,
+    bare_nuclei INTEGER,
+    bland_chromatin INTEGER,
+    normal_nucleoli INTEGER,
+    mitoses INTEGER,
+    class INTEGER
+);
+COPY bc_data FROM /tmp/bcdata-clean.csv DELIMITER ',' CSV;
+Listing 9-67.
+                      docker/postgres/initdb.sql
+                    
+
+
+
+            
+In Listing <a href="#Par206" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-68</a>, you use the tree tool to show the final
+            
+           state of your project.
+
+              $ tree
+.
+├── docker
+│   ├── jupyter
+│   │   └── Dockerfile
+│   └── postgres
+│       ├── Dockerfile
+│       ├── get_data.sh
+│       └── initdb.sql
+└── docker-compose.yml
+Listing 9-68.Use tree to Show Application Directory
+
+
+
+            
+
+<h3 class="heading3">使用 Compose 构建并运行您的应用程序</h3>
+In preparation for running your application, you use docker-compose build to build the two images used to define your services (Listing <a href="#Par208" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-69</a>).
+
+              $ docker-compose build
+Building this_jupyter
+Step 1/4 : FROM jupyter/scipy-notebook
+...
+Step 2/4 : USER root
+...
+Step 3/4 : RUN conda install --yes --name root psycopg2
+...
+Step 4/4 : USER jovyan
+...
+Successfully built b98e9ab6ee7e
+Successfully tagged ch9jupyterpostgres_this_jupyter:latest
+Building this_postgres
+Step 1/3 : FROM postgres:alpine
+...
+Step 2/3 : COPY get_data.sh /docker-entrypoint-initdb.d/get_data.sh
+...
+Step 3/3 : COPY initdb.sql /docker-entrypoint-initdb.d/initdb.sql
+...
+Successfully built 97b956a4da7a
+Successfully tagged ch9jupyterpostgres_this_postgres:latest
+Listing 9-69.Build Application Using docker-compose build
+                
+
+
+
+            
+Finally, in Listing <a href="#Par210" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-70</a>, you run your application using docker-compose up. Note that both a default network and your volume for data persistence
+            
+           are created prior to creating and starting your service containers.
+
+              $ docker-compose up -d
+Creating network "ch9jupyterpostgres_default" with the default driver
+Creating volume "ch9jupyterpostgres_postgres_data" with default driver
+Creating ch9jupyterpostgres_this_jupyter_1
+Creating ch9jupyterpostgres_this_postgres_1
+Starting ch9jupyterpostgres_this_jupyter_1
+Starting ch9jupyterpostgres_this_postgres_1
+Listing 9-70.Start the Compose Application jupyter_postgres
+                
+
+
+
+            
+In Listing <a href="#Par212" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-71</a>, you display process information for your application.
+
+              $ docker-compose ps
+Name                                Command             
+-----------------------------------------------------------
+ch9jupyterpostgres_this_jupyter_1   tini -- start-notebook.sh      
+ch9jupyterpostgres_this_postgres_1  docker-entrypoint.sh postgres  
+State      Ports
+---------------------------------------------------------------------------
+Up         0.0.0.0:8888-&gt;8888/tcp
+Up         5432/tcp
+
+Listing 9-71.Display Containers for Current docker-compose.yml
+                
+
+
+
+            
+In Listing <a href="#Par214" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-72</a>, you use docker-
+          
+                compose
+                
+                
+               logs to display the logs associated with the this_postgres service.
+
+              $ docker-compose logs this_postgres
+Attaching to ch9jupyterpostgres_this_postgres_1
+this_postgres_1  | The files belonging to this database system will be owned by user "postgres".
+...
+this_postgres_1  | /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/get_data.sh
+this_postgres_1  | Connecting to archive.ics.uci.edu (128.195.10.249:80)
+this_postgres_1  | breast-cancer-wiscon 100%
+|*******************************| 19889   0:00:00 ETA
+...
+this_postgres_1  | /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/initdb.sql
+this_postgres_1  | CREATE TABLE
+this_postgres_1  | COPY 699
+...
+Listing 9-72.Display Logs for this_postgres
+                
+
+
+
+            
+What you wish to see here is the successful collection and insertion of the data. You can also connect to the running service via docker exec (Listing <a href="#Par216" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-73</a>) to verify that the correct number of rows were inserted. Here you use the word count tool named wc
+          <a href="#Fn14" id="Fn14_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">14</sup></a> to count the number of lines in the file you downloaded.
+
+              $ docker exec -it ch9jupyterpostgres_this_postgres_1 bash
+bash-4.3# wc -l /tmp/breast-cancer-wisconsin.data
+699 /tmp/breast-cancer-wisconsin.data
+Listing 9-73.
+                  Connect
+                    
+                   to this_postgres via docker exec
+                
+
+
+
+            
+Last, you connect to Jupyter to test some code. In Listing <a href="#Par219" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9-74</a>, you perform a simple count of the number of rows in your bc_data table.
+
+              In [1]: import psycopg2 as pg2
+In [2]: con = pg2.connect(host='this_postgres', user='postgres', database='postgres')
+        cur = con.cursor()
+        cur.execute("SELECT COUNT(*) FROM bc_data;")
+        cur.fetchall()
+Out[2]: [(699,)]
+Listing 9-74.Count the Number of Rows in the bc_data Table
+
+
+
+            
+Note that you have made
+            
+           use of the network created for you by specifying your host as 'this_postgres'.
+
+
+<h2 class="heading2">摘要</h2>
+In this chapter, I introduced the Docker Compose tool. You then used all of the techniques and tools discussed so far to build multi-service data applications using this tool. You built a trivial Jupyter-Redis application. You built a more complicated Jupyter-MongoDB application and explored the configuration of data persistence using Docker Compose. While using your Jupyter-MongoDB application you learned how to switch the underlying virtual hardware of your application if running as an AWS instance. Finally, you built a Jupyter-PostgreSQL application. In building the Jupyter-PostgreSQL application, you saw how to use build hooks defined in the postgres Docker image to load data into a database at runtime.
+Having completed this chapter, I hope you will be able to design your own simple multi-service applications using Jupyter and any or all of the data stores I have introduced. In the next chapter, I will revisit the interactive programming paradigm and introduce the idea of building software with this paradigm at its core. You will use Docker Compose to build this software.
+
+Footnotes
+<a href="#Fn1_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1</a>
+                <a href="https://github.com/docker/compose" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    https://github.com/docker/compose
+                  </a>
+              
+
+ 
+
+<a href="#Fn2_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">2</a>
+                <a href="https://blog.rstudio.org/2016/03/29/feather/" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    https://blog.rstudio.org/2016/03/29/feather/
+                  </a>
+              
+
+ 
+
+<a href="#Fn3_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">3</a>
+                <a href="http://www.vim.org" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    www.vim.org
+                  </a>
+              
+
+ 
+
+<a href="#Fn4_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4</a>
+                      <a href="https://github.com/jupyter/docker-stacks/blob/master/base-notebook/Dockerfile#L80" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                          https://github.com/jupyter/docker-stacks/blob/master/base-notebook/Dockerfile#L80
+                        </a>
+                    
+
+ 
+
+<a href="#Fn5_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">5</a>
+                <a href="https://alpinelinux.org" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    https://alpinelinux.org
+                  </a>
+              
+
+ 
+
+<a href="#Fn6_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">6</a>
+                    <a href="http://tldp.org/LDP/abs/html/varassignment.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                        http://tldp.org/LDP/abs/html/varassignment.html
+                      </a>
+                  
+
+ 
+
+<a href="#Fn7_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">7</a>
+                    <a href="http://tldp.org/LDP/abs/html/gotchas.html#WSBAD" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                        http://tldp.org/LDP/abs/html/gotchas.html#WSBAD
+                      </a>
+                  
+
+ 
+
+<a href="#Fn8_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>
+                  <a href="https://docs.python.org/3/library/os.html#os.environ" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      https://docs.python.org/3/library/os.html#os.environ
+                    </a>
+                
+
+ 
+
+<a href="#Fn9_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9</a>
+                  <a href="https://docs.python.org/3/glossary.html#term-mapping" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      https://docs.python.org/3/glossary.html#term-mapping
+                    </a>
+                
+
+ 
+
+<a href="#Fn10_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10</a>
+                  <a href="https://spacy.io/docs/usage/models" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      https://spacy.io/docs/usage/models
+                    </a>
+                
+
+ 
+
+<a href="#Fn11_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">11</a>
+                <a href="https://hub.docker.com/_/postgres/" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    https://hub.docker.com/_/postgres/
+                  </a>
+              
+
+ 
+
+<a href="#Fn12_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">12</a>
+                    <a href="http://archive.ics.uci.edu/ml/datasets.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                        http://archive.ics.uci.edu/ml/datasets.html
+                      </a>
+                  
+
+ 
+
+<a href="#Fn13_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">13</a>
+                    <a href="http://www.gnu.org/software/sed/manual/sed.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                        www.gnu.org/software/sed/manual/sed.html
+                      </a>
+                  
+
+ 
+
+<a href="#Fn14_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">14</a>
+                  <a href="https://linux.die.net/man/1/wc" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      https://linux.die.net/man/1/wc
+                    </a>
+                
+
+ 
+
+
+
+
+</body>
+</html>

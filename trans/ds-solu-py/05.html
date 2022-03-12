@@ -1,0 +1,530 @@
+<html lang="en">
+<head><title>Nonlinear Modeling With Scikit-Learn, PySpark, and H2O</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">5.用 Scikit-Learn、PySpark 和 H2O 进行非线性建模</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">本章使用一组不同的综合 Python 框架(即 Scikit-Learn、Spark MLlib 和 H2O)执行并评估了一种用于二元分类的非线性方法(称为<em class="EmphasisTypeItalic ">逻辑回归</em>)。首先，它阐明了 sigmoid 函数背后的基本概念。</p>
+<h2 class="Heading">探索逻辑回归方法</h2>
+<p>逻辑回归方法一致接受值，然后通过执行函数(<em class="EmphasisTypeItalic "> sigmoid </em>)对它们进行建模，以预测分类输出要素的值。等式<a href="#Equ1"> 5-1 </a>定义了适用于逻辑回归的 sigmoid 函数(也见图<a href="#Fig1"> 5-1 </a>)。<p> <img alt="$$ S(x)=\frac{L}{1-{e}^{-x}}=\frac{e^x}{e^x+1} $$" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Chapter_TeX_Equ1.png" style="width:10.69em"/> </p>(方程式 5-1)</p>
+<p>等式<a href="#Equ1"> 5-1 </a>和图<a href="#Fig1"> 5-1 </a>都表明该函数产生二进制输出值。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig1_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig1_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-1</p><p class="SimplePara">Sigmoid 函数</p>
+
+
+<p>清单<a href="#PC1"> 5-1 </a>使用<code>pandas</code>框架从微软 CSV 文件中获取必要的数据。</p>
+<pre>import pandas as pd
+df = pd.read_csv(r"C:\Users\i5 lenov\Downloads\banking.csv")
+
+Listing 5-1Attain the Data
+
+
+</pre>
+<p>清单<a href="#PC2"> 5-2 </a>规定了要删除的列名，然后执行<code>drop()</code>方法。为了删除数据中不必要的列，它将轴指定为<code>columns</code>。</p>
+<pre>drop_column_names = df.columns[[8, 9, 10]]
+initial_data = df.drop(drop_column_names, axis="columns")
+
+Listing 5-2Drop Unnecessary Features in the Data
+
+
+</pre>
+<p>清单<a href="#PC3"> 5-3 </a>获得数据中分类特征的虚拟值。</p>
+<pre>initial_data.iloc[::, 1] = pd.get_dummies(initial_data.iloc[::, 1])
+initial_data.iloc[::, 2] = pd.get_dummies(initial_data.iloc[::, 2])
+initial_data.iloc[::, 3] = pd.get_dummies(initial_data.iloc[::, 3])
+initial_data.iloc[::, 4] = pd.get_dummies(initial_data.iloc[::, 4])
+initial_data.iloc[::, 5] = pd.get_dummies(initial_data.iloc[::, 5])
+initial_data.iloc[::, 6] = pd.get_dummies(initial_data.iloc[::, 6])
+initial_data.iloc[::, 7] = pd.get_dummies(initial_data.iloc[::, 7])
+initial_data.iloc[::, 11] = pd.get_dummies(initial_data.iloc[::, 11])
+
+Listing 5-3Attain Dummy Features
+
+
+</pre>
+<p>清单<a href="#PC4"> 5-4 </a>删除空值。</p>
+<pre>initial_data = initial_data.dropna()
+
+Listing 5-4Drop Null Values
+
+
+</pre>
+<h3 class="Heading">sci kit-在行动中学习</h3>
+<p>本节使用 Scikit-Learn 框架执行和评估逻辑回归方法。清单<a href="#PC5"> 5-5 </a>概述了独立和从属特征。</p>
+<pre>import numpy as np
+x = np.array(initial_data.iloc[::, 0:17])
+y = np.array(initial_data.iloc[::,-1])
+
+Listing 5-5Outline the Features
+
+
+</pre>
+<p>清单<a href="#PC6"> 5-6 </a>随机划分数据帧。</p>
+<pre>from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+
+Listing 5-6Randomly Divide the Dataframe
+
+
+</pre>
+<p>清单<a href="#PC7"> 5-7 </a>缩放独立特征。</p>
+<pre>from sklearn.preprocessing import StandardScaler
+sk_standard_scaler = StandardScaler()
+sk_standard_scaled_x_train = sk_standard_scaler.fit_transform(x_train)
+sk_standard_scaled_x_test = sk_standard_scaler.transform(x_test)
+
+Listing 5-7Scale Independent Features
+
+
+</pre>
+<p>清单<a href="#PC8"> 5-8 </a>执行 Scikit-Learn 逻辑回归方法。</p>
+<pre>from sklearn.linear_model import LogisticRegression
+sk_logistic_regression_method = LogisticRegression()
+sk_logistic_regression_method.fit(sk_standard_scaled_x_train,  y_train)
+
+Listing 5-8Execute the Scikit-Learn Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC9"> 5-9 </a>确定了 Scikit-Learn 逻辑回归方法的最佳超参数。</p>
+<pre>from sklearn.model_selection import GridSearchCV
+sk_logistic_regression_method_param = {"penalty":("l1","l2")}
+sk_logistic_regression_method_param_mod  = GridSearchCV(estimator=sk_logistic_regression_method, param_grid=sk_logistic_regression_method_param, n_jobs=-1)
+sk_logistic_regression_method_param_mod.fit(sk_standard_scaled_x_train, y_train)
+print("Best logistic regression score: ", sk_logistic_regression_method_param_mod.best_score_)
+print("Best logistic regression parameter: ", sk_logistic_regression_method_param_mod.best_params_)
+Best logistic regression score:  0.8986039453717755
+Best logistic regression parameter:  {'penalty': 'l2'}
+
+Listing 5-9Determine the Best Hyperparameters for the Scikit-Learn Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC10"> 5-10 </a>使用 Scikit-Learn 框架执行逻辑回归方法。</p>
+<pre>sk_logistic_regression_method = LogisticRegression(penalty="l2")
+sk_logistic_regression_method.fit(sk_standard_scaled_x_train, y_train)
+
+Listing 5-10Execute the Scikit-Learn Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC11"> 5-11 </a>计算逻辑回归方法的截距。</p>
+<pre>print(sk_logistic_regression_method.intercept_)
+[-2.4596243]
+
+Listing 5-11Compute the Logistic Regression Method’s Intercept
+
+
+</pre>
+<p>清单<a href="#PC12"> 5-12 </a>计算系数。</p>
+<pre>print(sk_logistic_regression_method.coef_)
+[[ 0.03374725  0.04330667 -0.01305369 -0.02709009  0.13508899  0.01735913
+   0.00816758  0.42948983 -0.12670658 -0.25784955 -0.04025993 -0.14622466
+  -1.14143485  0.70803518  0.23256046 -0.02295578 -0.02857435]]
+
+Listing 5-12Compute the Logistic Regression Method’s Coefficients
+
+
+</pre>
+<p>清单<a href="#PC13"> 5-13 </a>计算 Scikit-Learn 逻辑回归方法的混淆矩阵，它包括两种形式的错误——假阳性和假阴性以及真阳性和真阴性(见表<a href="#Tab1"> 5-1 </a>)。</p>
+<p>表 5-1</p><p class="SimplePara">Scikit-Learn 逻辑回归方法的混淆矩阵</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">预测:存款</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">预测:无存款</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">实际:存款</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Seven thousand two hundred and thirty</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Ninety-five</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">实际:无存款</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Seven hundred and eleven</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Two hundred and two</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>from sklearn import metrics
+sk_logistic_regression_method_assessment_1 = pd.DataFrame(metrics.confusion_matrix(y_test, sk_yhat), index=["Actual: Deposit","Actual: No deposit"], columns=("Predicted: deposit","Predicted: No deposit"))
+print(sk_logistic_regression_method_assessment_1)
+
+Listing 5-13Compute the Scikit-Learn Logistic Regression Method’s Confusion Matrix
+
+
+</pre>
+<p>清单<a href="#PC14"> 5-14 </a>计算适当的分类报告(见表<a href="#Tab2"> 5-2 </a>)。</p>
+<p>表 5-2</p><p class="SimplePara">Scikit-Learn 逻辑回归方法的分类报告</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回忆</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">f1-分数</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">支持</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.910465</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.987031</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.947203</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7325.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.680135</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.221249</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.333884</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">913.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">准确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.902161</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.902161</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.902161</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.902161</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Avg 宏</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.795300</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.604140</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.640544</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">8238.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">加权平均值</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.884938</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.902161</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.879230</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">8238.000000</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>sk_logistic_regression_method_assessment_2 = pd.DataFrame(metrics.classification_report(y_test, sk_yhat, output_dict=True)).transpose()
+print(sk_logistic_regression_method_assessment_2)
+
+Listing 5-14Compute the Scikit-Learn Logistic Regression Method’s Classification Report
+
+
+</pre>
+<p>清单<a href="#PC15"> 5-15 </a>排列了 Scikit-Learn 逻辑回归方法的接收器操作特性曲线。目标是浓缩真阳性率(方法正确区分阳性类别的倾向)和假阳性率(方法正确区分阴性类别的倾向)的排列。见图<a href="#Fig2"> 5-2 </a>。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig2_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig2_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-2</p><p class="SimplePara">Scikit-Learn 逻辑回归方法的接收器操作特征曲线</p>
+
+
+<pre>sk_yhat_proba = sk_logistic_regression_method.predict_proba(sk_standard_scaled_x_test)[::,1]
+fpr_sk_logistic_regression_method, tprr_sk_logistic_regression_method, _ = metrics.roc_curve(y_test, sk_yhat_proba)
+area_under_curve_sk_logistic_regression_method = metrics.roc_auc_score(y_test, sk_yhat_proba)
+plt.plot(fpr_sk_logistic_regression_method, tprr_sk_logistic_regression_method, label="AUC= "+ str(area_under_curve_sk_logistic_regression_method))
+plt.xlabel("False Positive Rate (FPR)")
+plt.ylabel("True Positive Rate (TPR)")
+plt.legend(loc="best")
+plt.show()
+
+Listing 5-15Receiver Operating Characteristics Curve for the Scikit-Learn Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC16"> 5-16 </a>排列了 Scikit-Learn 逻辑回归方法的精度-召回曲线，以浓缩精度和召回的排列(见图<a href="#Fig3"> 5-3 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig3_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig3_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-3</p><p class="SimplePara">Scikit-Learn 逻辑回归方法的精度-召回曲线</p>
+
+
+<pre>p_sk_logistic_regression_method, r__sk_logistic_regression_method, _ = metrics.precision_recall_curve(y_test, sk_yhat)
+weighted_ps_sk_logistic_regression_method = metrics.roc_auc_score(y_test, sk_yhat)
+plt.plot(p_sk_logistic_regression_method, r__sk_logistic_regression_method,
+         label="WPR= " +str(weighted_ps_sk_logistic_regression_method))
+plt.xlabel("Recall")
+plt.ylabel("Precision")
+plt.legend(loc="best")
+plt.show()
+
+Listing 5-16Precision-Recall Curve for the Scikit-Learn Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC17"> 5-17 </a>安排了 Scikit-Learn 逻辑回归方法的学习曲线，以揭示加权训练和交叉验证准确性的变化(见图<a href="#Fig4"> 5-4 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig4_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig4_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-4</p><p class="SimplePara">Scikit-Learn 执行的逻辑回归方法的学习曲线</p>
+
+
+<pre>from sklearn.model_selection import learning_curve
+train_port_sk_logistic_regression_method, trainscoresk_logistic_regression_method, testscoresk_logistic_regression_method = learning_curve(sk_logistic_regression_method, x, y,
+                      cv=3, n_jobs=-5, train_sizes=np.linspace(0.1,1.0,50))
+trainscoresk_logistic_regression_method_mean = np.mean(trainscoresk_logistic_regression_method, axis=1)
+testscoresk_logistic_regression_method_mean = np.mean(testscoresk_logistic_regression_method, axis=1)
+plt.plot(train_port_sk_logistic_regression_method, trainscoresk_logistic_regression_method_mean, label="Weighted training accuracy")
+plt.plot(train_port_sk_logistic_regression_method, testscoresk_logistic_regression_method_mean, label="Weighted cv accuracy Score")
+plt.xlabel("Training values")
+plt.ylabel("Weighted accuracy score")
+plt.legend(loc="best")
+plt.show()
+
+Listing 5-17Learning Curve for the Logistic Regression Method Executed by Scikit-Learn
+
+
+</pre>
+
+<h3 class="Heading">PySpark 在行动</h3>
+<p class="Para" id="Par22">本节使用 PySpark 框架执行和评估逻辑回归方法。</p>
+<p>清单<a href="#PC18"> 5-18 </a>使用<code>findspark</code>框架准备 PySpark 框架。</p>
+<pre>import findspark as initiate_pyspark
+initiate_pyspark.init("filepath\spark-3.0.0-bin-hadoop2.7")
+
+Listing 5-18Prepare the PySpark Framework
+
+
+</pre>
+<p>清单<a href="#PC19"> 5-19 </a>使用<code>SparkConf()</code>方法规定了 PySpark 应用程序。</p>
+<pre>from pyspark import SparkConf
+pyspark_configuration = SparkConf().setAppName("pyspark_logistic_regression_method").setMaster("local")
+
+Listing 5-19Stipulate the PySpark App
+
+
+</pre>
+<p>清单<a href="#PC20"> 5-20 </a>使用<code>SparkSession()</code>方法准备 PySpark 会话。</p>
+<pre>from pyspark.sql import SparkSession
+pyspark_session = SparkSession(pyspark_context)
+
+Listing 5-20Prepare the Spark Session
+
+
+</pre>
+<p>清单<a href="#PC21"> 5-21 </a>使用<code>createDataFrame()</code>方法将本章前面创建的<code>pandas</code>数据帧更改为 PySpark 数据帧。</p>
+<pre>pyspark_initial_data = pyspark_session.createDataFrame(initial_data)
+
+Listing 5-21Change the Pandas Dataframe to a PySpark Dataframe
+
+
+</pre>
+<p>清单<a href="#PC22"> 5-22 </a>创建一个独立特征列表和一个从属特征字符串。然后，它使用 PySpark 框架建模的<code>VectorAssembler()</code>方法转换数据。</p>
+<pre>x_list = list(initial_data.iloc[::, 0:17].columns)
+y_list = str(initial_data.columns[-1])
+from pyspark.ml.feature import VectorAssembler
+pyspark_data_columns = x_list
+pyspark_vector_assembler = VectorAssembler(inputCols=pyspark_data_columns, outputCol="features")
+pyspark_data = pyspark_vector_assembler.transform(pyspark_initial_data)
+
+Listing 5-22Transform the Data
+
+
+</pre>
+<p>清单<a href="#PC23"> 5-23 </a>使用<code>randomSplit()</code>方法划分数据。</p>
+<pre>(pyspark_training_data, pyspark_test_data) = pyspark_data.randomSplit([.8,.2])
+
+Listing 5-23Divide the Dataframe
+
+
+</pre>
+<p>清单<a href="#PC24"> 5-24 </a>执行 PySpark 逻辑回归方法。</p>
+<pre>from pyspark.ml.classification import LogisticRegression
+pyspark_logistic_regression_method = LogisticRegression(labelCol = y_list, featuresCol = "features")
+pyspark_logistic_regression_method_fitted = pyspark_logistic_regression_method.fit(pyspark_training_data)
+
+Listing 5-24Execute the PySpark Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC25"> 5-25 </a>计算 PySpark 逻辑回归方法的预测。</p>
+<pre>pyspark_yhat = pyspark_logistic_regression_method_fitted.transform(pyspark_test_data)
+
+Listing 5-25Logistic Regression Method Predictions (Method Executed with PySpark Framework)
+
+
+</pre>
+<p>列表<a href="#PC26"> 5-26 </a>排列 PySpark 逻辑回归方法的接收机工作特性曲线，以浓缩精度和召回率的排列(见图<a href="#Fig5"> 5-5 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig5_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig5_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-5</p><p class="SimplePara">PySpark 逻辑回归法的接收机工作特性曲线</p>
+
+
+<pre>pyspark_logistic_regression_method_assessment = pyspark_logistic_regression_method_fitted.summary
+pyspark_logistic_regression_method_roc = pyspark_logistic_regression_method_assessment.roc.toPandas()
+pyspark_logistic_regression_method_auroc = pyspark_logistic_regression_method_assessment.areaUnderROC
+plt.plot(pyspark_logistic_regression_method_roc["FPR"], pyspark_logistic_regression_method_roc["TPR"],
+         label="AUC= "+str(pyspark_logistic_regression_method_auroc))
+plt.xlabel("False Positive Rate (FPR)")
+plt.ylabel("True Positive Rate (TPR)")
+plt.legend(loc=4)
+plt.show()
+
+Listing 5-26Receiver Operating Characteristics Curve for the PySpark Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC27"> 5-27 </a>整理了 PySpark 逻辑回归方法的精度-召回曲线，浓缩了精度和召回的安排(图<a href="#Fig6"> 5-6 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig6_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig6_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-6</p><p class="SimplePara">PySpark 逻辑回归方法的精度-召回曲线</p>
+
+
+<pre>pyspark_logistic_regression_method_assessment = pyspark_logistic_regression_method_fitted.summary
+pyspark_logistic_regression_method_assessment_pr = pyspark_logistic_regression_method_assessment.pr.toPandas()
+pyspark_logistic_regression_method_assessment_wpr = pyspark_logistic_regression_method_assessment.weightedPrecision
+plt.plot(pyspark_logistic_regression_method_assessment_pr["precision"],
+         pyspark_logistic_regression_method_assessment_pr["recall"],
+         label="WPR: "+str(pyspark_logistic_regression_method_assessment_wpr))
+plt.xlabel("Precision")
+plt.ylabel("Recall")
+plt.legend(loc="best")
+plt.show()
+
+Listing 5-27Precision-Recall Curve for the PySpark Logistic Regression Method
+
+
+</pre>
+
+
+<h2 class="Heading">H2O 在行动</h2>
+<p>本部分使用<code>H2O</code>框架执行和评估逻辑回归方法。清单<a href="#PC28"> 5-28 </a>准备 H2O 框架。</p>
+<pre>import h2o as initialize_h2o
+initialize_h2o.init()
+
+Listing 5-28Prepare the H2O Framework
+
+
+</pre>
+<p>清单<a href="#PC29"> 5-29 </a>将<code>pandas</code>数据帧更改为 H2O 数据帧。</p>
+<pre>h2o_data = initialize_h2o.H2OFrame(initial_data)
+
+Listing 5-29Change the Pandas Dataframe to H2O Dataframe
+
+
+</pre>
+<p>清单<a href="#PC30"> 5-30 </a>概述了独立和从属特征。</p>
+<pre>x_list = list(initial_data.iloc[::, 0:17].columns)
+y_list = str(initial_data.columns[-1])
+y = y_list
+x = h2o_data.col_names
+x.remove(y_list)
+
+Listing 5-30Outline the Features
+
+
+</pre>
+<p>清单<a href="#PC31"> 5-31 </a>随机划分数据。</p>
+<pre>h2o_training_data, h2o_validation_data, h2o_test_data = h2o_data.split_frame(ratios=[.8,.1])
+
+Listing 5-31Randomly Divide the Dataframe
+
+
+</pre>
+<p>清单<a href="#PC32"> 5-32 </a>执行 H2O 逻辑回归方法。</p>
+<pre>from h2o.estimators.glm import H2OGeneralizedLinearEstimator
+h2o_logistic_regression_method = H2OGeneralizedLinearEstimator(family="binomial")
+h2o_logistic_regression_method.train(x = x, y = y, training_frame = h2o_training_data, validation_frame = h2o_validation_data)
+
+Listing 5-32Execute the H2O Logistic Regression Method
+
+
+</pre>
+<p>清单<a href="#PC33"> 5-33 </a>计算 H2O 逻辑回归方法的预测。</p>
+<pre>h2o_yhat = h2o_logistic_regression_method.predict(h2o_test_data)
+
+Listing 5-33Compute the H2O Logistic Regression Method’s Predictions
+
+
+</pre>
+<p>清单<a href="#PC34"> 5-34 </a>计算 H2O 逻辑回归方法的预测值(见图<a href="#Fig7"> 5-7 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig7_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig7_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-7</p><p class="SimplePara">H2O 逻辑回归方法的标准化系数</p>
+
+
+<pre>h2o_logistic_regression_method_std_coefficients = h2o_logistic_regression_method.std_coef_plot()
+h2o_logistic_regression_method_std_coefficients
+
+Listing 5-34Compute the H2O Logistic Regression Method’s Standardized Coefficients
+
+
+</pre>
+<p>清单<a href="#PC35"> 5-35 </a>计算 H2O 逻辑回归方法的部分相关性(见图<a href="#Fig8"> 5-8 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig8_HTML.png" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig8_HTML.png" style="width:35.38em"/></p>
+<p>图 5-8</p><p class="SimplePara">H2O 逻辑回归方法的标准化系数</p>
+
+
+<pre>h2o_logistic_regression_method_dependency_plot = h2o_logistic_regression_method.partial_plot(data = h2o_data, cols = list(initial_data.columns[[0, 17]]), server=False, plot = True)
+h2o_logistic_regression_method_dependency_plot
+
+Listing 5-35Compute the H2O Logistic Regression Method’s Partial Dependency
+
+
+</pre>
+<p>清单<a href="#PC36"> 5-36 </a>按升序排列对 H2O 逻辑回归方法最重要的特征(见图<a href="#Fig9"> 5-9 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig9_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig9_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-9</p><p class="SimplePara">H2O 逻辑回归方法的方差重要性</p>
+
+
+<pre>h2o_logistic_regression_method_feature_importance = h2o_logistic_regression_method.varimp_plot()
+h2o_logistic_regression_method_feature_importance
+
+Listing 5-36Compute the H2O Logistic Regression Method’s Variance Importance
+
+
+</pre>
+<p>列表<a href="#PC37"> 5-37 </a>排列 H2O 逻辑回归方法的受试者工作特征曲线，浓缩真阳性率和假阳性率的排列(见图<a href="#Fig10"> 5-10 </a>)。</p>
+<p><img alt="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig10_HTML.jpg" src="../images/517508_1_En_5_Chapter/517508_1_En_5_Fig10_HTML.jpg" style="width:42.82em"/></p>
+<p>图 5-10</p><p class="SimplePara">H2O 逻辑回归法的受试者工作特征曲线</p>
+
+
+<pre>h2o_logistic_regression_method_assessment = h2o_logistic_regression_method.model_performance()
+
+Listing 5-37Receiver Operating Characteristics Curve for the H2O Logistic Regression Method
+
+
+</pre>
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par43">本章执行了三个关键的机器学习框架(Scikit-Learn、PySpark 和 H2O)来对数据进行建模，并使用逻辑回归方法生成具有两个类的分类输出特征。</p>
+
+
+
+</body>
+</html>

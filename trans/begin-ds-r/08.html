@@ -1,0 +1,364 @@
+<html xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lang="en" xml:lang="en" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2/ http://www.w3.org/MarkUp/SCHEMA/xhtml2.xsd">
+<head>
+    <title>Unknown</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+<p class="author">托马斯 mailund 2017 年</p>
+<p class="author">Thomas Mailund,《在 R 开始数据科学》, 10.1007/978-1-4842-2671-1_8</p>
+
+<!--Begin Abstract--><h1 class="booktitle" xml:lang="en">8.更多 R 编程</h1>
+<p class="author">Thomas Mailund <sup class="calibre6"> 1 </sup>的缩写形式</p>
+<p class="author" id="Aff2">①丹麦奥胡斯</p>
+<!--End Abstract--><p id="Par1" class="author">在这一章中，我们离开数据分析，回到编程和软件开发，这些主题是本书剩余章节的重点。第 1 章给出了 R 编程的教程介绍，但是省略了很多细节。本章涵盖了许多细节，而接下来的两章将涵盖 R 编程更高级的方面:函数式编程和面向对象编程。</p>
+<h2 class="booksubtitle">公式</h2>
+<p id="Par2" class="author">我们从回到表达法开始这一章。我们在 R 中所做的一切都涉及到对表达式求值。我们对大多数表达式求值是为了进行计算并得到结果，但是有些表达式有副作用——比如赋值——而我们通常求值是因为副作用。</p>
+<h3 class="heading">算术表达式</h3>
+<p id="Par3" class="author">我们在第<a href="01.html" class="pcalibre pcalibre3 calibre3 pcalibre1 pcalibre2"> 1 </a>章看到了算术表达式，所以这里只做一个非常简短的提醒。算术表达式是涉及数字的运算符，由一元运算符+和-组成。</p>
+<pre class="programcode" id="PC1"><code class="fixedline">+ x</code><br class="calibre8"/><code class="fixedline">- x</code></pre>
+<p id="Par5" class="author">其中+实际上不做任何事情，而-改变其操作数的符号。接下来是加、减、乘、除的中缀运算符:</p>
+<pre class="programcode" id="PC2"><code class="fixedline">x + y</code><br class="calibre8"/><code class="fixedline">x - y</code><br class="calibre8"/><code class="fixedline">x * y</code><br class="calibre8"/><code class="fixedline">x / y</code></pre>
+<p id="Par7" class="author">除法将返回一个浮点数，即使它的两个操作数都是整数，所以如果你想做整数除法，你需要特殊的操作符:</p>
+<pre class="programcode" id="PC3"><code class="fixedline">x %/% y</code></pre>
+<p id="Par9" class="author">如果您想要整数除法的余数，您需要这个中缀运算符:</p>
+<pre class="programcode" id="PC4"><code class="fixedline">x %% y</code></pre>
+<p id="Par11" class="author">最后，还有求幂运算符。要计算 x<em class="emphasistypeitalic"/><sup class="calibre6"><em class="emphasistypeitalic1">y</em></sup>，您可以使用以下两个运算符中的任意一个:</p>
+<pre class="programcode" id="PC5"><code class="fixedline">x ^ y</code><br class="calibre8"/><code class="fixedline">x ** y</code></pre>
+<p id="Par13" class="author">在所有这些例子中，x 和 y 可以是数字或引用数字的变量(实际上是数字的向量，因为 R 总是对向量起作用)，或者它们可以是对数字求值的其他表达式。如果你用中缀操作符组成表达式，你就有了和算术中相同的优先规则。例如，取幂先于乘法，乘法先于加法。这意味着如果您需要以另一种顺序计算表达式，您将需要使用括号。</p>
+<p id="Par14" class="author">因为这些规则是您所熟悉的，所以这不会给您带来麻烦，除非您将这些表达式与操作符:。这不是一个真正的算术运算符，但它<em class="emphasistypeitalic">是</em>一个用于生成序列的中缀运算符，它的优先级高于乘法，但低于取幂。这意味着 1:2**2 将首先计算 2**2 表达式以得到 1:4，然后构造序列:</p>
+<pre class="programcode" id="PC6"><code class="fixedline">1:2**2</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3 4</code></pre>
+<p id="Par16" class="author">表达式 1:2*2 将首先计算:表达式，以创建包含 1 和 2 的向量，然后将此向量乘以 2:</p>
+<pre class="programcode" id="PC7"><code class="fixedline">1:2*2</code><br class="calibre8"/><code class="fixedline">## [1] 2 4</code></pre>
+<p id="Par18" class="author">由于一元运算符的优先级高于:它还意味着-1:2 将给出从-1 到 2 的序列，而不是包含-1 和-2 的序列。为此，您需要括号:</p>
+<pre class="programcode" id="PC8"><code class="fixedline">-1:2</code><br class="calibre8"/><code class="fixedline">## [1] -1  0  1  2</code><br class="calibre8"/><code class="fixedline">-(1:2)</code><br class="calibre8"/><code class="fixedline">## [1] -1 -2</code></pre>
+<p id="Par20" class="author">函数在运算符之前计算:</p>
+<pre class="programcode" id="PC9"><code class="fixedline">1:<strong class="emphasistypebold">sqrt</strong>(4)</code><br class="calibre8"/><code class="fixedline">## [1] 1 2</code></pre>
+
+<h3 class="heading">布尔表达式</h3>
+<p id="Par22" class="author">对于布尔值(真或假)，也有逻辑运算符。接线员！对一个值求反:</p>
+<pre class="programcode" id="PC10"><code class="fixedline">!TRUE</code><br class="calibre8"/><code class="fixedline">## [1] FALSE</code><br class="calibre8"/><code class="fixedline">!FALSE</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code></pre>
+<p id="Par24" class="author">|和||是逻辑“或”运算符，而&amp;和&amp;&amp;是逻辑“与”运算符。|和||或&amp;和&amp;&amp;的区别在于它们处理向量的方式。单字符版本将按元素应用运算符并创建一个向量，而双字符版本将只查看向量中的第一个值。</p>
+<pre class="programcode" id="PC11"><code class="fixedline">TRUE | FALSE</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline">FALSE | FALSE</code><br class="calibre8"/><code class="fixedline">## [1] FALSE</code><br class="calibre8"/><code class="fixedline">TRUE || FALSE</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline">FALSE || FALSE</code><br class="calibre8"/><code class="fixedline">## [1] FALSE</code><br class="calibre8"/><code class="fixedline">x &lt;- <strong class="emphasistypebold">c</strong>(TRUE, FALSE, TRUE, FALSE)</code><br class="calibre8"/><code class="fixedline">y &lt;- <strong class="emphasistypebold">c</strong>(TRUE, TRUE, FALSE, FALSE)</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline">x | y</code><br class="calibre8"/><code class="fixedline">## [1]  TRUE  TRUE  TRUE FALSE</code><br class="calibre8"/><code class="fixedline">x || y</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline">x &amp; y</code><br class="calibre8"/><code class="fixedline">## [1]  TRUE FALSE FALSE FALSE</code><br class="calibre8"/><code class="fixedline">x &amp;&amp; y</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code></pre>
+<p id="Par26" class="author">我们通常在像 if 这样的控制结构中使用两个字符的版本——因为它们在任何情况下都不会对向量进行操作——而当我们需要使用布尔算术进行计算时，当我们希望我们的表达式作为矢量化表达式工作时，我们使用单字符版本。</p>
+<p id="Par27" class="author">顺便提一下，当操作多个值时，所有算术运算符的工作方式都类似于|和&amp;运算符，也就是说，它们对向量进行元素操作。我们在第<a xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" href="01.html" class="pcalibre pcalibre3 calibre3 pcalibre1 pcalibre2"> 1 </a>章谈到向量表达式时看到了这一点。</p>
+
+
+<h2 class="booksubtitle">基本数据类型</h2>
+<p id="Par28" class="author">R 中有一些基本类型:数字、整数、复数、逻辑和字符。</p>
+<h3 class="heading">数字类型</h3>
+<p id="Par29" class="author">numeric 类型是您在任何时候向 r 中写入一个数字时都会得到的类型。您可以使用 is.numeric 函数或通过获取 class 对象来测试一个对象是否为 numeric。</p>
+<pre class="programcode" id="PC12"><code class="fixedline"><strong class="emphasistypebold">is.numeric</strong>(2)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">class</strong>(2)</code><br class="calibre8"/><code class="fixedline">## [1] "numeric"</code></pre>
+
+<h3 class="heading">整数类型</h3>
+<p id="Par31" class="author">整数类型用于整数。令人惊讶的是，r 中的 2 是<em class="emphasistypeitalic">而不是</em>整数。它是一个数值类型，是包含所有浮点数和整数的较大类型。要得到一个整数，你必须将值显式地设为一个整数，你可以使用函数 as.integer 或者在文字后面写 L 来实现。</p>
+<pre class="programcode" id="PC13"><code class="fixedline"><strong class="emphasistypebold">is.integer</strong>(2)</code><br class="calibre8"/><code class="fixedline">## [1] FALSE</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.integer</strong>(2L)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline">x &lt;- <strong class="emphasistypebold">as.integer</strong>(2)</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.integer</strong>(x)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">class</strong>(x)</code><br class="calibre8"/><code class="fixedline">## [1] "integer"</code></pre>
+<p id="Par33" class="author">如果把一个非整数翻译成整数，得到的只是整数部分。</p>
+<pre class="programcode" id="PC14"><code class="fixedline"><strong class="emphasistypebold">as.integer</strong>(3.2)</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">as.integer</strong>(9.9)</code><br class="calibre8"/><code class="fixedline">## [1] 9</code></pre>
+
+<h3 class="heading">复杂类型</h3>
+<p id="Par35" class="author">如果你发现你需要处理复数，R 也有。您可以通过将一个虚数(一个后跟 I 的数)加到任何数上或显式使用函数 as.complex 来构造它们。虚数可以是 0，0i，这将创建一个只有非零实部的复数。</p>
+<pre class="programcode" id="PC15"><code class="fixedline">1 + 0i</code><br class="calibre8"/><code class="fixedline">## [1] 1+0i</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.complex</strong>(1 + 0i)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">class</strong>(1 + 0i)</code><br class="calibre8"/><code class="fixedline">## [1] "complex"</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">sqrt</strong>(<strong class="emphasistypebold">as.complex</strong>(-1))</code><br class="calibre8"/><code class="fixedline">## [1] 0+1i</code></pre>
+
+<h3 class="heading">逻辑类型</h3>
+<p id="Par37" class="author">逻辑值是当你明确地输入真或假时得到的，但它也是当你进行比较时得到的。</p>
+<pre class="programcode" id="PC16"><code class="fixedline">x &lt;- 5 &gt; 4</code><br class="calibre8"/><code class="fixedline">x</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">class</strong>(x)</code><br class="calibre8"/><code class="fixedline">## [1] "logical"</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.logical</strong>(x)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code></pre>
+
+<h3 class="heading">字符类型</h3>
+<p id="Par39" class="author">最后，当你输入一个字符串，比如“hello，world”，你得到的就是字符。</p>
+<pre class="programcode" id="PC17"><code class="fixedline">x &lt;- "hello, world"</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">class</strong>(x)</code><br class="calibre8"/><code class="fixedline">## [1] "character"</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.character</strong>(x)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code></pre>
+<p id="Par41" class="author">与某些语言不同，字符不是指单个字符，而是指任何文本。因此，它不像在 C 或 Java 中，你有单一字符类型，“C”和多字符字符串，“字符串”，他们都只是字符。</p>
+<p id="Par42" class="author">与其他类型类似，您可以使用 as 将值显式转换为字符(字符串)。character:</p>
+<pre class="programcode" id="PC18"><code class="fixedline"><strong class="emphasistypebold">as.character</strong>(3.14)</code><br class="calibre8"/><code class="fixedline">## [1] "3.14"</code></pre>
+<p id="Par44" class="author">在 R 中，我不会进一步讨论字符串处理。当然，有很多操作字符串的函数——即使有所有这些函数，我仍然发现在 R 中操作字符串比在 Python 等脚本语言中要困难得多——但是这些超出了本书的范围。</p>
+
+
+<h2 class="booksubtitle">数据结构</h2>
+<p id="Par45" class="author">从基本类型出发，您可以构造其他数据结构，主要是通过将简单的类型连接成更复杂的类型。这里的基本构件是向量和列表，向量是相同类型的值序列，列表是不同类型的值序列。</p>
+<h3 class="heading">向量</h3>
+<p id="Par46" class="author">在这本书里我们已经多次看到了向量，所以你应该对它们很熟悉。每当我们看到包含单个数字的表达式时，我们实际上看到了包含单个值的向量，所以我们从未见过<em class="emphasistypeitalic">不是</em>向量的任何东西。但是我们现在考虑向量的更多技术方面。</p>
+<p id="Par47" class="author">到目前为止，我所称的向量在技术上被称为“原子序列”。这些是先前描述的基本类型的任何序列。您可以通过使用 c 函数连接基本值来创建它们。</p>
+<pre class="programcode" id="PC19"><code class="fixedline">v &lt;- <strong class="emphasistypebold">c</strong>(1, 2, 3)</code></pre>
+<p id="Par49" class="author">或者通过一些其他操作符或函数，例如:操作符或 rep 函数</p>
+<pre class="programcode" id="PC20"><code class="fixedline">1:3</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">rep</strong>("foo", 3)</code><br class="calibre8"/><code class="fixedline">## [1] "foo" "foo" "foo"</code></pre>
+<p id="Par51" class="author">我们可以使用 is.atomic 函数来测试某个东西是否是这种向量:</p>
+<pre class="programcode" id="PC21"><code class="fixedline">v &lt;- 1:3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.atomic</strong>(v)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code></pre>
+<p id="Par53" class="author">我之所以提到“原子序列”是迄今为止我们称之为向量的技术上正确的术语，是因为 R 中还有一些东西被明确地称为向量。实际上，没有混淆，因为所有我称之为矢量的原子序列也是矢量。</p>
+<pre class="programcode" id="PC22"><code class="fixedline">v &lt;- 1:3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.vector</strong>(v)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code></pre>
+<p id="Par55" class="author">只是 R 只把这样一个序列看作一个 vector——也就是说，vector 返回 TRUE——如果对象没有任何属性(除了一个，names，它被允许有)。</p>
+<p id="Par56" class="author">属性是与一个对象相关的元信息，我们在这里不会涉及太多，但是你必须知道，如果一个完全好的向量得到了一个属性，vector 将为 FALSE。</p>
+<pre class="programcode" id="PC23"><code class="fixedline">v &lt;- 1:3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.vector</strong>(v)</code><br class="calibre8"/><code class="fixedline">## [1] TRUE</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">attr</strong>(v, "foo") &lt;- "bar"</code><br class="calibre8"/><code class="fixedline">v</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3</code><br class="calibre8"/><code class="fixedline">## attr(,"foo")</code><br class="calibre8"/><code class="fixedline">## [1] "bar"</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">is.vector</strong>(v)</code><br class="calibre8"/><code class="fixedline">## [1] FALSE</code></pre>
+<p id="Par58" class="author">所以如果你想测试某样东西是不是我在这里说的那种向量，用 is.atomic 代替。</p>
+<p id="Par59" class="author">当你连接(原子)向量时，你总是得到另一个向量。因此，当您组合几个 c()调用时，如果您这样做，您不会得到任何类型的树结构:</p>
+<pre class="programcode" id="PC24"><code class="fixedline"><strong class="emphasistypebold">c</strong>(1, 2, <strong class="emphasistypebold">c</strong>(3, 4), <strong class="emphasistypebold">c</strong>(5, 6, 7))</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3 4 5 6 7</code></pre>
+<p id="Par61" class="author">类型可能会改变，如果你尝试连接不同类型的向量，R 会尝试把向量的类型转换成最一般的类型。</p>
+<pre class="programcode" id="PC25"><code class="fixedline"><strong class="emphasistypebold">c</strong>(1, 2, 3, "foo")</code><br class="calibre8"/><code class="fixedline">## [1] "1"   "2"   "3"   "foo"</code></pre>
+
+<h3 class="heading">[数]矩阵</h3>
+<p id="Par63" class="author">如果你想要的是矩阵而不是向量，你真正想要的只是一个二维向量。您可以使用 dim 函数设置向量的维度，它设置我们之前讨论过的属性之一，您可以在其中指定希望矩阵具有的行数和列数。</p>
+<pre class="programcode" id="PC26"><code class="fixedline">v &lt;- 1:6</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">attributes</strong>(v)</code><br class="calibre8"/><code class="fixedline">## NULL</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">dim</strong>(v) &lt;- <strong class="emphasistypebold">c</strong>(2, 3)</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">attributes</strong>(v)</code><br class="calibre8"/><code class="fixedline">## $dim</code><br class="calibre8"/><code class="fixedline">## [1] 2 3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">dim</strong>(v)</code><br class="calibre8"/><code class="fixedline">## [1] 2 3</code><br class="calibre8"/><code class="fixedline">v</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2] [,3]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    3    5</code><br class="calibre8"/><code class="fixedline">## [2,]    2    4    6</code></pre>
+<p id="Par65" class="author">当您这样做时，向量中的值将按列的方式进入矩阵，也就是说，向量中的值将先从第一列向下，然后到下一列，依此类推。</p>
+<p id="Par66" class="author">您可以使用方便的函数 matrix 来创建矩阵，并在那里使用 by row 参数指定是按列还是按行传递值。</p>
+<pre class="programcode" id="PC27"><code class="fixedline">v &lt;- 1:6</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">matrix</strong>(data = v, nrow = 2, ncol = 3, byrow = FALSE)</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2] [,3]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    3    5</code><br class="calibre8"/><code class="fixedline">## [2,]    2    4    6</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">matrix</strong>(data = v, nrow = 2, ncol = 3, byrow = TRUE)</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2] [,3]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    2    3</code><br class="calibre8"/><code class="fixedline">## [2,]    4    5    6</code></pre>
+<p id="Par68" class="author">一旦你有了一个矩阵，在 R 中做线性代数有很多支持，但是有几件事你需要知道。首先，*运算符不会做矩阵乘法。如果你想做逐元素乘法，你可以使用*;对于矩阵乘法，您需要使用运算符%*%。</p>
+<pre class="programcode" id="PC28"><code class="fixedline">(A &lt;- <strong class="emphasistypebold">matrix</strong>(1:4, nrow = 2))</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    3</code><br class="calibre8"/><code class="fixedline">## [2,]    2    4</code><br class="calibre8"/><code class="fixedline">(B &lt;- <strong class="emphasistypebold">matrix</strong>(5:8, nrow = 2))</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]    5    7</code><br class="calibre8"/><code class="fixedline">## [2,]    6    8</code><br class="calibre8"/><code class="fixedline">A * B</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]    5   21</code><br class="calibre8"/><code class="fixedline">## [2,]   12   32</code><br class="calibre8"/><code class="fixedline">A %*% B</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]   23   31</code><br class="calibre8"/><code class="fixedline">## [2,]   34   46</code></pre>
+<p id="Par70" class="author">如果你想转置一个矩阵，你可以使用 t 函数，如果你想反转它，你可以使用 solve 函数。</p>
+<pre class="programcode" id="PC29"><code class="fixedline"><strong class="emphasistypebold">t</strong>(A)</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    2</code><br class="calibre8"/><code class="fixedline">## [2,]    3    4</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">solve</strong>(A)</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]   -2  1.5</code><br class="calibre8"/><code class="fixedline">## [2,]    1 -0.5</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">solve</strong>(A) %*% A</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    0</code><br class="calibre8"/><code class="fixedline">## [2,]    0    1</code></pre>
+<p id="Par72" class="author">solve 函数实际上旨在求解一组线性方程，如果它也有一个向量参数，它就能做到这一点，但是您可以查看该函数的文档来了解这是如何实现的。</p>
+<p id="Par73" class="author">您还可以通过设置带有两个以上维度作为参数的 dimension 属性来获得更高维的向量，称为<em class="emphasistypeitalic">数组</em>，或者您可以使用 array 函数。</p>
+
+<h3 class="heading">列表</h3>
+<p id="Par74" class="author">和向量一样，列表也是序列，但是和向量不同的是，列表的元素可以是任何类型的对象，并且它们不必是相同类型的对象。这意味着您可以从列表中构造更复杂的数据结构。</p>
+<p id="Par75" class="author">例如，我们可以列出两个向量:</p>
+<pre class="programcode" id="PC30"><code class="fixedline"><strong class="emphasistypebold">list</strong>(1:3, 5:8)</code><br class="calibre8"/><code class="fixedline">## [[1]]</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3</code><br class="calibre8"/><code class="fixedline">##</code><br class="calibre8"/><code class="fixedline">## [[2]]</code><br class="calibre8"/><code class="fixedline">## [1] 5 6 7 8</code></pre>
+<p id="Par77" class="author">请注意，如果我们用 c()将向量组合在一起，它们不会像这样连接在一起。这个命令的结果是两个元素的列表，恰好都是向量。</p>
+<p id="Par78" class="author">它们也不需要有相同的类型，我们可以列一个这样的列表，它也包含两个向量，但是向量的类型不同:</p>
+<pre class="programcode" id="PC31"><code class="fixedline"><strong class="emphasistypebold">list</strong>(1:3, <strong class="emphasistypebold">c</strong>(TRUE, FALSE))</code><br class="calibre8"/><code class="fixedline">## [[1]]</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3</code><br class="calibre8"/><code class="fixedline">##</code><br class="calibre8"/><code class="fixedline">## [[2]]</code><br class="calibre8"/><code class="fixedline">## [1]  TRUE FALSE</code></pre>
+<p id="Par80" class="author">因为列表可以包含其他列表，所以您可以非常自然地构建树状数据结构。</p>
+<pre class="programcode" id="PC32"><code class="fixedline"><strong class="emphasistypebold">list</strong>(<strong class="emphasistypebold">list</strong>(), <strong class="emphasistypebold">list</strong>(<strong class="emphasistypebold">list</strong>(), <strong class="emphasistypebold">list</strong>()))</code><br class="calibre8"/><code class="fixedline">## [[1]]</code><br class="calibre8"/><code class="fixedline">## list()</code><br class="calibre8"/><code class="fixedline">##</code><br class="calibre8"/><code class="fixedline">## [[2]]</code><br class="calibre8"/><code class="fixedline">## [[2]][[1]]</code><br class="calibre8"/><code class="fixedline">## list()</code><br class="calibre8"/><code class="fixedline">##</code><br class="calibre8"/><code class="fixedline">## [[2]][[2]]</code><br class="calibre8"/><code class="fixedline">## list()</code></pre>
+<p id="Par82" class="author">您可以使用函数 unlist()将一个列表展平为一个向量。这将强制列表中的元素转换成相同的类型，当然，因为这是 vectors 所要求的。</p>
+<pre class="programcode" id="PC33"><code class="fixedline"><strong class="emphasistypebold">unlist</strong>(<strong class="emphasistypebold">list</strong>(1:4, 5:7))</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3 4 5 6 7</code></pre>
+
+<h3 class="heading">索引</h3>
+<p id="Par84" class="author">我们在第<a href="01.html" class="pcalibre pcalibre3 calibre3 pcalibre1 pcalibre2"> 1 </a>章看到了基本的索引，但是 R 中的索引远不止这些。类型？`[[`进入 R 提示符，准备大吃一惊吧。</p>
+<p id="Par85" class="author">我们已经看到了基本的索引。如果你想要一个向量 v 的第<em class="emphasistypeitalic"> n </em>个元素，你用 v[n]:</p>
+<pre class="programcode" id="PC34"><code class="fixedline">v &lt;- 1:4</code><br class="calibre8"/><code class="fixedline">v[2]</code><br class="calibre8"/><code class="fixedline">## [1] 2</code></pre>
+<p id="Par87" class="author">但这你已经知道了。您还知道，您可以使用一系列索引从向量中获得一个子序列:</p>
+<pre class="programcode" id="PC35"><code class="fixedline">v[2:3]</code><br class="calibre8"/><code class="fixedline">## [1] 2 3</code></pre>
+<p id="Par89" class="author">这实际上只是使用索引向量的一个特例:</p>
+<pre class="programcode" id="PC36"><code class="fixedline">v[<strong class="emphasistypebold">c</strong>(1,1,4,3,2)]</code><br class="calibre8"/><code class="fixedline">## [1] 1 1 4 3 2</code></pre>
+<p id="Par91" class="author">在这里，我们使用正数进行索引，这是有意义的，因为 vector 中的元素具有正索引，但也可以使用负数在 r 中进行索引，如果这样做，它将被解释为指定所需值的补码。因此，如果您想要除了第一个元素之外的所有元素<em xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" class="emphasistypeitalic">，您可以使用:</em></p>
+<pre class="programcode" id="PC37"><code class="fixedline">v[-1]</code><br class="calibre8"/><code class="fixedline">## [1] 2 3 4</code></pre>
+<p id="Par93" class="author">您还可以使用多个负指数来删除一些值:</p>
+<pre class="programcode" id="PC38"><code class="fixedline">v[-(1:2)]</code><br class="calibre8"/><code class="fixedline">## [1] 3 4</code></pre>
+<p id="Par95" class="author">您不能组合正指数和负指数。我甚至不知道这有什么意义，但无论如何，你就是不能。</p>
+<p id="Par96" class="author">另一种索引方法是使用布尔向量。这个向量应该和你索引的向量一样长，它会挑选出布尔向量为真的元素。</p>
+<pre class="programcode" id="PC39"><code class="fixedline">v[v %% 2 == 0]</code><br class="calibre8"/><code class="fixedline">## [1] 2 4</code></pre>
+<p id="Par98" class="author">如果你想分配给一个向量，你只需要分配给你索引的元素；只要赋值操作符右边的向量的长度与索引提取的元素的长度相同，就可以将它赋值给向量。</p>
+<pre class="programcode" id="PC40"><code class="fixedline">v[v %% 2 == 0] &lt;- 13</code><br class="calibre8"/><code class="fixedline">v</code><br class="calibre8"/><code class="fixedline">## [1]  1 13  3 13</code></pre>
+<p id="Par100" class="author">如果向量有不止一个维度——记住矩阵和数组实际上只是有更多维度的向量——那么你可以通过子集化每个维度来子集化它们。如果您忽略一个维度，您将获得该维度中的整个范围的值，这是获得矩阵的行和列的简单方法:</p>
+<pre class="programcode" id="PC41"><code class="fixedline"> m &lt;- <strong class="emphasistypebold">matrix</strong>(1:6, nrow = 2, byrow = TRUE)</code><br class="calibre8"/><code class="fixedline"> m</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2] [,3]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    2    3</code><br class="calibre8"/><code class="fixedline">## [2,]    4    5    6</code><br class="calibre8"/><code class="fixedline"> m[1,]</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3</code><br class="calibre8"/><code class="fixedline"> m[,1]</code><br class="calibre8"/><code class="fixedline">## [1] 1 4</code></pre>
+<p id="Par102" class="author">您也可以通过在一个或多个维度中提供范围来索引子矩阵:</p>
+<pre class="programcode" id="PC42"><code class="fixedline">m[1:2,1:2]</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    2</code><br class="calibre8"/><code class="fixedline">## [2,]    4    5</code></pre>
+<p id="Par104" class="author">当你取出一个一维子矩阵时——就像我们对 m[1，]——结果是一个向量，而不是一个矩阵。有时候那就是你想要的；有时候你真的不在乎得到的是矩阵还是向量，但是有时候你想做线性代数，然后你肯定希望你拉出来的子矩阵是矩阵。您可以告诉 R，它不应该通过给索引一个选项 drop=FALSE 来将一维矩阵简化为一行:</p>
+<pre class="programcode" id="PC43"><code class="fixedline">m[1,,drop=FALSE]</code><br class="calibre8"/><code class="fixedline">##      [,1] [,2] [,3]</code><br class="calibre8"/><code class="fixedline">## [1,]    1    2    3</code><br class="calibre8"/><code class="fixedline">m[,1,drop=FALSE]</code><br class="calibre8"/><code class="fixedline">##      [,1]</code><br class="calibre8"/><code class="fixedline">## [1,]    1</code><br class="calibre8"/><code class="fixedline">## [2,]    4</code></pre>
+<p id="Par106" class="author">如果你觉得这很奇怪(给索引一个选项)，那么你需要知道的是，R 中的一切都涉及函数调用。对矩阵进行索引只是另一个函数调用，函数可以接受命名参数。这就是这里发生的一切。</p>
+<p id="Par107" class="author">使用[]对列表进行子集化时，结果总是另一个列表。如果这让你感到惊讶，请记住，当你对一个向量进行子集化时，你总是会得到一个向量。你不会想太多，因为我们看待单值的方式，总是把它看成长度为 1 的向量，所以我们更习惯于这样。</p>
+<p id="Par108" class="author">无论如何，你总是会得到一个列表。即使您正在设置单个元素的子集，您也不会获得该元素；您将得到一个包含该元素的列表。</p>
+<pre class="programcode" id="PC44"><code class="fixedline">L &lt;- <strong class="emphasistypebold">list</strong>(1,2,3)</code><br class="calibre8"/><code class="fixedline">L[1]</code><br class="calibre8"/><code class="fixedline">## [[1]]</code><br class="calibre8"/><code class="fixedline">## [1] 1</code><br class="calibre8"/><code class="fixedline">L[2:3]</code><br class="calibre8"/><code class="fixedline">## [[1]]</code><br class="calibre8"/><code class="fixedline">## [1] 2</code><br class="calibre8"/><code class="fixedline">##</code><br class="calibre8"/><code class="fixedline">## [[2]]</code><br class="calibre8"/><code class="fixedline">## [1] 3</code></pre>
+<p id="Par110" class="author">如果您想访问其中的实际元素，您需要使用[[]]操作符。</p>
+<pre class="programcode" id="PC45"><code class="fixedline">L &lt;- <strong class="emphasistypebold">list</strong>(1,2,3)</code><br class="calibre8"/><code class="fixedline">L[[1]]</code><br class="calibre8"/><code class="fixedline">## [1] 1</code></pre>
+
+<h3 class="heading">命名值</h3>
+<p id="Par112" class="author">向量或列表中的元素可以有名字。这些属性不影响元素的值，但是可以用来引用它们。</p>
+<p id="Par113" class="author">您可以在创建向量或列表时设置这些名称:</p>
+<pre class="programcode" id="PC46"><code class="fixedline">v &lt;- <strong class="emphasistypebold">c</strong>(a = 1, b = 2, c = 3, d = 4)</code><br class="calibre8"/><code class="fixedline">v</code><br class="calibre8"/><code class="fixedline">## a b c d</code><br class="calibre8"/><code class="fixedline">## 1 2 3 4</code><br class="calibre8"/><code class="fixedline">L &lt;- <strong class="emphasistypebold">list</strong>(a = 1:5, b = <strong class="emphasistypebold">c</strong>(TRUE, FALSE))</code><br class="calibre8"/><code class="fixedline">L</code><br class="calibre8"/><code class="fixedline">## $a</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3 4 5</code><br class="calibre8"/><code class="fixedline">##</code><br class="calibre8"/><code class="fixedline">## $b</code><br class="calibre8"/><code class="fixedline">## [1]  TRUE FALSE</code></pre>
+<p id="Par115" class="author">或者您可以使用 names</p>
+<pre class="programcode" id="PC47"><code class="fixedline"><strong class="emphasistypebold">names</strong>(v) &lt;- LETTERS[1:4]</code><br class="calibre8"/><code class="fixedline">v</code><br class="calibre8"/><code class="fixedline">## A B C D</code><br class="calibre8"/><code class="fixedline">## 1 2 3 4</code></pre>
+<p id="Par117" class="author">您可以使用名称来索引向量和列表(其中[]和[[]]返回列表或列表的元素，如前所述):</p>
+<pre class="programcode" id="PC48"><code class="fixedline">v["A"]</code><br class="calibre8"/><code class="fixedline">## A</code><br class="calibre8"/><code class="fixedline">## 1</code><br class="calibre8"/><code class="fixedline">L["a"]</code><br class="calibre8"/><code class="fixedline">## $a</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3 4 5</code><br class="calibre8"/><code class="fixedline">L[["a"]]</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3 4 5</code></pre>
+<p id="Par119" class="author">命名值后，还可以使用第三个索引操作符，即$操作符。它基本上像[[]]一样工作，只是您不必将名称放在引号中:</p>
+<pre class="programcode" id="PC49"><code class="fixedline">L$a</code><br class="calibre8"/><code class="fixedline">## [1] 1 2 3 4 5</code></pre>
+<p id="Par121" class="author">对于向量来说，引入[[]]操作符从来都不是一个好时机，但是现在:如果对向量使用[[]]操作符，它将只允许您提取单个元素，如果向量有名称，它将删除名称。</p>
+
+<h3 class="heading">工厂</h3>
+<p id="Par122" class="author">我们在第<a href="01.html" class="pcalibre pcalibre3 calibre3 pcalibre1 pcalibre2"> 1 </a>章中看到的因子类型在技术上也是一种向量类型，但它不是与前面类型相同意义上的基本类型。它存储为一个整数向量(因子中的级别),并具有相关的属性，如级别。它是使用我们在第<a href="10.html" class="pcalibre pcalibre3 calibre3 pcalibre1 pcalibre2"> 10 章</a>中返回的职业系统实现的，在这里我们不再进一步讨论。</p>
+
+<h3 class="heading">公式</h3>
+<p id="Par123" class="author">另一种数据类型是公式。我们在第<a href="06.html" class="pcalibre pcalibre3 calibre3 pcalibre1 pcalibre2"> 6 </a>章中看到了这些，我们可以使用∞运算符创建它们。像因子一样，结果是使用类定义的对象。在项目 2 中，您将看到如何使用公式通过模型矩阵实现您自己的统计模型。</p>
+
+
+<h2 class="booksubtitle">控制结构</h2>
+<p id="Par124" class="author">控制结构决定了程序的执行流程。你可以通过一个接一个的语句或表达式走得很远，但最终你将不得不根据计算的结果做一件事而不是另一件事，这就是控制结构的用武之地。</p>
+<p id="Par125" class="author">像许多其他编程语言一样，R 中有两种控制结构:select (if 语句)和 loops (for、while 或 repeat 语句)。</p>
+<h3 class="heading">选择语句</h3>
+<p id="Par126" class="author">如果语句如下所示:</p>
+<pre class="programcode" id="PC50"><code class="fixedline">if (boolean) {</code><br class="calibre8"/><code class="fixedline">    <em class="emphasistypeitalic"># do something</em>            </code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par128" class="author">或者像这样:</p>
+<pre class="programcode" id="PC51"><code class="fixedline">if (boolean) {</code><br class="calibre8"/><code class="fixedline">    <em class="emphasistypeitalic"># do one thing</em>            </code><br class="calibre8"/><code class="fixedline">} else {</code><br class="calibre8"/><code class="fixedline">    <em class="emphasistypeitalic"># do another thing</em>            </code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par130" class="author">你可以像这样把它们串起来:</p>
+<pre class="programcode" id="PC52"><code class="fixedline">if (x &lt; 0) {</code><br class="calibre8"/><code class="fixedline">    <em class="emphasistypeitalic"># handle negative x</em>            </code><br class="calibre8"/><code class="fixedline">} else if (x &gt; 0) {</code><br class="calibre8"/><code class="fixedline">    <em class="emphasistypeitalic"># handle positive x</em>            </code><br class="calibre8"/><code class="fixedline">} else {</code><br class="calibre8"/><code class="fixedline">    <em class="emphasistypeitalic"># handle if x is zero</em>            </code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par132" class="author">在这里的所有例子中，我把条件为真或为假的陈述放在花括号里。严格地说，如果我们讨论的是一个单独的语句，这是不必要的。这将工作得很好:</p>
+<pre class="programcode" id="PC53"><code class="fixedline">if (x &gt; 0) "positive" else if (x &lt; 0) "negative" else "zero"</code></pre>
+<p id="Par134" class="author">但是如果您在语句之间放置新行，它将会失败；R 解析器可能会对此感到困惑，而你<em class="emphasistypeitalic">确实</em>需要花括号。这可能是一个语法错误:</p>
+<pre class="programcode" id="PC54"><code class="fixedline">if (x &gt; 0)</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>("positive")</code><br class="calibre8"/><code class="fixedline">else if (x &lt; 0)</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>("negative")</code><br class="calibre8"/><code class="fixedline">else</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>("zero")</code></pre>
+<p id="Par136" class="author">虽然这没什么问题:</p>
+<pre class="programcode" id="PC55"><code class="fixedline">if (x &gt; 0) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>("positive")</code><br class="calibre8"/><code class="fixedline">} else if (x &lt; 0) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>("negative")</code><br class="calibre8"/><code class="fixedline">} else {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>("zero")</code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par138" class="author">我建议总是使用花括号，因为当你只有一个语句时它们很好，所以在这种情况下你没有做错任何事情，当你有多个语句或者当你在 if 语句中有换行符时，它们是唯一有用的东西。</p>
+
+<h3 class="heading">环</h3>
+<p id="Par139" class="author">您将使用的最常见的循环结构可能是 for 循环。使用 for 循环遍历序列的元素；建筑工程是这样的:</p>
+<pre class="programcode" id="PC56"><code class="fixedline">for (i in 1:4) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(i)</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">## [1] 1</code><br class="calibre8"/><code class="fixedline">## [1] 2</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline">## [1] 4</code></pre>
+<p id="Par141" class="author">但是请记住，您迭代的是序列中的元素，因此您分配给迭代变量的变量是序列中的元素，而不是序列中的索引。如果您想遍历索引进入序列，可以使用 seq_along 函数:</p>
+<pre class="programcode" id="PC57"><code class="fixedline">x &lt;- <strong class="emphasistypebold">c</strong>("foo", "bar", "baz")</code><br class="calibre8"/><code class="fixedline">for (i in <strong class="emphasistypebold">seq_along</strong>(x)) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(i)</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(x[i])</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">## [1] 1</code><br class="calibre8"/><code class="fixedline">## [1] "foo"</code><br class="calibre8"/><code class="fixedline">## [1] 2</code><br class="calibre8"/><code class="fixedline">## [1] "bar"</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline">## [1] "baz"</code></pre>
+<p id="Par143" class="author">您有时会看到使用这种结构的代码:</p>
+<pre class="programcode" id="PC58"><code class="fixedline">for (i in 1:<strong class="emphasistypebold">length</strong>(x)) {</code><br class="calibre8"/><code class="fixedline">    <em class="emphasistypeitalic"># do stuff</em>            </code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par145" class="author">不要那样做。如果序列 x 为空，就不起作用。</p>
+<pre class="programcode" id="PC59"><code class="fixedline">x &lt;- <strong class="emphasistypebold">c</strong>()</code><br class="calibre8"/><code class="fixedline">1:<strong class="emphasistypebold">length</strong>(x)</code><br class="calibre8"/><code class="fixedline">## [1] 1 0</code></pre>
+<p id="Par147" class="author">如果想跳到循环的下一次迭代，可以使用 next 关键字。例如，下面将只打印 x 的每隔一个元素:</p>
+<pre class="programcode" id="PC60"><code class="fixedline">for (i in <strong class="emphasistypebold">seq_along</strong>(x)) {</code><br class="calibre8"/><code class="fixedline">    if (i %% 2 == 0) {</code><br class="calibre8"/><code class="fixedline">        next</code><br class="calibre8"/><code class="fixedline">    }</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(x[i])</code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par149" class="author">如果想完全终止循环，可以使用 break。</p>
+<pre class="programcode" id="PC61"><code class="fixedline">for (i in 1:100) {</code><br class="calibre8"/><code class="fixedline">    if (i %% 2 == 0) {</code><br class="calibre8"/><code class="fixedline">        next</code><br class="calibre8"/><code class="fixedline">    }</code><br class="calibre8"/><code class="fixedline">    if (i &gt; 5) {</code><br class="calibre8"/><code class="fixedline">        break</code><br class="calibre8"/><code class="fixedline">    }</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(i)</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">## [1] 1</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline">## [1] 5</code></pre>
+<p id="Par151" class="author">另外两个你不会经常使用的循环结构。它们是 while 和 repeat 循环。</p>
+<p id="Par152" class="author">只要布尔表达式为真，while 循环就会迭代，如下所示:</p>
+<pre class="programcode" id="PC62"><code class="fixedline">i &lt;- 1</code><br class="calibre8"/><code class="fixedline">while (i &lt; 5) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(i)</code><br class="calibre8"/><code class="fixedline">    i &lt;- i + 1</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">## [1] 1</code><br class="calibre8"/><code class="fixedline">## [1] 2</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline">## [1] 4</code></pre>
+<p id="Par154" class="author">重复的表情会一直持续下去，至少直到你打破这个循环。</p>
+<pre class="programcode" id="PC63"><code class="fixedline">i &lt;- 1</code><br class="calibre8"/><code class="fixedline">repeat {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(i)</code><br class="calibre8"/><code class="fixedline">    i &lt;- i + 1</code><br class="calibre8"/><code class="fixedline">    if (i &gt; 5) break</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">## [1] 1</code><br class="calibre8"/><code class="fixedline">## [1] 2</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline">## [1] 4</code><br class="calibre8"/><code class="fixedline">## [1] 5</code></pre>
+
+<h3 class="heading">关于循环的警告</h3>
+<p id="Par156" class="author">如果你读了更多关于 R 的东西，你很快就会发现 R 中的循环很慢。这并不像有些人说的那么糟糕，但也是有一定道理的。因为 R 是一种非常动态的语言——函数和变量在程序执行过程中随时可能改变——解释器在运行代码之前很难优化代码，这与其他一些语言不同(但与 Python 等其他动态语言并无太大区别)。然而，优化循环的尝试也不多，因为 R 中通常有比使用显式循环语句更好的解决方案。</p>
+<p id="Par157" class="author">r 是一种所谓的函数式语言(除了别的以外)，在函数式语言中，你通常不使用循环。循环构造的工作方式是，在执行代码时需要改变循环变量或布尔表达式的值，而改变变量在函数语言中被认为是“不纯的”(所以，很明显，R 不是纯函数语言)。相反，递归函数用于循环。大多数函数式语言甚至没有循环结构——纯函数式语言当然也没有。r 更实际一点，但是你<em class="emphasistypeitalic">通常比</em>更擅长使用循环的替代品。</p>
+<p id="Par158" class="author">我们将在下一章对此进行更深入的探讨。</p>
+
+
+<h2 class="booksubtitle">功能</h2>
+<p id="Par159" class="author">您可以这样定义函数:</p>
+<pre class="programcode" id="PC64"><code class="fixedline">name &lt;- function(arguments) expression</code></pre>
+<p id="Par161" class="author">其中 name 可以是任何变量名，arguments 是函数的形参列表，expression 是调用它时函数将执行的操作。之所以称之为表达式，是因为你也可以把函数体看作一个表达式，但它通常是一系列用花括号括起来的语句:</p>
+<pre class="programcode" id="PC65"><code class="fixedline">name &lt;- function(arguments) { statements }</code></pre>
+<p id="Par163" class="author">只是这样一系列的陈述也是一种表达；执行一系列语句的结果就是最后一条语句的值。</p>
+<p id="Par164" class="author">以下函数将打印一条语句并返回 5，因为函数体中的语句首先是一条打印语句，然后是将作为函数返回值的值 5:</p>
+<pre class="programcode" id="PC66"><code class="fixedline">f &lt;- function() {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>("hello, world")</code><br class="calibre8"/><code class="fixedline">    5</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">f</strong>()</code><br class="calibre8"/><code class="fixedline">## [1] "hello, world"</code><br class="calibre8"/><code class="fixedline">## [1] 5</code></pre>
+<p id="Par166" class="author">我们通常不写没有参数的函数——就像我之前做的那样——但是有一个或多个形式参数。这些参数最简单的形式就是变量名。当您调用函数时，它们被赋值，然后这些值可以在函数体<a href="#Fn1" id="Fn1_source" class="pcalibre pcalibre3 calibre3 pcalibre1 pcalibre2"> <sup class="calibre6"> 1 </sup> </a>中使用:</p>
+<pre class="programcode" id="PC67"><code class="fixedline">plus &lt;- function(x, y) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(<strong class="emphasistypebold">paste</strong>(x, "+", y, "is", x + y))</code><br class="calibre8"/><code class="fixedline">    x + y</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline">div &lt;- function(x, y) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">print</strong>(<strong class="emphasistypebold">paste</strong>(x, "/", y, "is", x / y))</code><br class="calibre8"/><code class="fixedline">    x / y</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">plus</strong>(2, 2)</code><br class="calibre8"/><code class="fixedline">## [1] "2 + 2 is 4"</code><br class="calibre8"/><code class="fixedline">## [1] 4</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">div</strong>(6, 2)</code><br class="calibre8"/><code class="fixedline">## [1] "6 / 2 is 3"</code><br class="calibre8"/><code class="fixedline">## [1] 3</code></pre>
+<h3 class="heading">命名参数</h3>
+<p id="Par169" class="author">调用函数时参数的顺序很重要，因为它决定了哪个参数被设置为哪个值:</p>
+<pre class="programcode" id="PC68"><code class="fixedline"><strong class="emphasistypebold">div</strong>(6,2)</code><br class="calibre8"/><code class="fixedline">## [1] "6 / 2 is 3"</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">div</strong>(2,6)</code><br class="calibre8"/><code class="fixedline">## [1] "2 / 6 is 0.333333333333333"</code><br class="calibre8"/><code class="fixedline">## [1] 0.3333333</code></pre>
+<p id="Par171" class="author">但是，如果一个函数有许多参数，总是很难记住顺序，所以有一种替代方法来指定哪个变量被赋予哪个值:命名参数。这意味着当你调用一个函数的时候，你可以明确每个参数应该被设置成哪个参数。</p>
+<pre class="programcode" id="PC69"><code class="fixedline"><strong class="emphasistypebold">div</strong>(x = 6, y = 2)</code><br class="calibre8"/><code class="fixedline">## [1] "6 / 2 is 3"</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">div</strong>(y = 2, x = 6)</code><br class="calibre8"/><code class="fixedline">## [1] "6 / 2 is 3"</code><br class="calibre8"/><code class="fixedline">## [1] 3</code></pre>
+<p id="Par173" class="author">这就明确了哪个参数被赋予了哪个值，您可以把它看作一个赋值操作符。但是你不应该这么做，因为尽管你<em class="emphasistypeitalic">可以</em>使用=作为赋值操作符，但你<em class="emphasistypeitalic">不能</em>使用&lt;来指定命名变量。看起来你可以，但它不会做你想让它做的事情(除非你想做一些非常奇怪的事情):</p>
+<pre class="programcode" id="PC70"><code class="fixedline"><strong class="emphasistypebold">div</strong>(x &lt;- 6, y &lt;- 2)</code><br class="calibre8"/><code class="fixedline">## [1] "6 / 2 is 3"</code><br class="calibre8"/><code class="fixedline">## [1] 3</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">div</strong>(y &lt;- 2, x &lt;- 6)</code><br class="calibre8"/><code class="fixedline">## [1] "2 / 6 is 0.333333333333333"</code><br class="calibre8"/><code class="fixedline">## [1] 0.3333333</code></pre>
+<p id="Par175" class="author">赋值操作符在函数的外面，但是你传递给函数的值是位置的，所以在函数里面你给了 x 2 和 y 6。</p>
+<p id="Par176" class="author">不要混淆这两个赋值操作符:代码很可能会运行，但不太可能做您想要它做的事情！</p>
+
+<h3 class="heading">默认参数</h3>
+<p id="Par177" class="author">定义函数时，可以为参数提供默认值，如下所示:</p>
+<pre class="programcode" id="PC71"><code class="fixedline">pow &lt;- function(x, y = 2) x^y</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">pow</strong>(2)</code><br class="calibre8"/><code class="fixedline">## [1] 4</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">pow</strong>(3)</code><br class="calibre8"/><code class="fixedline">## [1] 9</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">pow</strong>(2, 3)</code><br class="calibre8"/><code class="fixedline">## [1] 8</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">pow</strong>(3, 3)</code><br class="calibre8"/><code class="fixedline">## [1] 27</code></pre>
+<p id="Par179" class="author">只要在函数调用时没有提供参数，就会使用默认的参数值。</p>
+
+<h3 class="heading">返回值</h3>
+<p id="Par180" class="author">函数的返回值是函数体中执行的语句的最后一个表达式。如果函数是一系列语句，这只是序列中的最后一条语句，但是通过使用控制结构，您可以将不同的语句作为最后一条语句:</p>
+<pre class="programcode" id="PC72"><code class="fixedline">safer_div &lt;- function(x, y) {</code><br class="calibre8"/><code class="fixedline">    if (y == 0) {</code><br class="calibre8"/><code class="fixedline">        NA</code><br class="calibre8"/><code class="fixedline">    } else {</code><br class="calibre8"/><code class="fixedline">        x / y</code><br class="calibre8"/><code class="fixedline">    }</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">safer_div</strong>(4, 2)</code><br class="calibre8"/><code class="fixedline">## [1] 2</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">safer_div</strong>(4, 0)</code><br class="calibre8"/><code class="fixedline">## [1] NA</code></pre>
+<p id="Par182" class="author">也可以使用 return()语句从函数中显式返回，类似于从循环中中断。</p>
+<pre class="programcode" id="PC73"><code class="fixedline">safer_div &lt;- function(x, y) {</code><br class="calibre8"/><code class="fixedline">    if (y == 0) {</code><br class="calibre8"/><code class="fixedline">        <strong class="emphasistypebold">return</strong>(NA)</code><br class="calibre8"/><code class="fixedline">    }</code><br class="calibre8"/><code class="fixedline">    x / y</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">safer_div</strong>(4, 2)</code><br class="calibre8"/><code class="fixedline">## [1] 2</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">safer_div</strong>(4, 0)</code><br class="calibre8"/><code class="fixedline">## [1] NA</code></pre>
+<p id="Par184" class="author">请注意，return()语句在括号中包含返回值。许多编程语言允许你这样写:</p>
+<pre class="programcode" id="PC74"><code class="fixedline">safer_div &lt;- function(x, y) {</code><br class="calibre8"/><code class="fixedline">    if (y == 0) {</code><br class="calibre8"/><code class="fixedline">        return NA</code><br class="calibre8"/><code class="fixedline">    }</code><br class="calibre8"/><code class="fixedline">    x / y</code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par186" class="author">但这是 r 中的一个错误。</p>
+
+<h3 class="heading">懒惰评估</h3>
+<p id="Par187" class="author">我在几个地方写过，当我们调用一个函数时，给函数参数赋值。在许多编程语言中，这正是函数调用的工作方式——计算为每个参数提供的表达式，并将结果分配给函数参数，以便函数可以在函数体中使用它们——但在 R 中，实际上是表达式分配给函数参数。并且表达式直到需要时才被求值；叫<em class="emphasistypeitalic">懒评</em>的东西。</p>
+<p id="Par188" class="author">这种处理函数参数的方式有一些好处，也有一些奇怪的后果。</p>
+<p id="Par189" class="author">第一个好处是它使默认参数更加灵活。我们可以写一个这样的函数:</p>
+<pre class="programcode" id="PC75"><code class="fixedline">f &lt;- function(x, y = x^2) y + x</code></pre>
+<p id="Par191" class="author">其中，y 的默认值取决于另一个参数 x，在声明函数时，x 的值是未知的，但 y 不会在那里计算，所以这无关紧要。每当我们调用函数时，函数体中的 x 是已知的，这就是我们需要 y 值的地方，所以表达式将在这里求值。</p>
+<pre class="programcode" id="PC76"><code class="fixedline"><strong class="emphasistypebold">f</strong>(2)</code><br class="calibre8"/><code class="fixedline">## [1] 6</code></pre>
+<p id="Par193" class="author">因为 y 在使用前不会被求值，所以它<em xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" class="emphasistypeitalic">也意味着如果你在使用 y 之前给 x 赋了一个不同的值，那么 y 的值取决于 x 的新值，而不是调用函数时 x 的值！</em></p>
+<pre class="programcode" id="PC77"><code class="fixedline">g &lt;- function(x, y = x^2) { x &lt;- 0; y + x }</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">g</strong>(2)</code><br class="calibre8"/><code class="fixedline">## [1] 0</code></pre>
+<p id="Par195" class="author">另一方面，如果 y 在我们赋值给 x 之前被赋值，那么它将被赋值给依赖于 x 的值，在我们赋值它的时候，它将保持这个值。它在第一次被需要的时候被评估，然后结果被记住，以备以后我们引用 y 时使用。</p>
+<pre class="programcode" id="PC78"><code class="fixedline">h &lt;- function(x, y = x^2) { y; x &lt;- 0; y + x }</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">h</strong>(2)</code><br class="calibre8"/><code class="fixedline">## [1] 4</code></pre>
+<p id="Par197" class="author">因此，惰性求值允许您在未知参数的上下文中指定依赖于其他参数的默认参数，但它的代价是参数的值依赖于第一次求值时的上下文。</p>
+<p id="Par198" class="author">如果只是能够以这种方式指定变量，我们当然可以有一个解决方案，不涉及我们为此付出的怪异。毕竟，大多数编程语言都是这么做的，但是懒惰求值还有其他好处:只有在真正需要的时候才求值。</p>
+
+<h3 class="heading">辖域</h3>
+<p id="Par199" class="author">R 中的作用域是词法性的。这意味着，如果一个变量在一个函数中使用，但没有在函数或函数的部分参数中定义，那么 R 将从创建函数的地方开始在代码中向外搜索。这实质上意味着从代码中指定函数的位置向外向上搜索，因为在定义函数的位置执行代码时会创建一个函数。</p>
+<p id="Par200" class="author">考虑以下代码:</p>
+<pre class="programcode" id="PC79"><code class="fixedline">x &lt;- "x"</code><br class="calibre8"/><code class="fixedline">f &lt;- function(y) {</code><br class="calibre8"/><code class="fixedline">    g &lt;- function() <strong class="emphasistypebold">c</strong>(x, y)</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">g</strong>()</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">f</strong>("y")</code><br class="calibre8"/><code class="fixedline">## [1] "x" "y"</code></pre>
+<p id="Par202" class="author">这里我们有一个全局变量 x 和一个带参数 y 的函数 f，在函数 f 中，我们定义了函数 g，它既没有定义也没有把变量 x 和 y 作为形式参数，但是返回了它们。我们将 g 作为 f 中的最后一个语句，这样它就变成了在最后一行调用 f 的结果。</p>
+<p id="Par203" class="author">在 g 内部，我们没有定义 x 或 y，所以要找到它们的值，R 将从创建 g 的地方向外搜索。它会找到 y 作为函数 f 的自变量，所以从那里得到它，继续向外，在全局水平上找到 x。</p>
+<p id="Par204" class="author">g 引用的变量是在创建 g 时的变量，而不是值，所以如果我们在创建 g 后更新变量，我们也会更改 g 将返回的值:</p>
+<pre class="programcode" id="PC80"><code class="fixedline">x &lt;- "x"</code><br class="calibre8"/><code class="fixedline">f &lt;- function(y) {</code><br class="calibre8"/><code class="fixedline">  g &lt;- function() <strong class="emphasistypebold">c</strong>(x, y)</code><br class="calibre8"/><code class="fixedline">  y &lt;- "z"</code><br class="calibre8"/><code class="fixedline">  <strong class="emphasistypebold">g</strong>()</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">f</strong>("y")</code><br class="calibre8"/><code class="fixedline">## [1] "x" "z"</code></pre>
+<p id="Par206" class="author">这不仅仅是懒惰的评估疯狂，也不是说 g 还没有评估 y，因此，它是可以改变的。需要时，它会查找 y 的值:</p>
+<pre class="programcode" id="PC81"><code class="fixedline">x &lt;- "x"</code><br class="calibre8"/><code class="fixedline">f &lt;- function(y) {</code><br class="calibre8"/><code class="fixedline">  g &lt;- function() <strong class="emphasistypebold">c</strong>(x, y)</code><br class="calibre8"/><code class="fixedline">  <strong class="emphasistypebold">g</strong>()</code><br class="calibre8"/><code class="fixedline">  y &lt;- "z"</code><br class="calibre8"/><code class="fixedline">  <strong class="emphasistypebold">g</strong>()</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">f</strong>("y")</code><br class="calibre8"/><code class="fixedline">## [1] "x" "z"</code></pre>
+<p id="Par208" class="author">如果我们从 f 返回函数 g，而不是对它求值的结果，我们会看到 R 的作用域的另一个特征——叫做<em class="emphasistypeitalic">闭包</em>的东西。r 记住了一个函数中变量的值，我们已经从这个函数中返回，这个函数不再是我们计算的一个活动部分。在下面的例子中，我们返回了函数 g，此时不再有活动的 f 函数。所以实际上不再有参数 y 的活动实例。然而 g 指的是一个 y，所以我们给 f 的参数实际上被记住了。</p>
+<pre class="programcode" id="PC82"><code class="fixedline">x &lt;- "x"</code><br class="calibre8"/><code class="fixedline">f &lt;- function(y) {</code><br class="calibre8"/><code class="fixedline">  g &lt;- function() <strong class="emphasistypebold">c</strong>(x, y)</code><br class="calibre8"/><code class="fixedline">  g</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">g &lt;- <strong class="emphasistypebold">f</strong>("y")</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">g</strong>()</code><br class="calibre8"/><code class="fixedline">## [1] "x" "y"</code></pre>
+<p id="Par210" class="author">如果我们使用不同的参数 y 值调用 f 两次，我们可以看到这是如何工作的:</p>
+<pre class="programcode" id="PC83"><code class="fixedline">x &lt;- "x"</code><br class="calibre8"/><code class="fixedline">f &lt;- function(y) {</code><br class="calibre8"/><code class="fixedline">  g &lt;- function() <strong class="emphasistypebold">c</strong>(x, y)</code><br class="calibre8"/><code class="fixedline">  g</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">g &lt;- <strong class="emphasistypebold">f</strong>("y")</code><br class="calibre8"/><code class="fixedline">h &lt;- <strong class="emphasistypebold">f</strong>("z")</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">g</strong>()</code><br class="calibre8"/><code class="fixedline">## [1] "x" "y"</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">h</strong>()</code><br class="calibre8"/><code class="fixedline">## [1] "x" "z"</code></pre>
+<p id="Par212" class="author">这就产生了两种不同的功能。在 f 内部，它们都被称为 g，但它们是两个不同的函数，因为它们是在对 f 的两次不同调用中创建的，而且它们记住了两个不同的 y 参数，因为 f 的两个实例是用不同的 y 值调用的。</p>
+<p id="Par213" class="author">当从定义函数的地方向外看时，它寻找的是函数被调用时的变量值，而不是函数被创建时的值。变量不一定要在函数创建时定义；它们只需要在最终调用函数时定义。</p>
+<p id="Par214" class="author">考虑以下代码:</p>
+<pre class="programcode" id="PC84"><code class="fixedline">f &lt;- function() {</code><br class="calibre8"/><code class="fixedline">  g &lt;- function() <strong class="emphasistypebold">c</strong>(y, z)</code><br class="calibre8"/><code class="fixedline">  y &lt;- "y"</code><br class="calibre8"/><code class="fixedline">  g</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><code class="fixedline">h &lt;- <strong class="emphasistypebold">f</strong>()</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">h</strong>()</code><br class="calibre8"/><code class="fixedline">## Error in h(): object 'z' not found</code><br class="calibre8"/><code class="fixedline">z &lt;- "z"</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">h</strong>()</code><br class="calibre8"/><code class="fixedline">## [1] "y" "z"</code></pre>
+<p id="Par216" class="author">在函数 g 被定义的地方——在函数 f 内部——它引用了还没有定义的变量 y 和 z。这无关紧要，因为我们只创建了函数 g；我们不援引它。然后，我们在调用 f 并返回 g 的上下文中设置变量 y。在函数调用之外，我们将 f()的返回值命名为 h。如果我们此时调用 h，它将记住 y 是在 f 中定义的，并且它将记住它在我们从 f 返回的时间点的值。仍然没有为 z 设置值，因此调用 h 会导致错误。因为 z 没有在内部函数引用它的封闭作用域中定义，所以它必须在最外层的全局作用域中定义，但它没有。如果我们把它设置在那里，错误就消失了，因为现在 R 可以通过从函数创建的地方向外搜索来找到变量。</p>
+<p id="Par217" class="author">我真的不应该告诉你这些，因为我将要告诉你的特性是危险的。我将向您展示一种方法，它可以让函数产生比其他方法更多的副作用，而且函数真的不应该有任何副作用。无论如何，这个<em class="emphasistypeitalic">是</em>语言的一个特性——如果你非常小心地使用它——当你觉得需要让函数有副作用时，它会非常有用。</p>
+<p id="Par218" class="author">这就是问题所在:如果你想给一个变量赋值，而这个变量在你想赋值的函数范围之外，该怎么办呢？你不能只给变量赋值，因为如果你给一个在当前作用域中找不到的变量赋值，那么你就在当前作用域中创建了这个变量。</p>
+<pre class="programcode" id="PC85"><code class="fixedline">f &lt;- function() {</code><br class="calibre8"/><code class="fixedline">    x &lt;- NULL</code><br class="calibre8"/><code class="fixedline">    set &lt;- function(val) { x &lt;- val }</code><br class="calibre8"/><code class="fixedline">    get &lt;- function() x</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">list</strong>(set = set, get = get)</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline">x &lt;- <strong class="emphasistypebold">f</strong>()</code><br class="calibre8"/><code class="fixedline">x$<strong class="emphasistypebold">get</strong>()</code><br class="calibre8"/><code class="fixedline">## NULL</code><br class="calibre8"/><code class="fixedline">x$<strong class="emphasistypebold">set</strong>(5)</code><br class="calibre8"/><code class="fixedline">x$<strong class="emphasistypebold">get</strong>()</code><br class="calibre8"/><code class="fixedline">## NULL</code></pre>
+<p id="Par220" class="author">在这段代码中——我建议您仔细阅读，因为其中有一些巧妙的想法——我们创建了一个 getter 和 setter 函数；getter 告诉我们变量 x 是什么，setter 应该更新它。但是在 set 的主体中设置 x 会在该函数内部创建一个局部变量；它没有分配给 x 上一级。</p>
+<p id="Par221" class="author">有一个单独的赋值操作符&lt; </p>
+<p id="Par222" class="author">如果我们在前面的例子中使用赋值操作符，我们得到了我们想要的行为。</p>
+<pre class="programcode" id="PC86"><code class="fixedline">f &lt;- function() {</code><br class="calibre8"/><code class="fixedline">    x &lt;- NULL</code><br class="calibre8"/><code class="fixedline">    set &lt;- function(val) { x &lt;&lt;- val }</code><br class="calibre8"/><code class="fixedline">    get &lt;- function() x</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">list</strong>(set = set, get = get)</code><br class="calibre8"/><code class="fixedline">}</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline">x &lt;- <strong class="emphasistypebold">f</strong>()</code><br class="calibre8"/><code class="fixedline">x$<strong class="emphasistypebold">get</strong>()</code><br class="calibre8"/><code class="fixedline">## NULL</code><br class="calibre8"/><code class="fixedline">x$<strong class="emphasistypebold">set</strong>(5)</code><br class="calibre8"/><code class="fixedline">x$<strong class="emphasistypebold">get</strong>()</code><br class="calibre8"/><code class="fixedline">## [1] 5</code></pre>
+<p id="Par224" class="author">如果我们在这个例子中没有在 f 的主体中设置变量 x，getter 和 setter 都会引用一个全局变量，如果没有全局变量，第一次调用 get 会导致错误。虽然这个例子表明你必须创建一个函数有副作用的对象，但是让函数修改隐藏在闭包中的变量比使用全局变量要好很多。</p>
+
+<h3 class="heading">函数名不同于变量名</h3>
+<p id="Par225" class="author">关于作用域的最后一个注意事项——我不确定这应该被认为是一个特性还是一个 bug——是如果 R 看到看起来像函数调用的东西，它会去搜索一个函数，即使从函数创建开始向外搜索会先到达一个非函数。</p>
+<pre class="programcode" id="PC87"><code class="fixedline">n &lt;- function(x) x</code><br class="calibre8"/><code class="fixedline">f &lt;- function(n) <strong class="emphasistypebold">n</strong>(n)</code><br class="calibre8"/><code class="fixedline"><strong class="emphasistypebold">f</strong>(5)</code><br class="calibre8"/><code class="fixedline">## [1] 5</code></pre>
+<p id="Par227" class="author">根据作用域规则，您应该向外搜索，f 函数中的 n 应该引用 f 的参数。但是很明显，第一个 n 是函数调用，第二个是它的参数，所以当我们调用 f 时，它看到参数不是函数，所以它进一步向外搜索，找到了<em class="emphasistypeitalic">函数</em> n。它用它的参数调用那个函数。所以 f 里面的两个 n 其实指的是不同的东西。</p>
+<p id="Par228" class="author">当然，如果我们用一个实际上是函数的东西来调用 f，那么它会识别出 n 是一个函数，并以它自己作为参数来调用这个函数。</p>
+<pre class="programcode" id="PC88"><code class="fixedline"><strong class="emphasistypebold">f</strong>(function(x) 15)</code><br class="calibre8"/><code class="fixedline">## [1] 15</code></pre>
+<p id="Par230" class="author">很有趣，对吧？</p>
+
+
+<h2 class="booksubtitle">递归函数</h2>
+<p id="Par231" class="author">在我们开始练习之前，本章的最后一个主题是递归函数。有些人认为这是一个很难的话题，但是在函数式编程语言中，它是最基本的构建块之一，所以确实值得花一些时间来理解它，尽管与大多数纯函数式语言相比，在 R 中不太可能需要递归。</p>
+<p id="Par232" class="author">不过，在最基本的层面上，我们可以根据对同一个函数的调用来定义函数的计算——我们允许一个函数调用它自己，只是用新的参数。</p>
+<p id="Par233" class="author">考虑阶乘运算符<em class="emphasistypeitalic"> n </em>！=<em class="emphasistypeitalic">n</em>×(<em class="emphasistypeitalic">n</em>—1)×…×3×2×1。我们可以根据<em class="emphasistypeitalic"> n </em>和一个更小的阶乘，即<em class="emphasistypeitalic">n</em>1 的阶乘，重写<em class="emphasistypeitalic"> n </em>的阶乘，得到<em class="emphasistypeitalic"> n </em>！=<em class="emphasistypeitalic">n</em>×(<em class="emphasistypeitalic">n</em>—1)！。这是递归有用的一个典型例子:我们根据对某个较小值的计算来定义某个<em class="emphasistypeitalic"> n </em>的值。作为一个函数，我们将写阶乘(n)等于 n *阶乘(n-1)。</p>
+<p id="Par234" class="author">不过，递归函数有两个方面。解决一个大小为<em class="emphasistypeitalic"> n </em>的问题包括将问题分解成你可以马上做的事情，并将其与一个更小的函数调用相结合，这里是<em class="emphasistypeitalic">n</em>1。这部分我们称之为递归的“步骤”。我们不能永远把问题缩小到越来越小的部分——那将是一个无限的递归，就像我们永远也到不了任何地方的无限循环一样糟糕——在某种程度上，我们需要把问题缩小到足够小，我们可以直接处理它。这就是递归的基础。</p>
+<p id="Par235" class="author">对于阶乘，我们在 1 中有一个自然基，因为 1！= 1.因此我们可以编写阶乘函数的递归实现，如下所示:</p>
+<pre class="programcode" id="PC89"><code class="fixedline">factorial &lt;- function(n) {</code><br class="calibre8"/><code class="fixedline">    if (n == 1) {</code><br class="calibre8"/><code class="fixedline">        1</code><br class="calibre8"/><code class="fixedline">    } else {</code><br class="calibre8"/><code class="fixedline">        n * <strong class="emphasistypebold">factorial</strong>(n - 1)</code><br class="calibre8"/><code class="fixedline">    }</code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par237" class="author">它实际上是一种通用的算法策略，叫做<em class="emphasistypeitalic">分而治之</em>，将一个问题分解成你可以递归处理的子问题，然后以某种方式组合结果。</p>
+<p id="Par238" class="author">考虑对一系列数字进行排序。我们可以使用这种策略对一个序列进行排序，首先注意到我们有一个简单的基础——对一个空序列或一个只有一个元素的序列进行排序很容易，因为我们不需要在那里做任何事情。对于这一步，我们可以将序列分成大小相等的两部分，并对它们进行递归排序。现在我们有两个排序的序列，如果我们合并这两个，我们已经把它们合并成一个排序的序列。</p>
+<p id="Par239" class="author">让我们开始吧。</p>
+<p id="Par240" class="author">我们需要能够合并两个序列，这样我们就可以先解决这个问题。这是我们应该能够用递归函数来做的事情，因为如果任何一个序列为空，我们就可以返回另一个序列。如果两个序列中都有元素，我们可以选择第一个元素最小的序列，将其作为我们最终结果中需要的第一个元素，然后将剩余的数字合并在一起。</p>
+<pre class="programcode" id="PC90"><code class="fixedline">merge &lt;- function(x, y) {</code><br class="calibre8"/><code class="fixedline">  if (<strong class="emphasistypebold">length</strong>(x) == 0) <strong class="emphasistypebold">return</strong>(y)</code><br class="calibre8"/><code class="fixedline">  if (<strong class="emphasistypebold">length</strong>(y) == 0) <strong class="emphasistypebold">return</strong>(x)</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline">  if (x[1] &lt; y[1]) {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">c</strong>(x[1], <strong class="emphasistypebold">merge</strong>(x[-1], y))</code><br class="calibre8"/><code class="fixedline">  } else {</code><br class="calibre8"/><code class="fixedline">    <strong class="emphasistypebold">c</strong>(y[1], <strong class="emphasistypebold">merge</strong>(x, y[-1]))</code><br class="calibre8"/><code class="fixedline">  }</code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par242" class="author">这里有一个简短的声明:通常这个算法会在线性时间内运行，但是由于我们递归调用的方式，我们实际上是在复制向量，每当我们删除第一个元素时，使它成为一个二次时间算法。实现一个线性时间合并函数作为一个练习。</p>
+<p id="Par243" class="author">使用这个函数，我们可以实现一个排序函数。这种算法叫做合并排序，所以我们称之为函数:</p>
+<pre class="programcode" id="PC91"><code class="fixedline">merge_sort &lt;- function(x) {</code><br class="calibre8"/><code class="fixedline">  if (<strong class="emphasistypebold">length</strong>(x) &lt; 2) <strong class="emphasistypebold">return</strong>(x)</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline">  n &lt;- <strong class="emphasistypebold">length</strong>(x)</code><br class="calibre8"/><code class="fixedline">  m &lt;- n %/% 2</code><br class="calibre8"/><br class="calibre8"/><code class="fixedline">  <strong class="emphasistypebold">merge</strong>(<strong class="emphasistypebold">merge_sort</strong>(x[1:m]), <strong class="emphasistypebold">merge_sort</strong>(x[(m+1):n]))</code><br class="calibre8"/><code class="fixedline">}</code></pre>
+<p id="Par245" class="author">所以在这里，使用两个简单的递归函数，我们用几行代码解决了一个真正的算法问题。这是像 r 这样的函数式编程语言的典型做法。当然，当使用循环更容易完成事情时，你不应该坚持纯函数递归。在任何情况下都使用最容易的方法，除非你发现它太慢了。只有那时你才开始变得聪明。</p>
+
+<h2 class="booksubtitle">练习</h2>
+<p id="Par246" class="author">尝试以下练习，以便更好地理解本章中讨论的概念。</p>
+<h3 class="heading">斐波那契数</h3>
+<p id="Par247" class="author"><em class="emphasistypeitalic">斐波那契</em>数定义如下:前两个斐波那契数为 1，<em class="emphasistypeitalic">F</em><sub class="calibre10">1</sub>=<em class="emphasistypeitalic">F</em><sub class="calibre10">2</sub>= 1。对于较大的斐波那契数，定义为<em class="emphasistypeitalic">F</em><sub class="calibre10"><em class="emphasistypeitalic1">I</em></sub><em class="emphasistypeitalic">= F</em><sub class="calibre10"><em class="emphasistypeitalic1">I 1</em></sub><em class="emphasistypeitalic">+F</em><sub class="calibre10"><em class="emphasistypeitalic1">I 2</em></sub>。</p>
+<p id="Par248" class="author">实现一个递归函数来计算第<em class="emphasistypeitalic"> n </em>个斐波那契数。</p>
+<p id="Par249" class="author">斐波那契数列的递归函数通常效率很低，因为在递归调用中你要多次重新计算相同的数字。所以实现另一个版本，迭代计算第<em class="emphasistypeitalic"> n </em>个斐波那契数(也就是说，从底部开始，计算到第<em class="emphasistypeitalic"> n </em>个数字，不递归调用)。</p>
+
+<h3 class="heading">外部产品</h3>
+<p id="Par250" class="author">两个向量<strong class="emphasistypebold"> v </strong>和<strong class="emphasistypebold"> w </strong>的外积是一个矩阵，定义如下:<br class="calibre8"/>T5】</p>
+<p id="Par251" class="author">写一个计算两个向量的外积的函数。</p>
+<p id="Par252" class="author">实际上有一个内置的函数 outer，您在这里覆盖了它。即使您已经覆盖了它，您也可以使用 base::outer 名称来访问它。您可以使用它来检查您自己的函数是否在做正确的事情。</p>
+
+<h3 class="heading">线性时间合并</h3>
+<p id="Par253" class="author">我们使用的合并函数在其递归调用中复制向量。这使得它比它必须慢。实现线性时间合并功能。</p>
+<p id="Par254" class="author">不过，在开始之前，您应该意识到一些事情。如果您打算通过编写如下代码向向量追加内容:</p>
+<pre class="programcode" id="PC92"><code class="fixedline">v &lt;- <strong class="emphasistypebold">c</strong>(v, element)</code></pre>
+<p id="Par256" class="author">你将再次得到一个二次时间算法。这是因为当你这样做的时候，你实际上是在创建一个新的向量，你首先将旧的 v 向量中的所有元素复制到第一个元素中，然后在最后添加元素。如果你这样做<em class="emphasistypeitalic"> n </em>次，你平均每次操作花费了订单<em class="emphasistypeitalic"> n </em> <sup class="calibre6"> 2 </sup>。这是因为人们在循环中做类似的事情，而不是 R 解释器，这给了 R 慢循环的名声。除非无法避免，否则永远不要添加到向量中。</p>
+<p id="Par257" class="author">对于 merge 函数，我们已经知道结果应该有多长，所以可以预先分配一个结果向量，并将单个元素复制到其中。你可以像这样创建一个长度为<em class="emphasistypeitalic"> n </em>的向量:</p>
+<pre class="programcode" id="PC93"><code class="fixedline">n &lt;- 5</code><br class="calibre8"/><code class="fixedline">v &lt;- <strong class="emphasistypebold">vector</strong>(length = n)</code></pre>
+<p id="Par259" class="author">如果你需要的话，你可以像这样列出一个长度列表:</p>
+<pre class="programcode" id="PC94"><code class="fixedline"><strong class="emphasistypebold">vector</strong>("list", length = n)</code></pre>
+
+<h3 class="heading">二进位检索</h3>
+<p id="Par261" class="author">二分搜索法是一种经典的算法，用于找出一个元素是否包含在一个排序的序列中。这是一个简单的递归函数。基本情况是处理一个元素的序列。在那里，您可以直接比较正在搜索的元素和序列中的元素，以确定它们是否相同。如果序列中有多个元素，则选择中间的一个。如果它是您正在搜索的元素，那么您就完成了，并且可以返回该元素包含在序列中。如果它比你要搜索的元素小，那么你知道<em class="emphasistypeitalic">如果</em>元素在列表中，那么它必须在序列的后半部分，你可以在那里搜索。如果它比你要搜索的元素大，那么你知道如果它在序列中，它一定在序列的前半部分，你在那里递归搜索。</p>
+<p id="Par262" class="author">如果您完全按照描述实现它，您必须用一个子序列递归调用。这包括复制函数调用的子序列，这使得实现<em xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" class="emphasistypeitalic">比它需要的效率低得多。尝试实现二分搜索法没有这一点。</em></p>
+
+<h3 class="heading">更多排序</h3>
+<p id="Par263" class="author">在我们实现的合并排序中，我们通过将一个序列一分为二，对每个子序列进行排序，然后合并它们来解决排序问题。如果实现正确，这个算法将在时间<em class="emphasistypeitalic"> O </em> ( <em class="emphasistypeitalic"> n </em> log <em class="emphasistypeitalic"> n </em>)上运行，如果我们假设对我们排序的元素所能做的唯一操作是比较它们，那么这对于排序算法来说是最佳的。</p>
+<p id="Par264" class="author">如果我们拥有的元素都是介于 1 和<em class="emphasistypeitalic"> n </em>之间的整数，并且我们拥有其中的<em class="emphasistypeitalic"> m </em>，我们可以使用桶排序来对它们进行时间排序<em class="emphasistypeitalic"> O </em> ( <em class="emphasistypeitalic"> n </em> + <em class="emphasistypeitalic"> m </em>)。该算法首先为 1 和<em class="emphasistypeitalic"> n </em>之间的每个数字创建一个计数向量。这需要时间<em class="emphasistypeitalic"> O </em> ( <em class="emphasistypeitalic"> n </em>)。然后，它遍历序列中的<em class="emphasistypeitalic"> m </em>元素，每次看到<em class="emphasistypeitalic"> i </em>时，更新编号为<em class="emphasistypeitalic"> i </em>的计数器。这在时间上运行<em class="emphasistypeitalic"> O </em> ( <em class="emphasistypeitalic"> m </em>)。最后，在时间<em class="emphasistypeitalic">O</em>(<em class="emphasistypeitalic">n</em>+<em class="emphasistypeitalic">m</em>)内，从 1 到<em class="emphasistypeitalic"> n </em>遍历这些数字，并输出每个数字，即计数器指示的次数。</p>
+<p id="Par265" class="author">实现桶排序。</p>
+<p id="Par266" class="author">另一种算法是快速排序，它通过递归工作，并在预期时间<em class="emphasistypeitalic"> O </em> ( <em class="emphasistypeitalic"> n </em> log <em class="emphasistypeitalic"> n </em>)内运行。它的最坏情况复杂度是实际的<em class="emphasistypeitalic"> O </em> ( <em class="emphasistypeitalic"> n </em> <sup class="calibre6"> 2 </sup>)，但是平均来说它运行的时间是<em class="emphasistypeitalic">O</em>(<em class="emphasistypeitalic">n</em>log<em class="emphasistypeitalic">n</em>)并且开销比合并排序小(如果你正确实现的话)。</p>
+<p id="Par267" class="author">它的工作方式如下:基本情况——单个元素——与合并排序相同。当你有一个以上的元素时，你在序列中随机选择一个元素；称之为支点。现在，将序列分割成小于轴心的元素、等于轴心的元素和大于轴心的元素。递归排序较小和较大元素的序列。然后输出所有排序后的较小元素，再输出等于轴心的元素，再输出排序后的较大元素。</p>
+<p id="Par268" class="author">实现快速排序。</p>
+
+<h3 class="heading">选择 k 个最小元素</h3>
+<p id="Par269" class="author">如果您有<em class="emphasistypeitalic"> n </em>个元素，并且您希望<em class="emphasistypeitalic"> k </em>最小，一个简单的解决方案是对元素进行排序，然后选择数字<em class="emphasistypeitalic"> k </em>。这种方法效果很好，而且在大多数情况下很容易做到足够快，但是实际上可以做得更快。看，我们实际上不需要对元素进行完全排序，我们只需要将最小的元素移动到序列中的位置。</p>
+<p id="Par270" class="author">可以修改前面练习中的快速排序算法来解决这个问题。每当我们将一个序列分割成小于、等于和大于中枢的元素时，我们递归地对越来越小的元素进行排序。如果我们只对在排序列表中找到最终在位置<em class="emphasistypeitalic"> k </em>结束的元素感兴趣，我们不需要对不与该索引重叠的序列进行排序。如果我们有比 pivot 小的<em class="emphasistypeitalic"> m </em> &lt; <em class="emphasistypeitalic"> k </em>元素，我们可以直接把它们放在序列的最前面，不用排序。我们需要它们来确保第<em class="emphasistypeitalic"> k </em>个最小的元素在正确的索引处结束，但是我们不需要它们被排序。类似的，如果<em class="emphasistypeitalic"> k </em> &lt; <em class="emphasistypeitalic"> m </em>我们也不需要对较大的元素进行排序。如果我们对它们进行排序，它们最终的索引都会大于 k，我们并不关心这些。当然，如果有<em class="emphasistypeitalic"> m </em> &lt; <em class="emphasistypeitalic"> k </em>元素小于主元，<em class="emphasistypeitalic"> l </em>等于主元，有<em class="emphasistypeitalic"> m + l ≥ k </em>，那么<em class="emphasistypeitalic"> k </em>最小元素等于主元，我们可以返回那个。</p>
+<p id="Par271" class="author">实现这个算法。</p>
+
+
+<h1 class="booktitle">脚注</h1>
+<p id="Par167" class="para1">我实际上是在撒谎，因为函数的参数不是赋值的，而是还没有被求值的表达式。参见后面的<em class="emphasistypeitalic">懒评</em>一节。</p>
+
+
+
+
+</body>
+</html>

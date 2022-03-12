@@ -1,0 +1,1357 @@
+<html lang="en">
+<head><title>Clustering GNI Per Capita on a Continental Level</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">7.在大陆一级对人均国民总收入进行分组</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">本章涵盖了无监督的机器学习。在无监督的机器学习中，你不分割数据，而是用整个数据集呈现模型，并允许模型在没有任何监督的情况下自己发现数据中的模式。鉴于本章涵盖了聚类分析，所以介绍了最简单的无监督机器学习模型，称为<em class="EmphasisTypeItalic "> k-means </em> <em class="EmphasisTypeItalic ">。</em>k-means 方法很容易理解。当您进行聚类分析时，没有真正的响应变量—您对所有变量都一视同仁。也没有预测变量，所以不存在预测/预报的情况。你只分析数据中的模式。</p>
+<p>k-means 模型根据相似性对值进行分组。首先，该模型查找彼此接近的值，并估计它们之间的距离。此后，它确定该组值的中心，并拉伸这些值，使这些值位于一个聚类内。它通过执行距离估计来发现组中的相似性。最常见的距离估计方法是欧几里德距离估计。方程 7-1 展示了欧几里得方程。<p> <img alt="$$ J={\sum}_{i=1}^k{\sum}_{i=1}^c{\left|\left|{x}_i^J-{C}_j\right|\right|}^2 $$" src="../images/516940_1_En_7_Chapter/516940_1_En_7_Chapter_TeX_Equ1.png" style="width:11.73em"/> </p>(方程式 7-1)</p>
+<p class="Para" id="Par4">其中<em class="EmphasisTypeItalic "> J </em>表示目标函数，<em class="EmphasisTypeItalic "> $k$ </em>表示聚类数，<em class="EmphasisTypeItalic "> n </em>表示事例数，<img alt="$$ {x}_i^J $$" src="../images/516940_1_En_7_Chapter/516940_1_En_7_Chapter_TeX_IEq1.png" style="width:1.22em"/>表示<em class="EmphasisTypeItalic ">事例</em> <sub> <em class="EmphasisTypeItalic "> j </em> </sub>，<em class="EmphasisTypeItalic "> C </em> <sub> <em class="EmphasisTypeItalic "> j </em> </sub>表示<em class="EmphasisTypeItalic "> j </em>的质心。</p>
+<p class="Para" id="Par5">该模型不同于其他模型，因为它假定您是根据数据分析来确定聚类数的。要确定簇的数量，请应用肘形曲线或碎石图。</p>
+<h2 class="Heading">本章的背景</h2>
+<p>本章假设数据中有三个聚类来处理这个问题。它通过应用以下三个标签对非洲国家进行分组:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par7">低人均国民总收入</p></li>
+<li><p class="Para" id="Par8">中等人均国民总收入</p></li>
+<li><p class="Para" id="Par9">高人均国民总收入</p></li>
+</ul>
+
+<p class="Para" id="Par10">它应用肘形曲线来确定关于数据的假设是否正确。然后对非洲国家的全部人均国民总收入数据使用 k-means 模型。鉴于有许多变量，它不能描述所有的数据。</p>
+<p>要进行聚类分析，首先需要执行描述性分析，然后执行降维，将高维数据降维为几个维度。前几章介绍了称为主成分分析(PCA)的降维技术。这种技术减少了数据，因此您可以通过应用散点图以二维形式表示它。清单<a href="#PC1"> 7-1 </a>检索本章的人均国民总收入数据(见表<a href="#Tab1"> 7-1 </a>)。</p>
+<p>表 7-1</p><p class="SimplePara">非洲人均国民总收入数据</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">国家</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">日期</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人均国民总收入</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td rowspan="5" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">安哥拉</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand and twenty</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand two hundred and thirty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand and nineteen</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand nine hundred and seventy</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand and eighteen</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three thousand two hundred and ten</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand and seventeen</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three thousand four hundred and fifty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand and sixteen</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Three thousand seven hundred and seventy</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>import wbdata
+countries = ["AGO", "BDI", "BEN", "BWA", "CAF", "CIV",
+             "COD", "DZA", "EGY", "ETH", "GAB", "GHA",
+              "GIN", "GMB", "GNQ", "KEN", "LBR", "LBY",
+             "LSO", "MAR", "MLI", "MOZ", "MWI", "NAM",
+             "NER", "NGA", "RWA", "SDN", "SEN","SOM",
+             "SWZ", "TCD", "TUN", "TZA", "UGA", "ZAF",
+             "ZMB", "ZWE"]
+indicators = {"NY.GNP.PCAP.CD":"gni_per_capita"}
+df = wbdata.get_dataframe(indicators, country=countries, convert_date=False)
+df.head()
+
+Listing 7-1Load Africa’s GNI Per Capita Data
+
+
+</pre>
+<p>清单<a href="#PC2"> 7-2 </a>拆分数据——它将索引从多重索引更改为单一索引。</p>
+<pre>df = df["gni_per_capita"]
+df = df.unstack(level=0)
+
+Listing 7-2Unstack Data
+
+
+</pre>
+<p>列表<a href="#PC3"> 7-3 </a>用平均值替换缺失值。注意，这个例子不处理异常值。考虑到有如此多的变量，在这个简单的例子中这样做将是令人疲惫的。在现实世界中，处理异常值至关重要，因为它们会对结论产生负面影响。</p>
+<pre>df["Algeria"] = df["Algeria"].fillna(df["Algeria"].mean())
+df["Angola"] = df["Angola"].fillna(df["Angola"].mean())
+df["Benin"] = df["Benin"].fillna(df["Benin"].mean())
+df["Botswana"] = df["Botswana"] .fillna(df["Botswana"] .mean())
+df["Burundi"] = df["Burundi"].fillna(df["Burundi"] .mean())
+df["Central African Republic"] = df["Central African Republic"].fillna(df["Central African Republic"].mean())
+df["Chad"] = df["Chad"].fillna(df["Chad"].mean())
+df["Congo, Dem. Rep."] = df["Congo, Dem. Rep."].fillna(df["Congo, Dem. Rep."].mean())
+df["Cote d'Ivoire"] = df["Cote d'Ivoire"].fillna(df["Cote d'Ivoire"].mean())
+df["Egypt, Arab Rep."] = df["Egypt, Arab Rep."].fillna(df["Egypt, Arab Rep."].mean())
+df["Equatorial Guinea"] = df["Equatorial Guinea"].fillna(df["Equatorial Guinea"].mean())
+df["Eswatini"] = df["Eswatini"].fillna(df["Eswatini"].mean())
+df["Ethiopia"] = df["Ethiopia"].fillna(df["Ethiopia"].mean())
+df["Gabon"] = df["Gabon"].fillna(df["Gabon"].mean())
+df["Gambia, The"] = df["Gambia, The"].fillna(df["Gambia, The"].mean())
+df["Ghana"] = df["Ghana"].fillna(df["Ghana"].mean())
+df["Guinea"] = df["Guinea"].fillna(df["Guinea"].mean())
+df["Kenya"] = df["Kenya"].fillna(df["Kenya"].mean())
+df["Lesotho"] = df["Lesotho"].fillna(df["Lesotho"].mean())
+df["Liberia"] = df["Liberia"].fillna(df["Liberia"].mean())
+df["Libya"] = df["Libya"].fillna(df["Libya"].mean())
+df["Malawi"] = df["Malawi"].fillna(df["Malawi"].mean())
+df["Mali"] = df["Mali"].fillna(df["Mali"].mean())
+df["Morocco"] = df["Morocco"].fillna(df["Morocco"].mean())
+df["Mozambique"] = df["Mozambique"] .fillna(df["Mozambique"].mean())
+df["Namibia"] = df["Namibia"].fillna(df["Namibia"].mean())
+df["Niger"] = df["Niger"].fillna(df["Niger"].mean())
+df["Nigeria"] = df["Nigeria"].fillna(df["Nigeria"].mean())
+df["Rwanda"] = df["Rwanda"].fillna(df["Rwanda"].mean())
+df["Senegal"] = df["Senegal"].fillna(df["Senegal"].mean())
+df["Somalia"] = df["Somalia"].fillna(df["Somalia"].mean())
+df["South Africa"] = df["South Africa"].fillna(df["South Africa"].mean())
+df["Sudan"] = df["Sudan"].fillna(df["Sudan"].mean())
+df["Tanzania"] = df["Tanzania"].fillna(df["Tanzania"].mean())
+df["Tunisia"] = df["Tunisia"].fillna(df["Tunisia"].mean())
+df["Uganda"] = df["Uganda"].fillna(df["Uganda"].mean())
+df["Zambia"] = df["Zambia"].fillna(df["Zambia"].mean())
+df["Zimbabwe"] = df["Zimbabwe"].fillna(df["Zimbabwe"].mean())
+
+Listing 7-3Replace Outliers with Mean Values
+
+
+</pre>
+
+<h2 class="Heading">描述统计学</h2>
+<p>清单<a href="#PC4"> 7-4 </a>中的命令检索表<a href="#Tab2"> 7-2 </a>，该表展示了数据的集中趋势和分散性。</p>
+<p>表 7-2</p><p class="SimplePara">描述统计学</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+<col class="tcol7 align-left"/>
+<col class="tcol8 align-left"/>
+<col class="tcol9 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">国家</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">数数</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">平均</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">标准</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">福建话</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">25%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">50%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">75%</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最大</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">阿尔及利亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2180.169492</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1482.758119</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ninety</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1100.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1980.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2810.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Five thousand five hundred and ten</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">安哥拉</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1848.857143</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1141.479700</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three hundred and twenty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">860.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1848.857143</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1848.857143</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Five thousand and ten</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">贝宁</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">512.542373</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">383.386633</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Ninety</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">230.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">370.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">820.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand two hundred and eighty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">博茨瓦纳</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2896.271186</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2466.075086</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eighty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">580.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2896.271186</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4930.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Seven thousand six hundred and sixty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">布隆迪</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">170.338983</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">71.483474</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Fifty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">120.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">170.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">230.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two hundred and eighty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">中非共和国</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">312.542373</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">138.631324</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eighty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">240.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">312.542373</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">420.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Five hundred and seventy</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">孔屑</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">352.203390</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">263.527783</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ten</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">190.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">220.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">470.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Nine hundred and eighty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">刚果民主共和国。有代表性的</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">287.037037</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">96.191039</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ten</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">287.037037</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">287.037037</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">287.037037</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Five hundred and fifty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">科特迪瓦文号</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">856.779661</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">504.435132</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and sixty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">600.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">760.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1070.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand two hundred and ninety</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">埃及，阿拉伯共和国</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1236.666667</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">919.878615</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and seventy</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">550.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1130.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1420.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three thousand four hundred and forty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">赤道几内亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4340.256410</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4072.093027</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and thirty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">700.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4340.256410</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4340.256410</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Fourteen thousand two hundred and fifty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">eswatini 先生</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2491.470588</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">884.784592</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three hundred</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1930.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2491.470588</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3080.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Four thousand four hundred and twenty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">埃塞俄比亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">315.526316</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">174.754088</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ten</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">210.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">315.526316</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">315.526316</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eight hundred and ninety</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加蓬</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4226.610169</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2482.096298</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three hundred and thirty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3100.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4226.610169</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">5520.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Nine thousand three hundred and thirty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">冈比亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">477.924528</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">215.919418</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ten</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">300.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">477.924528</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">660.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eight hundred and ninety</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加纳</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">652.203390</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">599.905736</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ninety</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">300.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">390.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">652.203390</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand two hundred and thirty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">几内亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">562.121212</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">137.837556</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three hundred and forty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">490.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">562.121212</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">562.121212</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand and twenty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">肯尼亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">518.983051</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">427.316022</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">260.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">390.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">518.983051</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand seven hundred and sixty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">莱索托</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">678.909091</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">406.061049</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eighty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">410.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">640.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1020.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand five hundred</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">利比里亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">458.947368</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">88.879970</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and eighty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">458.947368</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">458.947368</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">458.947368</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Six hundred and thirty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">利比亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7765.263158</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1585.829298</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Four thousand five hundred and fifty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7765.263158</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7765.263158</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7765.263158</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Twelve thousand three hundred and eighty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">马拉维</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">214.067797</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">133.542985</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Fifty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">130.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">170.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">300.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Five hundred and eighty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">园丁</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">373.653846</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">229.876988</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">220.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">300.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">460.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eight hundred and seventy</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">摩洛哥</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1517.169811</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">900.271028</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two hundred and twenty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">790.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1400.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2070.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three thousand two hundred</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">莫桑比克</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">416.785714</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">98.675454</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ninety</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">416.785714</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">416.785714</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">416.785714</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Six hundred and ninety</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">纳米比亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3194.358974</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1155.231283</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand three hundred and twenty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2270.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3194.358974</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3530.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Five thousand nine hundred and fifty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">尼日尔</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">318.135593</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">136.802468</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and fifty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">220.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">280.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">390.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Six hundred</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">尼日利亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">934.237288</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">801.430395</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">360.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">630.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1350.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two thousand nine hundred and forty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">卢旺达</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">314.576271</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">228.752574</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Forty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">150.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">270.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">350.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eight hundred and thirty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">塞内加尔</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">851.509434</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">312.396096</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three hundred and ten</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">640.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">851.509434</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">990.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand four hundred and thirty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">索马里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">147.428571</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">58.090242</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Seventy</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">110.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">147.428571</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">147.428571</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three hundred and twenty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">南非</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3200.508475</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1997.563869</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Four hundred and sixty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1610.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2880.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4990.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Seven thousand five hundred and seventy</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">苏丹</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">578.305085</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">407.770984</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and forty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">330.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">450.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">720.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand five hundred and forty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">坦桑尼亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">559.354839</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">226.501917</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and sixty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">500.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">559.354839</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">559.354839</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand one hundred</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">突尼斯</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2032.962963</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1196.525010</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two hundred and twenty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1160.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2032.962963</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3100.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Four thousand one hundred and sixty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">乌干达</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">439.459459</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">187.988882</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and eighty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">290.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">439.459459</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">439.459459</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eight hundred and fifty</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">赞比亚</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">650.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">445.985799</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and ninety</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">360.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">450.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">690.000000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One thousand eight hundred</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">津巴布韦</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">694.406780</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">306.688067</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two hundred and sixty</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">450.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">670.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">850.000000</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">One thousand four hundred and ten</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>df.describe().transpose()
+
+Listing 7-4Descriptive Summary
+
+
+</pre>
+<p>列表<a href="#PC5"> 7-5 </a>决定了一段时间内前五个国家的人均国民总收入(见图<a href="#Fig1"> 7-1 </a>)。</p>
+<p><img alt="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig1_HTML.png" src="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig1_HTML.png" style="width:43.12em"/></p>
+<p>图 7-1</p><p class="SimplePara">非洲人均国民总收入线图</p>
+
+
+<pre>df.iloc[::,0:5].plot()
+plt.title("GNI per capita, Atlas method (current US$) line plot")
+plt.xlabel("Date")
+plt.ylabel("GNI per capita, Atlas method (current US$)")
+plt.show()
+
+Listing 7-5Africa’s GNI Per Capita Line Plot
+
+
+</pre>
+<p class="Para" id="Par16">图<a href="#Fig1"> 7-1 </a>显示，从 1960 年到 2020 年，布隆迪的人均国民总收入在五个国家中最低。它还显示，阿尔及利亚、安哥拉、贝宁和博茨瓦纳的人均国民总收入在 2000 年代初大幅上升。</p>
+
+<h2 class="Heading">降维</h2>
+<p>清单<a href="#PC6"> 7-6 </a>应用主成分分析将数据简化为二维，然后清单<a href="#PC7"> 7-7 </a>使用二维散点图以图形方式表示简化后的数据(见图<a href="#Fig2"> 7-2 </a>)。在执行维度分析之前，您必须<em class="EmphasisTypeItalic ">标准化</em>数据(将数据居中，因此平均值为<code>0</code>，标准偏差为<code>1</code>)。</p>
+<p><img alt="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig2_HTML.png" src="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig2_HTML.png" style="width:43.12em"/></p>
+<p>图 7-2</p><p class="SimplePara">二维数据</p>
+
+
+<pre>from sklearn.decomposition import PCA
+pca2 = PCA(n_components=3)
+pca2.fit(std_df)
+x_3d = pca2.transform(std_df)
+plt.scatter(x_3d[:,0], x_3d[:,2], c=df['South Africa'],cmap="viridis",s=200)
+plt.title("Africa Inequality 2-D Data")
+plt.xlabel("y")
+plt.show()
+
+Listing 7-7Reduce the Data
+
+
+</pre>
+<pre>from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+std_df = scaler.fit_transform(df)
+
+Listing 7-6Standardize the Data
+
+
+</pre>
+<p class="Para" id="Par18">图<a href="#Fig2"> 7-2 </a>以二维散点图显示了非洲国家的人均国民总收入。</p>
+
+<h2 class="Heading">聚类数检测</h2>
+<p>清单<a href="#PC8"> 7-8 </a>在训练 k-means 模型之前，使用肘形曲线确定要包含的聚类数。肘在 y 轴上画出了<em class="EmphasisTypeItalic ">特征值</em>(线性变换后的标量向量)，在 x 轴上画出了<em class="EmphasisTypeItalic "> k </em>的数量。</p>
+<pre>pca = PCA(n_components=3).fit(std_df)
+pca_df = pca.transform(std_df)
+pca_df = pca.transform(std_df)
+from sklearn.cluster import KMeans
+Nc = range(1,20)
+kmeans = [KMeans(n_clusters=i) for i in Nc]
+scores = [kmeans[i].fit(pca_df).score(pca_df) for i in range(len(kmeans))]
+fig, ax = plt.subplots()
+plt.plot(Nc, scores,color="navy",lw=4)
+plt.xlabel("No. of clusters")
+plt.title("Elbow curve")
+plt.ylabel("Score")
+plt.show()
+
+Listing 7-8Elbow Curve
+
+
+</pre>
+<p> 
+</p>
+<p><img alt="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig3_HTML.png" src="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig3_HTML.png" style="width:43.12em"/></p>
+<p>图 7-3</p><p class="SimplePara">肘形曲线</p>
+
+
+<p class="Para" id="Par20">图<a href="#Fig3"> 7-3 </a>为肘部曲线。x 轴是 k 的数量(代表聚类的数量)，y 轴是失真(代表特征值——线性变换后检索到的标量)。y 轴揭示了大量关于该数据中变量之间相关性的严重程度，也称为 WSS(在平方和的聚类内)。为了确定您必须包括多少个集群，您需要确定<em class="EmphasisTypeItalic ">截止点</em>。要选择截止点，您需要确定肘部曲线开始剧烈弯曲的点。在这种情况下，集群的数量是三个。</p>
+
+<h2 class="Heading">k-均值模型开发</h2>
+<p>清单<a href="#PC9"> 7-9 </a>通过应用所有数据和聚类数(三)来训练 k-means 模型。</p>
+<pre>kmeans = KMeans(n_clusters=3,
+                copy_x=False,
+                max_iter= 1,
+                n_init= 10,
+                tol= 1.0)
+kmeans_output = kmeans.fit(pca_df)
+kmeans_output
+
+Listing 7-9K-Means Model Development
+
+
+</pre>
+<h3 class="Heading">预言</h3>
+<p>列表<a href="#PC10"> 7-10 </a>预测标签(见表<a href="#Tab3"> 7-3 </a></p>
+<p>表 7-3</p><p class="SimplePara">预测标签</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">簇</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 2 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 3 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 4 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">...</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">...</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 56 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 57 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 58 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 59 </strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 60 </strong></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>y_predkmeans = pd.DataFrame(kmeans_output.labels_, columns = ["Clusters"])
+y_predkmeans
+
+Listing 7-10Predictions
+
+
+</pre>
+<p class="Para" id="Par23">清单<a href="#PC10"> 7-10 </a>并没有透露太多关于 k-means 模型如何估计标签的信息。</p>
+
+<h3 class="Heading">聚类中心检测</h3>
+<p>清单<a href="#PC11"> 7-11 </a>检索表<a href="#Tab4"> 7-4 </a>，它显示了每个集群的平均值。</p>
+<p>表 7-4</p><p class="SimplePara">聚类中心</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">群组 1</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">群组 2</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">第 3 组</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.600930</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">9.258221</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-4.160474</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.429737</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.508989</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.217940</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 2 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.587821</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.273357</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">0.862871</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>centers = kmeans_output.cluster_centers_
+centroids = pd.DataFrame(centers).transpose()
+centroids.columns = ["Cluster 1","Cluster 2", "Cluster 3"]
+centroids
+
+Listing 7-11Find Cluster Centers
+
+
+</pre>
+<p>清单<a href="#PC12"> 7-12 </a>绘制了图<a href="#Fig4"> 7-4 </a>，其显示了估计的标签。</p>
+<p><img alt="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig4_HTML.png" src="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig4_HTML.png" style="width:43.12em"/></p>
+<p>图 7-4</p><p class="SimplePara">非洲人均国民总收入 k 均值模型</p>
+
+
+<pre>fig, ax = plt.subplots()
+plt.scatter(pca_df[:,0],pca_df[:,1],c=kmeans_output.labels_,cmap="viridis",s=200)
+plt.scatter(centers[:,0], centers[:,1], color="red")
+plt.title("Africa GNI per capita, Atlas method (current US$) clusters")
+plt.xlabel("y")
+plt.show()
+
+Listing 7-12Africa’s GNI Per Capita Scatter
+
+
+</pre>
+<p class="Para" id="Par26">图<a href="#Fig4"> 7-4 </a>显示了各自聚类(红点)中的数据点(以黄色、紫色和绿色突出显示)。</p>
+
+
+<h2 class="Heading">聚类结果分析</h2>
+<p>为了更好地理解清单<a href="#PC13"> 7-13 </a>中的预测标签，请参见表<a href="#Tab5"> 7-5 </a>。</p>
+<p>表 7-5</p><p class="SimplePara">非洲人均国民总收入群组表</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">国家</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">簇</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">阿尔及利亚</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">低人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">安哥拉</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">低人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 2 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">贝宁</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 3 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">博茨瓦纳</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 4 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">布隆迪</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 5 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">中非共和国</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 6 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">孔屑</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 7 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">刚果民主共和国。有代表性的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 8 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">科特迪瓦文号</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 9 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">埃及，阿拉伯共和国</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 10 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">赤道几内亚</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 11 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">eswatini 先生</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 12 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">埃塞俄比亚</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 13 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加蓬</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 14 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">冈比亚</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 15 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加纳</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 16 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">几内亚</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 17 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">肯尼亚</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 18 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">莱索托</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">高人均国民总收入</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 19 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">利比里亚</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">低人均国民总收入</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>stocks = pd.DataFrame(df.columns)
+cluster_labels = pd.DataFrame(kmeans.labels_)
+stockClusters = pd.concat([stocks, cluster_labels],axis = 1)
+stockClusters.columns = ["Country","Clusters"]
+stockClusters = stockClusters.replace({0: "Low GNI per capita",1: "Moderate GNI per capita",2: "High GNI per capita"})
+stockClusters.head(20)
+
+Listing 7-13Africa GNI Per Capita Cluster Table
+
+
+</pre>
+<p>列表<a href="#PC14"> 7-14 </a>简化了表<a href="#Tab5"> 7-5 </a>中的数据(见图<a href="#Fig5"> 7-5 </a>)。</p>
+<p><img alt="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig5_HTML.jpg" src="../images/516940_1_En_7_Chapter/516940_1_En_7_Fig5_HTML.jpg" style="width:43.12em"/></p>
+<p>图 7-5</p><p class="SimplePara">非洲人均国民总收入分组数</p>
+
+
+<pre>class_series = stockClusters.groupby("Clusters").size()
+class_series.name = "Count"
+class_series.plot.pie(autopct="%2.f",cmap="Blues_r")
+plt.title("Clusters pie chart")
+plt.show()
+
+Listing 7-14Africa’s GNI Per Capita Cluster Count
+
+
+</pre>
+<p class="Para" id="Par29">图<a href="#Fig5"> 7-5 </a>显示，28%的国家人均国民总收入高，51%的国家人均国民总收入低，21%的国家人均国民总收入中等。</p>
+
+<h2 class="Heading">k 均值模型评估</h2>
+<p class="Para" id="Par30">k-means 模型不会对数据做出极端假设。你可以在没有预设假设的情况下应用它——它建立了数据的真实性，而不是测试声明。它也没有稳健的模型评估矩阵。</p>
+<h3 class="Heading">剪影法</h3>
+<p>你可以依靠剪影方法来确定模型做出智能猜测的程度(参见清单<a href="#PC15"> 7-15 </a>)。它估计平均最近聚类距离和聚类内距离之间的差，以及最大平均最近聚类距离和聚类内距离之间的差。它返回范围从-1 到 1 的值，其中-1 表示较差的模型，0 表示一般的模型，1 表示在进行猜测时具有示范性的模型。</p>
+<pre>from sklearn import metrics
+metrics.silhouette_score(df, y_predkmeans)
+0.43409785393807543
+
+Listing 7-15Find Silhouette Score
+
+
+</pre>
+<p class="Para" id="Par32">剪影评分 0.43401。这意味着分类器在估计非洲国家人均国民总收入方面表现平平。</p>
+
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par33">本章介绍了一种用于聚类的无监督机器学习模型，称为<em class="EmphasisTypeItalic "> k 均值模型</em>。它开发了一个带有默认超参数的模型。它估计了非洲国家人均国民总收入值之间的差距。之后，它根据人均国民总收入将这些国家分组。本章以无监督机器学习的讨论结束。</p>
+
+
+
+</body>
+</html>

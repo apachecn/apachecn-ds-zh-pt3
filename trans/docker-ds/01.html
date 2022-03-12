@@ -1,0 +1,1122 @@
+<html xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lang="en" xml:lang="en" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2/ http://www.w3.org/MarkUp/SCHEMA/xhtml2.xsd">
+<head>
+    <title>Unknown</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+© Joshua Cook 2017
+Joshua CookDocker for Data Science<a href="01.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">https://doi.org/10.1007/978-1-4842-3012-1_1</a>
+
+<!--Begin Abstract--><h1 class="chaptertitle" xml:lang="en">1.介绍</h1>
+
+Joshua Cook<sup class="calibre5">1 </sup>
+(1)Santa Monica, California, USA
+
+ 
+
+
+<!--End Abstract-->The typical data scientist consistently has a series of extremely complicated problems on their mind beyond considerations stemming from their system infrastructure. Still, it is inevitable that infrastructure issues will present themselves. To oversimplify, we might draw a distinction between the “modeling problem” and the “engineering problem.” The data scientist is uniquely qualified to solve the former, but can often come up short in solving the latter.
+Docker has been widely adopted by the system administrator and DevOps community as a modern solution to the challenges presented in high availability and high performance computing.<a href="#Fn1" id="Fn1_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">1</sup></a> Docker is being used for the following: transitioning legacy applications to a more modern “microservice”-based approach, facilitating continuous integration and continuous deployment for the integration of new code, and optimizing infrastructure usage.
+In this book, I discuss Docker as a tool for the data scientist, in particular in conjunction with the popular interactive programming platform Jupyter. Using Docker
+       and Jupyter, the data scientist can easily take ownership of their system configuration and maintenance, prototype easily deployable and scalable data solutions, and trivially clone entire systems with an eye toward replicability and communication. In short, I propose that skill with Docker is just enough knowledge of systems operations to make the data scientist dangerous. Having done this, I propose that Docker can add high performance and availability tools to the data scientist’s toolbelt and fundamentally change the way that models are developed, prototyped, and scaled.
+<h2 class="heading2">“大数据”</h2>
+A precise definition of “big data
+        ” will elude even the most seasoned data wizard. I favor the idea that big data is the exact scope of data that is no longer manageable without explicit consideration to its scope. This will no doubt vary from individual to individual and from development team to development team. I believe that mastering the concepts and techniques associated with Docker presented herein will drastically increase the size and scope of what exactly big data is for any reader.
+
+<h2 class="heading2">学习的推荐做法</h2>
+In this first chapter, you jump will headlong into using Docker and Jupyter on a cloud system. I hope that readers have a solid grasp of the Python numerical computing stack, although I believe that nearly anyone should be able to work their way through this book with enough curiosity and liberal Googling.
+For the purposes of working through this book, I recommend using a sandbox system. If you are able to install Docker in an isolated, non-mission critical setting, you can work through this text without fear of “breaking things.” For this purpose, I here describe the process of setting up a minimal cloud-based system for running Docker using Amazon Web Services (AWS)
+        .
+As of the writing of this book, AWS is the dominant cloud-based service provider. I don’t endorse the idea that its dominance is a reason a priori to use its services. Rather, I present an AWS solution here as one that will be the easiest to adopt by the largest group of people. Furthermore, I believe that this method will generalize to other cloud-based offerings such as DigitalOcean<a href="#Fn2" id="Fn2_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">2</sup></a> or Google Cloud Platform,<a href="#Fn3" id="Fn3_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">3</sup></a> provided that the reader has secure shell (ssh)
+         access to these systems and that they are running a Linux variant.
+I present instructions for configuring a system using Elastic Compute Cloud (EC2)
+        . New users receive 750 hours of free usage on their T2.micro platform and I believe that this should be more than enough for the typical reader’s journey through this text.
+Over the next few pages, I outline the process of configuring an AWS EC2 system for the purposes of working through this text. This process
+          
+         consists of
+<ol class="calibre7"><li class="listitem">1.配置密钥对</li>
+<li class="listitem">2.创建新的安全组</li>
+<li class="listitem">3.创建新的 EC2 实例</li>
+<li class="listitem">4.配置新实例以使用 Docker</li>
+</ol>
+
+      
+<h3 class="heading3">设置新的 AWS 帐户</h3>
+To begin, set up an AWS account if you do not already have one.<a href="#Fn4" id="Fn4_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">4</sup></a>
+        
+Note
+This work can be done in any region, although it is recommended that readers take note of which region they have selected for work (Figure <a href="#Fig1" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-1</a>). For reasons I have long forgotten, I choose to work in us-west-2.<img src="Images/A439726_1_En_1_Fig1_HTML.jpg" alt="A439726_1_En_1_Fig1_HTML.jpg" class="calibre9"/>
+Figure 1-1.Readers should take note of the region in which they are working
+
+
+
+          
+
+
+<h3 class="heading3">配置密钥对</h3>
+In order to interface with your sandbox system running on AWS EC2, you will need an ssh key pair. Amazon EC2 uses public-key cryptography to facilitate all connections to running EC2 instances.<a href="#Fn5" id="Fn5_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">5</sup></a> In your case, this means the creation of a secure connection between your local system and a sandbox system you will configure on an EC2 instance. To do this, you will create an ssh key pair locally and import the public component of the key pair into AWS. When you create a new instance, you have AWS provision the new instance with the public key, so that you can use your local private key to connect to the instance.
+Note
+Windows users are encouraged to make use of the excellent Git BASH tool available as part of the Git for Windows package here: <a href="https://git-for-windows.github.io" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    https://git-for-windows.github.io
+                  </a>. Git BASH will include all of the necessary command line tools that you will be using, including ssh-keygen and ssh.
+
+In Listing <a href="#Par25" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-1</a>, you use the ssh-keygen tool to create a key pair on your local system. For these purposes (that is, a disposable sandbox AWS system), you can leave all fields blank, including a passphrase to use the ssh key. The location in which you save the key will vary from system to system. The default location on my system is ∼/.ssh/id_rsa where ∼ signifies the current user’s home directory.<a href="#Fn6" id="Fn6_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">6</sup></a> This process will create id_rsa and id_rsa.pub, a key pair. You will place the id_rsa.pub key into systems you wish to access and thus be able to ssh into these systems using the id_rsa file.
+        
+
+              $ ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/ubuntu/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/ubuntu/.ssh/id_rsa.
+Your public key has been saved in /home/ubuntu/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:g5IYNQMf1n1jW5p36Y9I/qSPxnckhT665KtiB06xu2U ubuntu@ip-172-31-43-19
+The key's randomart image is:
++---[RSA 2048]----+
+|  ..*. .         |
+|   + +. . + .    |
+|  . .    o *   o |
+|   o . .. + . + .|
+|  . o . So . + . |
+|     .  +.  . = .|
+|       o oE+.o.* |
+|        =o.o*+o o|
+|       ..+.o**o. |
++----[SHA256]-----+
+Listing 1-1.Create a New Key Pair
+
+
+
+            
+In Listing <a href="#Par27" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-2</a>, you verify that the contents of the key using the cat tool. You display a public key that was created on a remote Ubuntu system, as can be seen at the end of the key (ubuntu@ip-172-31-43-19). This should appear similar on any system.
+
+              $ cat ∼/.ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDdnHPEiq1a4OsDDY+g9luWQS8pCjBmR64MmsrQ9MaIaE5shIcFB1Kg3pGwJpypiZjoSh9pS55S9LckNsBfn8Ff42ALLjR8y+WlJKVk/0DvDXgGVcCc0t/uTvxVx0bRruYxLW167J89UnxnJuRZDLeY9fDOfIzSR5eglhCWVqiOzB+OsLqR1W04Xz1oStID78UiY5msW+EFg25Hg1wepYMCJG/Zr43ByOYPGseUrbCqFBS1KlQnzfWRfEKHZbtEe6HbWwz1UDL2NrdFXxZAIXYYoCVtl4WXd/WjDwSjbMmtf3BqenVKZcP2DQ9/W+geIGGjvOTfUdsCHennYIEUfEEP ubuntu@ip-172-31-43-19
+Listing 1-2.Verify Newly Created ssh-key
+                
+
+
+
+            
+<h4 class="heading5">在 AWS 上创建新的密钥对</h4>
+Log in to your AWS control panel and navigate to the EC2 Dashboard, as shown in Figure <a href="#Fig2" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-2</a>. First, access “Services” (Figure <a href="#Fig2" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-2</a>, #1) then access “EC2” (Figure <a href="#Fig2" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-2</a>, #2). The Services link can be accessed from any page in the AWS website.<img src="Images/A439726_1_En_1_Fig2_HTML.jpg" alt="A439726_1_En_1_Fig2_HTML.jpg" class="calibre10"/>
+Figure 1-2.Access the EC2 control panel
+                      
+                      
+                    
+                  
+
+
+
+          
+Once at the EC2 control panel, access the Key Pairs pane using either link (Figure <a href="#Fig3" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-3</a>).<img src="Images/A439726_1_En_1_Fig3_HTML.jpg" alt="A439726_1_En_1_Fig3_HTML.jpg" class="calibre11"/>
+Figure 1-3.Access key pairs in the EC2 Ddashboard
+                      
+                      
+                    
+                  
+
+
+
+          
+From the Key Pairs pane, choose “Import Key Pair.” This will activate a modal that you can use to create a new key pair associated with a region on your AWS account. Make sure to give the key pair a computer-friendly name, like from-MacBook-2017. Paste the contents of your public key (id_rsa.pub) into the public key contents. Prior to clicking Import, your key should appear as in Figure <a href="#Fig4" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-4</a>. Click Import to create the new key.<img src="Images/A439726_1_En_1_Fig4_HTML.jpg" alt="A439726_1_En_1_Fig4_HTML.jpg" class="calibre12"/>
+Figure 1-4.
+                    Import
+                      
+                      
+                     a new key pair
+
+
+
+          
+Note
+Many AWS assets are created uniquely by region. Key pairs created in one region will not be available in another.
+
+You have created a key pair between AWS and your local system. When you create a new instance, you will instruct AWS to provision the instance with this key pair and thus you will be able to access the cloud-based system from your local system.<img src="Images/A439726_1_En_1_Fig5_HTML.jpg" alt="A439726_1_En_1_Fig5_HTML.jpg" class="calibre13"/>
+Figure 1-5.Connect to AWS from your local machine using an SSH key
+                      
+                      
+                    
+                  
+
+
+
+          
+Note
+The terminology can be a bit confusing. AWS refers to an uploaded public key as a “key pair.” To be clear, you are uploading the public component of a key pair you have created on your system (e.g. id_rsa.pub). The private key will remain on your system (e.g. id_rsa).
+
+
+<h4 class="heading5">创建新的安全组</h4>
+From the EC2 Dashboard, access the Security Group pane
+              
+             using either link (Figure <a href="#Fig6" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-6</a>).<img src="Images/A439726_1_En_1_Fig6_HTML.jpg" alt="A439726_1_En_1_Fig6_HTML.jpg" class="calibre14"/>
+Figure 1-6.Access security groups in the EC2 Dashboard
+
+
+
+          
+From the Security Group pane, click “Create Security Group.” Give the security group a computer friendly group name like jupyter_docker. Give the security group a description like “Open access to Jupyter and Docker default ports.” Use the default VPC. Access the Inbound tab and configure the following security rules:
+<ul class="unorderedlistmarkbullet"><li class="calibre15">SSH:端口范围:22，源:任何地方</li>
+<li class="calibre15">HTTP:端口范围:80，来源:任何地方</li>
+<li class="calibre15">HTTPS:港口范围:443，来源:任何地方</li>
+<li class="calibre15">自定义 TCP 规则:端口范围:2376，来源:任何地方</li>
+<li class="calibre15">自定义 TCP 规则:端口范围:8888，来源:任何地方</li>
+</ul>
+
+          
+When you have added all of these rules, it should appear as in Figure <a href="#Fig7" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-7</a>. Table <a href="#Tab1" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-1</a> shows a list of ports and the services that will be accessible over these ports.<img src="Images/A439726_1_En_1_Fig7_HTML.jpg" alt="A439726_1_En_1_Fig7_HTML.jpg" class="calibre16"/>
+Figure 1-7.
+                    Inbound rules
+                      
+                     for new security group
+
+
+
+            Table 1-1.Ports and Usages
+
+
+<table border="1" class="calibre17"><colgroup class="calibre18"><col class="calibre19"/>
+<col class="calibre19"/>
+</colgroup>
+<thead class="calibre20"><tr class="header"><th class="calibre21">港口</th>
+<th class="calibre21">可用服务</th>
+</tr>
+</thead>
+<tbody class="calibre22"><tr class="noclass"><td class="calibre23">Twenty-two</td>
+<td class="calibre23">嘘</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">Eighty</td>
+<td class="calibre23">超文本传送协议</td>
+</tr>
+<tr class="noclass"><td class="calibre23">Four hundred and forty-three</td>
+<td class="calibre23">安全超文本传输协议</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">Two thousand three hundred and seventy-six</td>
+<td class="calibre23">坞站集线器</td>
+</tr>
+<tr class="noclass2"><td class="calibre23">Eight thousand eight hundred and eighty-eight</td>
+<td class="calibre23">朱皮特</td>
+</tr>
+</tbody>
+</table>
+
+          
+
+<h4 class="heading5">创建新的 EC2 实例</h4>
+To create a new instance, start from the EC2 Dashboard and click the Launch Instance button (Figure <a href="#Fig8" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-8</a>).<img src="Images/A439726_1_En_1_Fig8_HTML.jpg" alt="A439726_1_En_1_Fig8_HTML.jpg" class="calibre24"/>
+Figure 1-8.Launch a new instance
+                      
+                      
+                    
+                  
+
+
+
+          
+The launching of a new instance is a multi-step process that walks the user through all configurations necessary. The first tab is “Choose AMI.” An AMI is an Amazon Machine Image<a href="#Fn7" id="Fn7_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">7</sup></a> and contains the software you will need to run your sandbox machine. I recommend choosing the latest stable Ubuntu Server release that is free-tier eligible. At the time of writing, this was ami-efd0428f, Ubuntu Server 16.04 LTS (HVM), SSD Volume Type (Figure <a href="#Fig9" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-9</a>).<img src="Images/A439726_1_En_1_Fig9_HTML.jpg" alt="A439726_1_En_1_Fig9_HTML.jpg" class="calibre25"/>
+Figure 1-9.Choose the latest stable Ubuntu Server
+                      
+                      
+                     release as AMI
+
+
+
+          
+The second tab is “Choose Instance Type.” In usage, I have found that the free tier, t2.micro (Figure <a href="#Fig10" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-10</a>), is sufficient for many applications, especially the sort of sandbox-type work that might
+              
+              
+             be done in working through this text. This is to say that while working through the text, you may not be doing extended work on datasets, but rather learning about how to configure different systems. As such, your memory needs may be diminished. The ultimate goal is for the reader to be able to create and destroy machines at will. At this level of mastery, the reader can choose the minimum requirements for any application.<img src="Images/A439726_1_En_1_Fig10_HTML.jpg" alt="A439726_1_En_1_Fig10_HTML.jpg" class="calibre26"/>
+Figure 1-10.Use the 
+                          t2.micro type
+                          
+                          
+                          
+                        
+                  
+
+
+
+          
+The third tab, “Configure Instance,” can be safely ignored.
+The fourth tab is “Add Storage.” This option is also specific to intended usage. It should be noted that Jupyter Docker images can take up more than 5GB of disk space in the local image cache. For this reason, it is recommended to raise the value from the default 8GB to somewhere in the neighborhood of 20GB.
+The fifth tab, “Add Tags,” can be safely ignored.
+The sixth tab, “Configure Security Group,” is critical for the proper functioning of your systems. Previously, you configured a new security group to be used by your system. You will need to assign the security group that you just created, jupyter_docker, to the instance you are configuring. Choose “Select an existing security group,” and then select the security group you just created. Verify that ports 22, 80, 443, 2376, and 8888 are available in the Inbound Rules at the bottom of the tab (Figure <a href="#Fig11" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-11</a>).<img src="Images/A439726_1_En_1_Fig11_HTML.jpg" alt="A439726_1_En_1_Fig11_HTML.jpg" class="calibre27"/>
+Figure 1-11.Configure the security group
+                      
+                      
+                     for all traffic
+
+
+
+          
+Note
+Most readers will receive a warning from AWS at this final phase that says something to the effect of “Improve your instances' security. Your security group, jupyter_docker, is open to the world.” It is the opinion of this author that this warning can be safely ignored. The warning is letting us know that the instance we are preparing to launch can be accessed on the open web. This is intentional and by design. In this first and last conversation about system security, we will wave our hands at the concern and quickly move to the business of developing short-lifespan scalable systems.
+
+Finally, click “Review and Launch.” Here, you see the specific configuration of the EC2 instance you will be creating. Verify that you are creating a t2.micro running the latest free tier-eligible version of Ubuntu Server and that it is available to all traffic, and then click the Launch button
+              
+              
+             (Figure <a href="#Fig12" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-12</a>).<img src="Images/A439726_1_En_1_Fig12_HTML.jpg" alt="A439726_1_En_1_Fig12_HTML.jpg" class="calibre28"/>
+Figure 1-12.Launch the new EC2 instance
+                      
+                      
+                    
+                  
+
+
+
+          
+In a final confirmation step, you will see a modal titled “Select an existing key pair or create a new key pair.” Select the key pair you previously created. Check the box acknowledging access to that key pair and launch the instance (Figure <a href="#Fig13" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-13</a>).<img src="Images/A439726_1_En_1_Fig13_HTML.jpg" alt="A439726_1_En_1_Fig13_HTML.jpg" class="calibre29"/>
+Figure 1-13.Select the key pair
+                      
+                      
+                     previously imported
+
+
+
+          
+You should see a notification that the instance is now running. Click the View Instances tab in the lower right corner to be taken to the EC2 Dashboard Instances pane, where you should see your new instance running.
+Make note of the IP address of the new instance (Figure <a href="#Fig14" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-14</a>).<img src="Images/A439726_1_En_1_Fig14_HTML.jpg" alt="A439726_1_En_1_Fig14_HTML.jpg" class="calibre30"/>
+Figure 1-14.Note the IP address
+                      
+                      
+                     of a running instance
+
+
+
+          
+
+<h4 class="heading5">为使用 Docker 配置新的 EC2 实例</h4>
+Having set up an EC2 instance, you ssh into the instance using the IP you just obtained in order to provision the new instance with Docker (Listing <a href="#Par56" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-3</a>).
+
+                $ ssh ubuntu@54.244.109.176
+Welcome to Ubuntu 16.04.2 LTS (GNU/Linux 4.4.0-64-generic x86_64)
+...
+Listing 1-3.SSH into EC2 Instance
+
+
+
+              
+Note
+The first time you access your EC2 instance, you should see the following message: The authenticity of host '54.244.109.176 (54.244.109.176)' can't be established ... Are you sure you want to continue connecting (yes/no)? This is expected. You should hit &lt;ENTER&gt; to accept or type yes and hit &lt;ENTER&gt;.
+
+Next (Listing <a href="#Par59" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-4</a>), you install and configure Docker using a convenient install script provided by the Docker team. The script is obtained from get.docker.com and passed via pipe (|) to a shell (sh).
+
+                $ curl -sSL https://get.docker.com/ | sh
+apparmor is enabled in the kernel and apparmor utils were already installed
++ sudo -E sh -c sleep 3; apt-get update
+...
++ sudo -E sh -c docker version
+Client:
+ Version:      17.04.0-ce
+ API version:  1.28
+ Go version:   go1.7.5
+ Git commit:   4845c56
+ Built:        Mon Apr  3 18:07:42 2017
+ OS/Arch:      linux/amd64
+
+Server:
+ Version:      17.04.0-ce
+ API version:  1.28 (minimum version 1.12)
+ Go version:   go1.7.5
+ Git commit:   4845c56
+ Built:        Mon Apr  3 18:07:42 2017
+ OS/Arch:      linux/amd64
+ Experimental: false
+
+...
+
+Listing 1-4.Install Docker Via a Shell Script
+
+
+
+              
+In Listing <a href="#Par61" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-5</a>, you add the ubuntu user to the docker group. By default, the command line docker client will require sudo access in order to issue commands to the docker daemon. You can add the ubuntu user to the docker group in order to allow the ubuntu user to issue commands to docker without sudo.
+
+                $ sudo usermod -aG docker ubuntu
+Listing 1-5.Add the Ubuntu User to the Docker Group
+
+
+
+              
+Finally, in order to force the changes to take effect, you reboot the system (Listing <a href="#Par63" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-6</a>). As an alternative to rebooting the system, users can simply disconnect and reconnect to their remote system.
+
+                $ sudo reboot
+Listing 1-6.Restart the Docker Daemon
+
+
+
+              
+The reboot will have the effect of closing the secure shell to your EC2 instance. After waiting a few moments, reconnect to the system. At this point, your system will be ready for use. sudo should no longer be required to issue commands to the docker client. You can verify this by connecting to your remote system and checking the dock version (Listing <a href="#Par65" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-7</a>).
+
+                $ ssh ubuntu@54.244.109.176
+$ docker -v
+Docker version 17.04.0-ce, build 4845c56
+Listing 1-7.Log into the Remote System and Check the Docker Version
+
+
+
+              
+
+
+
+<h2 class="heading2">基础设施对数据的限制</h2>
+Before commencing with the nuts and bolts of using Docker and Jupyter to build scalable systems for computational programming, let’s conduct a simple series of experiments with this new AWS instance. You’ll begin with a series of simple questions:
+<blockquote class="blockquote">对于 t2.micro 来说，什么大小的数据集太大而无法加载到内存中？在 t2.micro 上，什么规模的数据集如此之大，以至于它会阻止 Jupyter 拟合不同类型的简单机器学习分类模型<a href="#Fn8" id="Fn8_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> <sup class="calibre6"> 8 </sup> </a>(例如，K 最近邻模型)？决策树模型？逻辑回归吗？支持向量分类器？</blockquote>
+      
+To answer these questions, you will proceed in the following fashion:
+<ol class="calibre7"><li class="listitem">1.在 AWS 实例上使用 Docker 运行 jupyter/scipy-notebook 映像。</li>
+<li class="listitem">2.使用 docker stats 在运行时和加载每个数据集时监控内存使用情况。</li>
+<li class="listitem">3.使用 sklearn . datasets . make _ classification 函数，使用 Jupyter 笔记本创建任意大小的数据集，并执行拟合。</li>
+<li class="listitem">4.在每个模型都适合之后，重启 Python 内核。</li>
+<li class="listitem">5.注意产生内存异常的数据集大小。</li>
+</ol>
+
+      
+<h3 class="heading3">调出笔记本图片</h3>
+Since you are working on a freshly provisioned AWS instance, you must begin by pulling the Docker image with which you wish to work, the jupyter/scipy-notebook. This can be done using the docker pull command, as shown in Listing <a href="#Par77" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-8</a>. The image is pulled from Project Jupyter’s public Docker Hub account.<a href="#Fn9" id="Fn9_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">9</sup></a>
+        
+
+              ubuntu@ip-172-31-6-246:∼$ docker pull jupyter/scipy-notebook
+Using default tag: latest
+latest: Pulling from jupyter/scipy-notebook
+693502eb7dfb: Pull complete
+a3782c2efb41: Pull complete
+9cb32b776a40: Pull complete
+e539f5722cd5: Pull complete
+b4690d4047c6: Pull complete
+121dc465f5c6: Pull complete
+c352772bbcfd: Pull complete
+eeda14d1c421: Pull complete
+0057b9e76c8a: Pull complete
+e63bd87d75dd: Pull complete
+055904fbc069: Pull complete
+d336770b8a83: Pull complete
+d61dbef85c7d: Pull complete
+c1559927bbf2: Pull complete
+ee5b638d15a3: Pull complete
+dc937a931aca: Pull complete
+4327c0faf37c: Pull complete
+b37332c24e8c: Pull complete
+b230bdb41817: Pull complete
+765fecb84d9c: Pull complete
+97efa424ddfa: Pull complete
+ccfb7ed42913: Pull complete
+2fb2abb673ce: Pull complete
+Digest: sha256:04ad7bdf5b9b7fe88c3d0f71b91fd5f71fb45277ff7729dbe7ae20160c7a56df
+Status: Downloaded newer image for jupyter/scipy-notebook:latest
+Listing 1-8.Pull the jupyter/scipy-notebook image.
+
+
+
+            
+Once you have pulled the image, it is now present in your docker images cache. Anytime you wish to run a new Jupyter container, Docker will load the container from the image in your cache.
+
+<h3 class="heading3">运行 jupyter/scipy 笔记本映像</h3>
+In Listing <a href="#Par81" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-9</a>, you run a Jupyter Notebook server using the minimum viable docker run command. Here, the -p flag serves to link port 8888 on the host machine, your EC2 instance, to the port 8888 on which the Jupyter Notebook server is running in the Docker container.
+
+              $ docker run -p 8888:8888 jupyter/scipy-notebook
+[I 22:10:01.236 NotebookApp] Writing notebook server cookie secret to /home/jovyan/.local/share/jupyter/runtime/notebook_cookie_secret
+[W 22:10:01.326 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using encryption. This is not recommended.
+[I 22:10:01.351 NotebookApp] JupyterLab alpha preview extension loaded from /opt/conda/lib/python3.5/site-packages/jupyterlab
+[I 22:10:01.358 NotebookApp] Serving notebooks from local directory: /home/jovyan/work
+[I 22:10:01.358 NotebookApp] 0 active kernels
+[I 22:10:01.358 NotebookApp] The Jupyter Notebook is running at: http://[all ip addresses on your system]:8888/?token=7b02e3aadb29c42ff066a7290d81dd48e44ce62bd7f2bd0a
+[I 22:10:01.359 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 22:10:01.359 NotebookApp]
+
+    Copy/paste this URL into your browser when you connect for the first time, to login with a token: http://localhost:8888/?token=7b02e3aadb29c42ff066a7290d81dd48e44ce62bd7f2bd0a.
+
+Listing 1-9.Run Jupyter Notebook Server
+
+
+
+            
+The output from the running Jupyter Notebook server provides you with an authentication token (token=7b02e3aadb29c42ff066a7290d81dd48e44ce62bd7f2bd0a) you can use to access the Notebook server through a browser. You can do this using the URL provided with the exception that you will need to replace localhost with the IP address of your EC2 instance (Listing <a href="#Par83" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-10</a>).
+
+              http://54.244.109.176:8888/?token=1c32913725d84a76e7b3f04c45b91e17b77f3c3574779101.
+Listing 1-10.The URL of a Jupyter Instance Running on AWS with an Access Token Passed as a Query Parameter
+
+
+
+            
+
+<h3 class="heading3">监控内存使用情况</h3>
+In Listing <a href="#Par85" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-11</a>, you have a look at your running container using the docker ps command. You will see a single container running with the jupyter/scipy-notebook image.
+
+              $ docker ps
+CNID  IMAGE      COMMAND    CREATED     STATUS     PORTS           NAMES
+cfef  jupyter/      scipy...   "tini..."  10 min ago  Up 10 min  0.0.0.0:8888-&gt;  friendly_                                                   8888/tcp        curie
+Listing 1-11.Monitor Running Docker Containers
+
+
+
+            
+Next, you use docker stats to monitor the active memory usage of your running containers (Listing <a href="#Par87" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-12</a>). docker stats is an active process you will use to watch memory usage throughout.
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %  NET I/O    BLOCK I/O   PIDS
+cfef9714b1c5  0.00%  49.73MiB / 990.7MiB  5.02%  60.3kB /   10.4MB / 0B 2                                                 1.36MB
+Listing 1-12.Monitor Docker Memory Usage.
+
+
+
+            
+You can see several things here germane to the questions above. The server is currently using none of the allotted CPU.<a href="#Fn10" id="Fn10_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">10</sup></a> You can see that the Docker container has nearly 1GB of memory available to it, and of this, it is using 5%, or about 50MB. The 1GB matches your expectation of the amount of memory available to a t2.micro.
+
+<h3 class="heading3">多大的数据集会导致内存异常？</h3>
+You are going to be using Jupyter Notebook to run the tests. First, you will create a new notebook using the Python 3 kernel (Figure <a href="#Fig15" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-15</a>).<img src="Images/A439726_1_En_1_Fig15_HTML.jpg" alt="A439726_1_En_1_Fig15_HTML.jpg" class="calibre31"/>
+Figure 1-15.Create a new notebook
+                    
+                    
+                  
+                
+
+
+
+        
+In Listing <a href="#Par92" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-13</a>, you examine your memory usage once more. (After launching a new notebook, the current memory usage increases to about 9% of the 1GB.)
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %  NET I/O   BLOCK I/O    PIDS
+cfef9714b1c5  0.01%  87.18MiB / 990.7MiB  8.80%  64.2kB /  12.6MB /     13                                                 1.48MB    217kB
+Listing 1-13.Monitor Docker Memory Usage
+
+
+
+            
+If you close and halt (Figure <a href="#Fig16" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-16</a>) your running notebook
+            
+            
+          , you can see memory usage return to the baseline of about 5% of the 1GB (Listing <a href="#Par94" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-14</a>).<img src="Images/A439726_1_En_1_Fig16_HTML.jpg" alt="A439726_1_En_1_Fig16_HTML.jpg" class="calibre32"/>
+Figure 1-16.Close and halt a running notebook
+
+
+
+        
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %  NET I/O   BLOCK I/O    PIDS
+cfef9714b1c5  0.00%  55.31MiB / 990.7MiB  5.58%  109kB /   12.4MB /     4                                                 1.56MB    397kB
+Listing 1-14.Monitor Docker Memory Usage
+
+
+
+            
+The Python machine learning library scikit-learn
+          <a href="#Fn11" id="Fn11_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">11</sup></a> has a module dedicated to loading canonical datasets and generating synthetic datasets: sklearn.datasets. Relaunch your notebook and load the make_classification function from this module (Listing <a href="#Par97" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-15</a>, Figure <a href="#Fig17" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-17</a>), using the standard Python syntax for importing a function from a module. Examine memory usage once more (Listing <a href="#Par98" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-16</a>).<img src="Images/A439726_1_En_1_Fig17_HTML.jpg" alt="A439726_1_En_1_Fig17_HTML.jpg" class="calibre33"/>
+Figure 1-17.Import make_classification
+                
+
+
+
+        
+
+              In [1]: from sklearn.datasets import make_classification
+Listing 1-15.Import make_classification
+                  
+                        
+                        
+                        
+                      
+                
+
+
+
+            
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %   NET I/O  BLOCK I/O    PIDS
+cfef9714b1c5  0.04%  148.3MiB / 990.7MiB  14.97%  242kB /  49.3MB /     13                                                  4.03MB   340kB
+Listing 1-16.Monitor Docker Memory Usage
+
+
+
+            
+Next (Listing <a href="#Par101" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-17</a>, Figure <a href="#Fig18" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-18</a>), you create a new classification dataset using the default values
+            
+            
+          . You then use the %whos IPython magic command<a href="#Fn12" id="Fn12_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">12</sup></a> to display the size of the dataset in memory. After this, you examine memory usage (Listing <a href="#Par102" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-18</a>).<img src="Images/A439726_1_En_1_Fig18_HTML.jpg" alt="A439726_1_En_1_Fig18_HTML.jpg" class="calibre34"/>
+Figure 1-18.Import make_classification
+                
+
+
+
+        
+
+              In [2]: X, y = make_classification()
+In [3]: %whos
+Variable              Type        Data/Info
+-------------------------------------------
+X                     ndarray     100x20: 2000 elems, type 'float64', 16000 bytes
+make_classification   function    &lt;function make_classification at 0x7feb192669d8&gt;
+y                     ndarray     100: 100 elems, type 'int64', 800 bytes
+Listing 1-17.Create a New Classification Dataset Using Default Values
+
+
+
+            
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %   NET I/O  BLOCK I/O  PIDS
+cfef9714b1c5  0.01%  152MiB / 990.7MiB    15.35%  268kB /  54.1MB /   13                                                  4.1MB    926kB
+Listing 1-18.Monitor Docker Memory Usage
+
+
+
+            
+So far you are minimally taxing your system. Take note of the size of the dataset, size in Python memory, and Docker system usage associated with this default classification dataset and then restart the Python kernel (Figure <a href="#Fig19" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-19</a>).<img src="Images/A439726_1_En_1_Fig19_HTML.jpg" alt="A439726_1_En_1_Fig19_HTML.jpg" class="calibre35"/>
+Figure 1-19.Restart the Python kernel
+                    
+                    
+                  
+                
+
+
+
+        
+Next, you rerun the same experiment, increasing the size of your feature set by a factor of 10 (Listing <a href="#Par105" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-19</a>, Figure <a href="#Fig20" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-20</a>). In Listing <a href="#Par106" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-20</a>, you examine Docker system usage.<img src="Images/A439726_1_En_1_Fig20_HTML.jpg" alt="A439726_1_En_1_Fig20_HTML.jpg" class="calibre36"/>
+Figure 1-20.Import make_classification
+                
+
+
+
+        
+
+              In [2]: X, y = make_classification(n_samples=1000, n_features=20)
+In [3]: %whos
+Variable              Type        Data/Info
+-------------------------------------------
+X                     ndarray     100x20: 2000 elems, type `float64`, 160000 bytes
+make_classification   function    &lt;function make_classification at 0x7feb192669d8&gt;
+y                     ndarray     100: 100 elems, type `int64`, 8000 bytes
+Listing 1-19.
+                  Create
+                    
+                    
+                   a New Classification Dataset
+
+
+
+            
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %   NET I/O   BLOCK I/O   PIDS
+cfef9714b1c5  0.01%  149.7MiB / 990.7MiB  15.11%  286kB /   54.5MB /    13                                                  4.13MB    1.13MB
+Listing 1-20.Monitor Docker Memory Usage
+
+
+
+            
+Repeat the experiment several more times, capturing the results in Table <a href="#Tab2" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-2</a>. Each time, restart the kernel, create a new dataset that is 10 times larger than the previous, and then examine the result in terms of memory usage using the IPython magic command %whos and the docker stats tool.Table 1-2.Classification Dataset Memory Footprint
+                    
+                    
+                   on t2.micro
+                
+
+
+<table border="1" class="calibre17"><colgroup class="calibre18"><col class="calibre19"/>
+<col class="calibre19"/>
+<col class="calibre19"/>
+</colgroup>
+<thead class="calibre20"><tr class="header"><th class="calibre21">特征集的形状</th>
+<th class="calibre21">Python 内存中的大小</th>
+<th class="calibre21">坞站系统使用</th>
+</tr>
+</thead>
+<tbody class="calibre22"><tr class="noclass"><td class="calibre23">100 × 20</td>
+<td class="calibre23">. 016MB</td>
+<td class="calibre23">152MB</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">1000 × 20</td>
+<td class="calibre23">. 16MB</td>
+<td class="calibre23">149.7 兆字节</td>
+</tr>
+<tr class="noclass"><td class="calibre23">1000 × 200</td>
+<td class="calibre23">1.525 兆字节</td>
+<td class="calibre23">152.8 兆字节</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">10000 × 200</td>
+<td class="calibre23">15.25 兆字节</td>
+<td class="calibre23">162.6 兆字节</td>
+</tr>
+<tr class="noclass"><td class="calibre23">10000 × 2000</td>
+<td class="calibre23">152.6 兆字节</td>
+<td class="calibre23">279.7 兆字节</td>
+</tr>
+<tr class="noclass3"><td class="calibre23">100000 × 2000</td>
+<td class="calibre23">内存异常</td>
+<td class="calibre23">不适用的</td>
+</tr>
+</tbody>
+</table>
+
+        
+Restart the Python kernel after each dataset is created. Take note of the dataset size that causes a memory exception.
+When you attempt to create a classification dataset of size 100000 by 2000, you will hit a MemoryError, as seen in Listing <a href="#Par110" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-21</a> and Figure <a href="#Fig21" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-21</a>.<img src="Images/A439726_1_En_1_Fig21_HTML.jpg" alt="A439726_1_En_1_Fig21_HTML.jpg" class="calibre37"/>
+Figure 1-21.
+                  
+                        MemoryError
+                        
+                        
+                        
+                       when attempting to create a classification dataset
+
+
+
+        
+
+              In [2]: X, y = make_classification(n_samples=100000, n_features=2000)
+---------------------------------------------------------------------------
+MemoryError                               Traceback (most recent call last)
+&lt;ipython-input-2-df42c0ced9d5&gt; in &lt;module&gt;()
+----&gt; 1 X, y = make_classification(n_samples=100000, n_features=2000)
+
+/opt/conda/lib/python3.5/site-packages/sklearn/datasets/samples_generator.py in make_classification(n_samples, n_features, n_informative, n_redundant, n_repeated, n_classes, n_clusters_per_class, weights, flip_y, class_sep, hypercube, shift, scale, shuffle, random_state)
+    179
+    180     # Initialize X and y
+--&gt; 181     X = np.zeros((n_samples, n_features))
+    182     y = np.zeros(n_samples, dtype=np.int)
+    183
+
+MemoryError:
+
+Listing 1-21.
+                  MemoryError When Attempting to Create a Classification Dataset
+
+
+
+            
+And with that, you have hit the memory ceiling for your current system. It is not a particularly large dataset: 100,000 rows and 2000 columns. But then again, you are not working with a particularly large system either: a single CPU and 1GB of RAM. Certainly, you can imagine situations in which you will want to work with larger datasets on larger systems.
+
+<h3 class="heading3">什么样的数据集太大而无法适应不同类型的简单模型？</h3>
+Next, let’s answer the second question. Let’s do this by starting with a fresh Docker container. First, in Listing <a href="#Par113" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-22</a>, you again use docker ps to display running containers.
+
+              $ docker ps
+CNID IMAGE     COMMAND   CREATED      STATUS      PORTS            NAMES
+cfef jupyter/  "tini..." 53 min ago   Up 53 min   0.0.0.0:8888-&gt;   friendly_     scipy...                                     8888/tcp         curie
+Listing 1-22.Monitor Running Docker Containers
+
+
+
+            
+In Listing <a href="#Par115" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-23</a>, you stop and then remove this container.
+
+              $ docker stop friendly_curie
+friendly_curie
+ubuntu@ip-172-31-1-64:∼$ docker rm friendly_curie
+friendly_curie
+Listing 1-23.Stop and Remove a Running Container
+
+
+
+            
+Next, in Listing <a href="#Par117" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-24</a>, you launch a brand new jupyter/scipy-notebook container.
+
+              $ docker run -p 8888:8888 jupyter/scipy-notebook
+[I 20:05:42.246 NotebookApp] Writing notebook server cookie secret to /home/jovyan/.local/share/jupyter/runtime/notebook_cookie_secret
+...
+
+    Copy/paste this URL into your browser when you connect for the first time,
+    to login with a token:
+        http://localhost:8888/?token=7a65c3c7dc6ea294a38397a48cc1ffe110ea138aef6d42c4
+
+Listing 1-24.Run Jupyter Notebook Server
+
+
+
+            
+Make sure to take note of the new security token (7a65c3c7dc6ea294a38397a48cc1ffe110ea138aef6d42c4) and again use the AWS instance’s IP address in lieu of localhost (Listing <a href="#Par119" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-25</a>).
+
+              http://54.244.109.176:8888/?token=7a65c3c7dc6ea294a38397a48cc1ffe110ea138aef6d42c4
+Listing 1-25.The URL of the New Jupyter Instance Running on AWS with an Access Token Passed as a Query Parameter
+
+
+
+            
+Before you start, measure the baseline usage for this current container via docker stats (Listing <a href="#Par121" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-26</a>).
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %   NET I/O  BLOCK I/O    PIDS
+22efba43b763  0.00%  43.29MiB / 990.7MiB  4.37%   768B /   0B / 0B      2                                                  486B  
+Listing 1-26.Monitor Docker Memory Usage
+
+
+
+            
+You again create a new Python 3 Notebook and set out to answer this second question. In Listing <a href="#Par123" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-27</a>, you examine the memory usage of your Docker machine with a brand new notebook running.
+
+              $ docker stats
+CONTAINER     CPU %  MEM USAGE / LIMIT    MEM %   NET I/O   BLOCK I/O   PIDS
+22efba43b763  0.04%  90.69MiB / 990.7MiB  9.15%   58.8kB /  0B / 217kB  13                                                  1.3MB
+Listing 1-27.Monitor Docker Memory Usage
+
+
+
+            
+The approach to solving this problem will be slightly different and will make heavier use of docker stats. The %whos IPython magic command cannot be used to display memory usage of a fit model and, in fact, a trivial method for measuring memory usage does not exist.<a href="#Fn13" id="Fn13_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">13</sup></a> You will take advantage of your knowledge of the space in memory occupied by the data created by make_classification and this baseline performance you just measured.
+You will use the code pattern in Listing <a href="#Par127" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-28</a> to perform this analysis.
+
+              from sklearn.datasets import make_classification
+from sklearn.&lt;model_module&gt; import &lt;model&gt;
+X, y = make_classification(&lt;shape&gt;)
+model = &lt;model&gt;()
+model.fit(X, y)
+model.score(X, y)
+Listing 1-28.Create a New Classification Dataset and Perform Naïve Model Fit
+
+
+
+            
+For example, use the following code to fit the smallest KNeighborsClassifier (Listing <a href="#Par129" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-29</a>), DecisionTreeClassifier (Listing <a href="#Par130" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-30</a>), LogisticRegression (1-31), and SVC (Listing <a href="#Par131" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-32</a>). You will then modify the scope of the data for each subsequent test.
+
+              from sklearn.datasets import make_classification
+from sklearn.neighbors import KNeighborsClassifier
+X, y = make_classification(1000, 20)
+model = KNeighborsClassifier()
+model.fit(X, y)
+model.score(X, y)
+Listing 1-29.Fit the smallest 
+                        KNeighborsClassifier
+                        
+                        
+                      
+                
+
+
+
+            
+
+              from sklearn.datasets import make_classification
+from sklearn.tree import DecisionTreeClassifier
+X, y = make_classification(1000, 20)
+model = DecisionTreeClassifier()
+model.fit(X, y)
+model.score(X, y)
+Listing 1-30.Fit the smallest 
+                        DecisionTreeClassifier
+                        
+                        
+                      
+                
+
+
+
+            
+
+              from sklearn.datasets import make_classification
+from sklearn.linear_model import LogisticRegression
+X, y = make_classification(1000, 20)
+model = LogisticRegression()
+model.fit(X, y)
+model.score(X, y)
+Listing 1-31.Fit the smallest 
+                        LogisticRegression
+                        
+                        
+                      
+                
+
+
+
+            
+
+              from sklearn.datasets import make_classification
+from sklearn.neighbors import SVC
+X, y = make_classification(1000, 20)
+model = SVC()
+model.fit(X, y)
+model.score(X, y)
+Listing 1-32.Fit the smallest SVC
+                
+
+
+
+            
+You then use docker stats to examine the Docker system usage. In between each test, you use docker restart (Listing <a href="#Par134" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-33</a>) followed by the container id 22efba43b763 to reset the memory usage on the container. After restart the container, you will typically have to confirm restarting the Jupyter kernel as well (Figure <a href="#Fig22" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-22</a>).<img src="Images/A439726_1_En_1_Fig22_HTML.jpg" alt="A439726_1_En_1_Fig22_HTML.jpg" class="calibre38"/>
+Figure 1-22.Confirm a restart of the Jupyter kernel
+
+
+
+        
+
+              $ docker restart 22efba43b763
+Listing 1-33.Restart Your Docker Container
+
+
+
+            
+The results of this experiment are captured in Table <a href="#Tab3" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-3</a> and Figure <a href="#Fig23" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1-23</a>.Table 1-3.Classification of Dataset and Model Memory Footprint on t2.micro
+                
+
+
+<table border="1" class="calibre17"><colgroup class="calibre18"><col class="calibre19"/>
+<col class="calibre19"/>
+<col class="calibre19"/>
+<col class="calibre19"/>
+<col class="calibre19"/>
+</colgroup>
+<thead class="calibre20"><tr class="header"><th class="calibre21">特征集的形状</th>
+<th class="calibre21">模型类型</th>
+<th class="calibre21">数据集系统使用量(MB)</th>
+<th class="calibre21">数据集和 Fit 峰值系统使用率(MB)</th>
+<th class="calibre21">差异(MB)</th>
+</tr>
+</thead>
+<tbody class="calibre22"><tr class="noclass"><td class="calibre23">基线(没有运行笔记本电脑)</td>
+<td class="calibre23">不适用的</td>
+<td class="calibre23">不适用的</td>
+<td class="calibre23">不适用的</td>
+<td class="calibre23">Forty point nine eight</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">基线(笔记本电脑运行)</td>
+<td class="calibre23">不适用的</td>
+<td class="calibre23">不适用的</td>
+<td class="calibre23">不适用的</td>
+<td class="calibre23">Seventy-six point one four</td>
+</tr>
+<tr class="noclass"><td class="calibre23">100 × 20</td>
+<td class="calibre23">近邻分类器</td>
+<td class="calibre23">Ninety-nine point nine</td>
+<td class="calibre23">One hundred</td>
+<td class="calibre23">Zero point one</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">100 × 20</td>
+<td class="calibre23">决策树分类器</td>
+<td class="calibre23">One hundred and three point two</td>
+<td class="calibre23">One hundred and three point three</td>
+<td class="calibre23">Zero point one</td>
+</tr>
+<tr class="noclass"><td class="calibre23">100 × 20</td>
+<td class="calibre23">逻辑回归</td>
+<td class="calibre23">One hundred and two point five</td>
+<td class="calibre23">One hundred and two point six</td>
+<td class="calibre23">Zero point one</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">100 × 20</td>
+<td class="calibre23">交换虚拟电路</td>
+<td class="calibre23">One hundred and one point two</td>
+<td class="calibre23">One hundred and one point four</td>
+<td class="calibre23">Zero point two</td>
+</tr>
+<tr class="noclass"><td class="calibre23">1000 × 20</td>
+<td class="calibre23">近邻分类器</td>
+<td class="calibre23">One hundred point three</td>
+<td class="calibre23">One hundred point four</td>
+<td class="calibre23">Zero point one</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">1000 × 20</td>
+<td class="calibre23">决策树分类器</td>
+<td class="calibre23">One hundred and three point seven</td>
+<td class="calibre23">One hundred and three point eight</td>
+<td class="calibre23">Zero point one</td>
+</tr>
+<tr class="noclass"><td class="calibre23">1000 × 20</td>
+<td class="calibre23">逻辑回归</td>
+<td class="calibre23">One hundred and four point nine</td>
+<td class="calibre23">One hundred and five point one</td>
+<td class="calibre23">Zero point two</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">1000 × 20</td>
+<td class="calibre23">交换虚拟电路</td>
+<td class="calibre23">One hundred and four point nine</td>
+<td class="calibre23">One hundred and five point five</td>
+<td class="calibre23">Zero point six</td>
+</tr>
+<tr class="noclass"><td class="calibre23">1000 × 200</td>
+<td class="calibre23">近邻分类器</td>
+<td class="calibre23">One hundred and six point three</td>
+<td class="calibre23">One hundred and six point nine</td>
+<td class="calibre23">Zero point six</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">1000 × 200</td>
+<td class="calibre23">决策树分类器</td>
+<td class="calibre23">One hundred and four point eight</td>
+<td class="calibre23">One hundred and five point seven</td>
+<td class="calibre23">Zero point nine</td>
+</tr>
+<tr class="noclass"><td class="calibre23">1000 × 200</td>
+<td class="calibre23">逻辑回归</td>
+<td class="calibre23">One hundred and two</td>
+<td class="calibre23">One hundred and two point three</td>
+<td class="calibre23">Zero point three</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">1000 × 200</td>
+<td class="calibre23">交换虚拟电路</td>
+<td class="calibre23">One hundred and four point six</td>
+<td class="calibre23">One hundred and six</td>
+<td class="calibre23">One point four</td>
+</tr>
+<tr class="noclass"><td class="calibre23">10000 × 200</td>
+<td class="calibre23">近邻分类器</td>
+<td class="calibre23">One hundred and fifteen point five</td>
+<td class="calibre23">One hundred and seventeen point eight</td>
+<td class="calibre23">Two point three</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">10000 × 200</td>
+<td class="calibre23">决策树分类器</td>
+<td class="calibre23">One hundred and nineteen point eight</td>
+<td class="calibre23">One hundred and twenty-seven point eight</td>
+<td class="calibre23">Eight</td>
+</tr>
+<tr class="noclass"><td class="calibre23">10000 × 200</td>
+<td class="calibre23">逻辑回归</td>
+<td class="calibre23">One hundred and twenty-one point three</td>
+<td class="calibre23">One hundred and twenty-two point six</td>
+<td class="calibre23">One point three</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">10000 × 200</td>
+<td class="calibre23">交换虚拟电路</td>
+<td class="calibre23">One hundred and twenty-one point one</td>
+<td class="calibre23">Two hundred and eighty-six point seven</td>
+<td class="calibre23">One hundred and sixty-five point six</td>
+</tr>
+<tr class="noclass"><td class="calibre23">10000 × 2000</td>
+<td class="calibre23">近邻分类器</td>
+<td class="calibre23">Two hundred and fifty-six point four</td>
+<td class="calibre23">Two hundred and seventy-five point one</td>
+<td class="calibre23">Eighteen point seven</td>
+</tr>
+<tr class="noclass1"><td class="calibre23">10000 × 2000</td>
+<td class="calibre23">决策树分类器</td>
+<td class="calibre23">Two hundred and fifty-seven point one</td>
+<td class="calibre23">Three hundred and thirty-three point six</td>
+<td class="calibre23">Seventy-six point five</td>
+</tr>
+<tr class="noclass"><td class="calibre23">10000 × 2000</td>
+<td class="calibre23">逻辑回归</td>
+<td class="calibre23">Two hundred and fifty-eight point six</td>
+<td class="calibre23">Five hundred and sixty-four point nine</td>
+<td class="calibre23">Three hundred and six point three</td>
+</tr>
+<tr class="noclass3"><td class="calibre23">10000 × 2000</td>
+<td class="calibre23">交换虚拟电路</td>
+<td class="calibre23">Two hundred and fifty-six point three</td>
+<td class="calibre23">Four hundred and ninety-one point nine</td>
+<td class="calibre23">Two hundred and thirty-five point six</td>
+</tr>
+</tbody>
+</table>
+
+          <img src="Images/A439726_1_En_1_Fig23_HTML.gif" alt="A439726_1_En_1_Fig23_HTML.gif" class="calibre39"/>
+Figure 1-23.Dataset vs. Peak Usage by model
+
+
+
+        
+<h4 class="heading5">适用于 T2 的数据测量范围。微处理器</h4>
+In the previous test, a 10000 row x 2000 column dataset was the largest that you were able to successfully load into memory. In this test, you were able to successfully fit a naïve implementation of four different machine learning models against each of the datasets that you were able to load into memory. That said, you can see that neither the LogisticRegression nor the SVC (Support Vector Classifier) are capable of handling much more.
+
+
+
+<h2 class="heading2">摘要</h2>
+In this chapter, I introduced the core subjects of this text, Docker and Jupyter, and discussed a recommended practice for working through this text, which is using a disposable Linux instance on Amazon Web Services. I provided detailed instructions for configuring, launching, and provisioning such an instance. Having launched an instance, you used Docker and Jupyter to explore a toy big data example, diagnosing memory performance as you loaded and fit models using a synthetic classification dataset generated by scikit-learn.
+I did not intended for this chapter to have been the moment when you thoroughly grasped using Docker and Jupyter to build systems for performing data science. Rather, I hope that it has served as a substantive introduction to the topic. Rather than simply stating what Docker and Jupyter are, I wanted you to see what these two technologies are by using them.
+In the chapters ahead, you will explore many aspects of the Docker and Jupyter ecosystems. Later, you will learn about the open source data stores Redis, MongoDB, and PostgreSQL, and how to integrate them into your Docker-based applications. Finally, you will learn about the Docker Compose tool and how to tie all of these pieces together in a single docker-compose.yml file.
+
+Footnotes
+<a href="#Fn1_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1</a>
+              <a href="http://www.docker.com/use-cases" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                  www.docker.com/use-cases
+                </a>
+            
+
+ 
+
+<a href="#Fn2_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">2</a>
+                <a href="http://www.digitalocean.com" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    www.digitalocean.com
+                  </a>
+              
+
+ 
+
+<a href="#Fn3_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">3</a>
+                <a href="https://cloud.google.com" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    https://cloud.google.com
+                  </a>
+              
+
+ 
+
+<a href="#Fn4_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4</a>Instructions for creating a new AWS account can be found at <a href="https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/
+                    </a>.
+
+ 
+
+<a href="#Fn5_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">5</a>
+                  <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+                    </a>
+                
+
+ 
+
+<a href="#Fn6_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">6</a>
+                  <a href="http://www.gnu.org/software/bash/manual/html_node/Tilde-Expansion.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      www.gnu.org/software/bash/manual/html_node/Tilde-Expansion.html
+                    </a>
+                
+
+ 
+
+<a href="#Fn7_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">7</a>
+                    <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                        http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html
+                      </a>
+                  
+
+ 
+
+<a href="#Fn8_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>
+                    <a href="http://scikit-learn.org/stable/tutorial/machine_learning_map/" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                        http://scikit-learn.org/stable/tutorial/machine_learning_map/
+                      </a>
+                  
+
+ 
+
+<a href="#Fn9_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9</a>
+                  <a href="http://hub.docker.com/u/jupyter/" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      http://hub.docker.com/u/jupyter/
+                    </a>
+                
+
+ 
+
+<a href="#Fn10_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10</a>My t2.micro has but a single CPU.
+
+ 
+
+<a href="#Fn11_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">11</a>
+                  <a href="http://scikit-learn.org/" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      http://scikit-learn.org/
+                    </a>
+                
+
+ 
+
+<a href="#Fn12_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">12</a>
+                  <a href="https://ipython.org/ipython-doc/3/interactive/magics.html#magic-whos" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      https://ipython.org/ipython-doc/3/interactive/magics.html#magic-whos
+                    </a>
+                
+
+ 
+
+<a href="#Fn13_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">13</a>
+                  <a href="https://stackoverflow.com/questions/449560/how-do-i-determine-the-size-of-an-object-in-python" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                      https://stackoverflow.com/questions/449560/how-do-i-determine-the-size-of-an-object-in-python
+                    </a>
+                
+
+ 
+
+
+
+
+</body>
+</html>

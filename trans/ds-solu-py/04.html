@@ -1,0 +1,526 @@
+<html lang="en">
+<head><title>Survival Analysis withPySpark and Lifelines</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">4.PySpark 和生命线生存分析</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">本章使用主要的 Python 框架(即 Lifelines 和 PySpark)描述并执行了几种生存分析方法。它首先解释了考克斯比例风险模型背后的基本概念。然后介绍了加速失效时间法。</p>
+<h2 class="Heading">探索生存分析</h2>
+<p class="Para" id="Par3">生存方法在制造业、保险业和医学领域很常见。当一项独立的调查进行了很长时间，并且受试者在给定的时间进入和离开时，它们便于正确地评估风险。</p>
+<p class="Para" id="Par4">这些方法在本章中被用来确定机器故障的概率和病人在疾病中存活的概率，以及其他应用。它们同样适用于缺失值(删失数据)。</p>
+
+<h2 class="Heading">探索 Cox 比例风险法</h2>
+<p>Cox 比例风险方法是处理受试者有相关变化的删失数据的最佳生存方法。它类似于 Mantel-Haenszel 方法，预计风险率是时间的函数。它指出，利率是协变量的函数。等式<a href="#Equ1"> 4-1 </a>定义了 Cox 比例风险法。<p> <img alt="$$ \left(t,{x}_1,{x}_2,\dots, {x}_p\right)=(t)\ \mathit{\exp}\left({b}_1{X}_1+{b}_2{X}_2+\dots {b}_p{X}_p\right) $$" src="../images/517508_1_En_4_Chapter/517508_1_En_4_Chapter_TeX_Equ1.png" style="width:22.28em"/> </p>(方程式 4-1)</p>
+<p>清单<a href="#PC1"> 4-1 </a>从一个 Microsoft Excel 文件中获取必要的数据。</p>
+<pre>import pandas as pd
+initial_data = pd.read_excel(r"filepath\survival_data.xlsx", index_col=[0])
+
+Listing 4-1Attain the Data
+
+
+</pre>
+<p>清单<a href="#PC2"> 4-2 </a>找到划分数据的比率。</p>
+<pre>int(initial_data.shape[0]) * 0.8
+
+345.6
+
+Listing 4-2Find the Ratio for Dividing the Data
+
+
+</pre>
+<p>清单<a href="#PC3"> 4-3 </a>划分数据。</p>
+<pre>lifeline_training_data = initial_data.loc[:346]
+lifeline_test_data = initial_data.loc[346:]
+
+Listing 4-3Divide the Data
+
+
+</pre>
+
+<h2 class="Heading">生命线在行动</h2>
+<p>本节使用生命线框架执行和评估 Cox 比例风险法。清单<a href="#PC4"> 4-4 </a>执行生命线考克斯比例风险法。</p>
+<pre>from lifelines import CoxPHFitter
+lifeline_cox_method = CoxPHFitter()
+lifeline_cox_method.fit(lifeline_training_data, initial_data.columns[0], initial_data.columns[1])
+
+Listing 4-4Execute the Lifeline Cox Proportional Hazards Method
+
+
+</pre>
+<p>列表<a href="#PC5"> 4-5 </a>计算测试统计量(见表<a href="#Tab1"> 4-1 </a>)并使用缩放的舍恩菲尔德评估生命线考克斯比例风险法，这有助于揭示残差中的任何异常(见图<a href="#Fig1"> 4-1 </a>)。</p>
+<p><img alt="../images/517508_1_En_4_Chapter/517508_1_En_4_Fig1_HTML.jpg" src="../images/517508_1_En_4_Chapter/517508_1_En_4_Fig1_HTML.jpg" style="width:42.82em"/></p>
+<p>图 4-1</p><p class="SimplePara">年龄的标度舍恩菲尔德残差</p>
+
+
+<p>表 4-1</p><p class="SimplePara">生命线 Cox 比例风险法的检验统计</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">检验统计量</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">p</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">年龄</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Ten point five three</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">&lt;0.005</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">等级</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Ten point seven eight</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">&lt;0.005</p>
+</td>
+</tr>
+<tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">鳍状物</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one two</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven three</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">等级</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one four</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven one</p>
+</td>
+</tr>
+<tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑕疵</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one eight</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point six seven</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">等级</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point two</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point six six</p>
+</td>
+</tr>
+<tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">帕罗</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one three</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">等级</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven four</p>
+</td>
+</tr>
+<tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">优先级</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point four nine</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point four eight</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">等级</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point four seven</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point four nine</p>
+</td>
+</tr>
+<tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人种</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three four</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point five six</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">等级</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three seven</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point five four</p>
+</td>
+</tr>
+<tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">温普</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公里</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eleven point nine one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">&lt;0.005</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">等级</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Eleven point six one</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">&lt;0.005</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>lifeline_cox_method_test_statistics_schoenfeld = lifeline_cox_method.check_assumptions(lifeline_training_data, show_plots=True)
+lifeline_cox_method_test_statistics_schoenfeld
+
+Listing 4-5Compute the Lifeline Cox Proportional Hazards Method’s Test Statistics and Residuals
+
+
+</pre>
+<p>清单<a href="#PC6"> 4-6 </a>确定生命线 Cox 比例风险法的评估总结(见表<a href="#Tab2"> 4-2 </a>)。</p>
+<p>表 4-2</p><p class="SimplePara">Cox 比例风险总结</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+<col class="tcol7 align-left"/>
+<col class="tcol8 align-left"/>
+<col class="tcol9 align-left"/>
+<col class="tcol10 align-left"/>
+<col class="tcol11 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">系数向量</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Exp（coef）</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Se（coef）</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">系数低于 95%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">上科夫 95%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">支出(系数)降低 95%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Exp（coef） Upper 95%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Z</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">P</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-log2(p)</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"> </th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">鳍状物</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.71</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point four nine</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point two three</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.16</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.27</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-3.13</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">&lt;0.005</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Nine point one four</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">年龄</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.03</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point nine seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero two</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.08</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point nine three</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point zero one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.38</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one seven</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two point five seven</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人种</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three nine</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point four eight</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.34</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point one three</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three point zero nine</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point zero five</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point seven six</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">温普</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.11</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point nine</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point two four</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.59</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point five six</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point four four</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.45</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point six five</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point six two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑕疵</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.15</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three two</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point six one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-2.34</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero four</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point zero four</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.90</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero six</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Four point one one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">帕罗</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point zero seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point two three</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.37</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point five one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point six nine</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point six seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven six</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point four</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">优先级</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point one one</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero three</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero four</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one six</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point zero four</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point one seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Three point two four</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">&lt;0.005</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Nine point seven three</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>lifeline_cox_method_assessment_summary = lifeline_cox_method.print_summary()
+lifeline_cox_method_assessment_summary
+
+Listing 4-6Compute the Assessment Summary
+
+
+</pre>
+<p>列表<a href="#PC7"> 4-7 </a>确定数据中每个特征的对数测试置信区间(见图<a href="#Fig2"> 4-2 </a>)。</p>
+<p><img alt="../images/517508_1_En_4_Chapter/517508_1_En_4_Fig2_HTML.jpg" src="../images/517508_1_En_4_Chapter/517508_1_En_4_Fig2_HTML.jpg" style="width:38.52em"/></p>
+<p>图 4-2</p><p class="SimplePara">对数检验置信区间</p>
+
+
+<pre>lifeline_cox_log_test_ci = lifeline_cox_method.plot()
+lifeline_cox_log_test_ci
+
+Listing 4-7Execute the Lifeline Cox Proportional Hazards Method
+
+
+</pre>
+
+<h2 class="Heading">探索加速失效时间方法</h2>
+<p class="Para" id="Par13">加速失效时间法用对数线性函数来模拟截尾数据，以描述存活时间的对数。同样，它还假设每个实例都是独立的。</p>
+<h3 class="Heading">PySpark 在行动</h3>
+<p class="Para" id="Par14">本节使用 PySpark 框架执行加速故障时间方法。</p>
+<p>清单<a href="#PC8"> 4-8 </a>用<code>findspark</code>框架运行 PySpark 框架。</p>
+<pre>import findspark as initiate_pyspark
+initiate_pyspark.init("filepath\spark-3.0.0-bin-hadoop2.7")
+
+Listing 4-8Prepare the PySpark Framework
+
+
+</pre>
+<p>清单<a href="#PC9"> 4-9 </a>使用<code>SparkConf()</code>方法规定了 PySpark 应用程序。</p>
+<pre>from pyspark import SparkConf
+pyspark_configuration = SparkConf().setAppName("pyspark_aft_method").setMaster("local")
+
+Listing 4-9Stipulate the PySpark App
+
+
+</pre>
+<p>清单<a href="#PC10"> 4-10 </a>使用<code>SparkSession()</code>方法准备<code>PySpark</code>会话。</p>
+<pre>from pyspark.sql import SparkSession
+pyspark_session = SparkSession(pyspark_context)
+from pyspark.sql import SparkSession
+
+Listing 4-10Prepare the Spark Session
+
+
+</pre>
+<p>清单<a href="#PC11"> 4-11 </a>使用<code>createDataFrame()</code>方法将本章前面创建的<code>pandas</code>数据帧更改为 PySpark 数据帧。</p>
+<pre>pyspark_initial_data = pyspark_session.createDataFrame(initial_data)
+
+Listing 4-11Change the Pandas Dataframe to a PySpark Dataframe
+
+
+</pre>
+<p>清单<a href="#PC12"> 4-12 </a>为独立特性创建一个列表，为从属特性创建一个字符串。它使用 PySpark 框架建模的<code>VectorAssembler()</code>方法转换数据。</p>
+<pre>x_list = list(initial_data.iloc[::, 0:9].columns)
+from pyspark.ml.feature import VectorAssembler
+pyspark_data_columns = x_list
+pyspark_vector_assembler = VectorAssembler(inputCols=pyspark_data_columns, outputCol="variables")
+pyspark_data = pyspark_vector_assembler.transform(pyspark_initial_data)
+
+Listing 4-12Transform the Data
+
+
+</pre>
+<p>清单<a href="#PC13"> 4-13 </a>执行 PySpark 加速故障时间方法。</p>
+<pre>from pyspark.ml.regression import AFTSurvivalRegression
+pyspark_accelerated_failure_method = AFTSurvivalRegression(censorCol=pyspark_data.columns[1], labelCol=pyspark_data.columns[0],featuresCol="variables",)
+pyspark_accelerated_failure_method_fitted = pyspark_accelerated_failure_method.fit(pyspark_data)
+
+Listing 4-13Execute the PySpark Accelerated Failure Time Method
+
+
+</pre>
+<p>清单<a href="#PC14"> 4-14 </a>计算 PySpark 加速故障时间方法的预测值。</p>
+<pre>pyspark_accelerated_failure_method_fitted.transform(pyspark_data).select(pyspark_data.columns[1],"prediction")
+pyspark_yhat.show()
+
++------+------------------+
+|arrest|        prediction|
++------+------------------+
+|     1|18.883982665910125|
+|     1| 16.88228128814963|
+|     1|22.631360777172517|
+|     0|373.13041474613107|
+|     0| 377.2238319806288|
+|     0| 375.8326538406928|
+|     1|  20.9780526816987|
+|     0| 374.6420738270714|
+|     0| 379.7483494080467|
+|     0| 376.1601473382181|
+|     0| 377.1412349521787|
+|     0| 373.7536844216336|
+|     1| 36.36443059383637|
+|     0|374.14261327949384|
+|     1| 22.98494042401171|
+|     1| 50.61463874375869|
+|     1| 25.56399364288275|
+|     0|379.61997114629696|
+|     0| 384.3322960430372|
+|     0|376.37634062210844|
++------+------------------+
+
+Listing 4-14Compute the PySpark Accelerated Failure Time Method’s Predictions
+
+
+</pre>
+<p>清单<a href="#PC15"> 4-15 </a>计算 PySpark 加速失效时间方法的系数。</p>
+<pre>pyspark_accelerated_failure_method_fitted.coefficients
+
+DenseVector([0.0388, -1.7679, -0.0162, -0.0003, 0.0098, -0.0086, -0.0026, 0.0115, 0.0003])
+
+Listing 4-15Compute the PySpark Accelerated Failure Time Method’s Coefficients
+
+
+</pre>
+
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par23">本章执行了两个关键的机器学习框架(Lifeline 和 PySpark ),用 Cox 比例风险和加速故障时间方法对删失数据进行建模。</p>
+
+
+
+</body>
+</html>

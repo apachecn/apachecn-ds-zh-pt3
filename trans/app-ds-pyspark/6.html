@@ -1,0 +1,1403 @@
+<html lang="en">
+<head><title>Model Evaluation</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">6.模型评估</h1>
+
+ 
+<!--End Abstract--><p><blockquote class="BlockQuote"> <p class="Para ParaOneEmphasisChild" id="Par3"> <em class="EmphasisTypeItalic ">“所有的模型都是错的，但有些是有用的”</em> </p> <p class="Para" id="Par4"> —乔治 E.P. Box。</p> </blockquote></p>
+<p class="Para" id="Par5">许多人试图开发模型来执行某项任务(例如，预测房价)。很多时候，这些模型不能代表 100%的现实。在我们的例子中，我们无法一直准确预测房价。然而，这并不意味着我们的模型是垃圾。一般来说，所有的统计和机器学习模型都面临这个问题。那么，为什么一开始要建一个呢？即使我们不能 100%代表现实，我们仍然可以模拟有用的行为，并足够接近地代表现实。在我们的例子中，我们可以使用像邮政编码这样的人口统计信息来预测价格，这种模型比随机模型表现得更好。这为整章奠定了基础。你需要确保这个想法被很好地植入，因为每个人都关心你根据你的模型带来的洞察力。</p>
+<p class="Para" id="Par6">也就是说，你可以建立一个或者 n 个模型来预测房价。你会选哪个，理由是什么？本章将为你提供回答这些问题的技巧和诀窍。在我们深入模型评估指标之前，我们需要涵盖一些相关的概念。</p>
+<h2 class="Heading">模型复杂性</h2>
+<p>模型复杂性衡量模型对从训练中获得的信息的概括程度。在前一章中，我们将数据分为训练和测试。然后，我们在训练数据集上构建我们的模型(模型拟合)，并将拟合的模型应用于测试数据集(模型泛化)。整个过程如图<a href="#Fig1"> 6-1 </a>所示。例如，我们使用了三种分类模型。当您比较使用不同超参数和相同算法的几个时期生成的模型时，同样的概念也适用，就像在神经网络中一样。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig1_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig1_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-1</p><p class="SimplePara">比较不同设置下模型的性能</p>
+
+
+<h3 class="Heading">欠拟合</h3>
+<p class="Para" id="Par8">我们来看看图<a href="#Fig1"> 6-1 </a>中的模型 1。这是一个线性模型，不太适合我们的训练数据。因此，它也不能很好地概括测试数据。该模型未能捕捉到基础数据中的非线性。因此，训练和测试数据集中的错误级别都很高。这被称为欠拟合。当这种类型的问题发生时，模型在训练和测试数据上都表现不佳。</p>
+
+<h3 class="Heading">最佳拟合</h3>
+<p class="Para" id="Par9">现在看看图中的模型 2。它能更好地捕捉数据中的非线性。因此，该模型对训练数据和测试数据的表现一样好。我们的两个模型都符合，而且模型泛化能力很好。这是一个最适合的模型场景。作为一名数据科学家或机器学习爱好者，你应该一直寻找这个最佳点——金发女孩点。</p>
+
+<h3 class="Heading">过度拟合</h3>
+<p class="Para" id="Par10">让我们看看图中的模型 3。这个模型非常符合训练数据。然而，它不能很好地概括测试数据。这叫做过度拟合。您也可以通过在训练过程中设置更多的时期来使模型过度拟合。因此，该模型能够很好地记忆(而不是概括)训练数据，但在测试数据上却不能表现得同样好。</p>
+<p>当您绘制每个模型的训练和测试误差时，通常会得到如图<a href="#Fig2"> 6-2 </a>所示的图表。这个数字是根据上图中错误实例的数量生成的。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig2_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig2_HTML.jpg" style="width:35.43em"/></p>
+<p>图 6-2</p><p class="SimplePara">模型复杂性图表</p>
+
+
+<p>很多时候，我们希望看到错误占整个数据集的百分比，即错误分类率。让我们用错误分类率生成另一个图，这次我们将使用每个历元的错误级别，而不是使用不同的模型。您可以清楚地看到由于欠拟合、最佳拟合和过拟合而导致的错误分类率的差异。通过查看该图表，您可以为您的数据选择最佳模型，即图<a href="#Fig3"> 6-3 </a>中所示的金发点。在 Epoch 10，我们的模型在训练和测试数据上都表现得更好，如图<a href="#Fig3"> 6-3 </a>所示。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig3_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig3_HTML.jpg" style="width:35.45em"/></p>
+<p>图 6-3</p><p class="SimplePara">金发姑娘斑点</p>
+
+
+
+<h3 class="Heading">偏差和方差</h3>
+<p>当我们讨论模型复杂性时，一些人使用术语<em class="EmphasisTypeItalic ">偏差</em>和<em class="EmphasisTypeItalic ">方差</em>来描述它。<em class="EmphasisTypeItalic ">一般来说，理想的模型应该具有低偏差和低方差。</em>那么，它们是什么呢？</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par14"><em class="EmphasisTypeItalic "> Bias </em>告诉你一个算法表现数据中真实关系的能力。</p></li>
+<li><p class="Para" id="Par15"><em class="EmphasisTypeItalic ">方差</em>告诉你一个算法在不同数据集之间的一致性(性能)。</p></li>
+</ul>
+
+<p class="Para" id="Par16">在我们的例子中，模型 1 不能捕捉数据中的非线性关系。因此，它具有较高的偏差。但是，它会在训练和测试数据集中产生类似的错误。因此，它具有低方差。以类似的方式，模型 2 具有低偏差和低方差，而模型 3 具有低偏差和高方差。因此，我们选择模型 2 作为最佳模型。</p>
+
+
+<h2 class="Heading">模型验证</h2>
+<p class="Para" id="Par17">基于我们对模型复杂性的讨论，我们可以理解在建模期间进行训练/测试分离的目的。拥有训练和测试数据集是执行模型验证的一种方式。还有其他可用的方法。但是首先，让我们从训练/测试分割开始，然后继续其他验证技术。</p>
+<h3 class="Heading">训练/测试分割</h3>
+<p>这个想法很简单，正如我们一直看到的那样。您根据指定的大小随机分割数据。在我们的大多数例子中，我们使用 70/30 分割。这意味着 70%的数据是从原始数据集中粗略采样以形成训练集，而剩余的 30%进入测试集。如图<a href="#Fig4"> 6-4 </a>所示。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig4_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig4_HTML.jpg" style="width:20.68em"/></p>
+<p>图 6-4</p><p class="SimplePara">训练/测试分割</p>
+
+
+<p>表示这种方法的另一种方式是使用图<a href="#Fig5"> 6-5 </a>中的条形。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig5_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig5_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-5</p><p class="SimplePara">训练/测试分割</p>
+
+
+<p class="Para" id="Par20">当执行分割时，您可以进行简单的随机抽样或分层抽样。</p>
+<h4 class="Heading">简单随机抽样</h4>
+<p class="Para" id="Par21">根据用户指定的比例，数据点被随机分配给每个训练和测试数据集。对于 70/30 分割，随机选择 70%的数据来创建定型数据集，剩余的 30%分配给测试数据集。</p>
+
+<h4 class="Heading">分层抽样</h4>
+<p class="Para" id="Par22">这种类型的取样是在监督研究中进行的。查看目标在原始数据集中的分布。让我们假设分布是 60% 0 和 40% 1。使用分层抽样，即使在拆分之后，您仍然可以在训练和测试数据集中保持目标的 60/40 分布。</p>
+<p class="Para" id="Par23">还有其他的抽样方法——比如均等抽样、整群抽样和系统抽样——不在本书的讨论范围之内。在 PySpark 中，您可以使用三个选项中的一个来完成训练/测试分割。以下代码执行 70/30 分割。</p>
+
+<h4 class="Heading">选项 1</h4>
+<p>
+ 
+</p>
+<pre>train, test = df.randomSplit([0.7, 0.3], seed=12345)
+
+</pre>
+
+<h4 class="Heading">选项 2</h4>
+<p>第二个选项使用 PySpark <em class="EmphasisTypeItalic "> ML 调优</em>库。在这一步之前，您需要使用 vector assembler 输出作为输入。</p>
+<pre>from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.tuning import ParamGridBuilder, TrainValidationSplit
+
+#model initialization
+lr = LogisticRegression(maxIter=10, featuresCol="features", labelCol="label")
+
+#model parameters to try
+paramGrid = ParamGridBuilder().addGrid(lr.regParam, [0.1, 0.01]).addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0]).build()
+
+# 70% of the data will be used for training, 30% for validation.
+train_valid_clf = TrainValidationSplit(estimator=lr, estimatorParamMaps=paramGrid, evaluator=BinaryClassificationEvaluator(), trainRatio=0.7)
+
+# assembled_df is the output of the vector assembler
+
+
+
+
+model = train_valid_clf.fit(assembled_df)
+
+</pre>
+
+<h4 class="Heading">选项 3</h4>
+<p>要在 PySpark 中执行分层采样，您需要使用一个使用<code>randomSplit</code>选项的变通方法。代码如下所示:</p>
+<pre># split data for 0s and 1s
+zero_df = df.filter(df["label"]==0)
+one_df = df.filter(df["label"]==1)
+
+# split data into train and test
+train_zero, test_zero = zero_df.randomSplit([0.7,0.3], seed=12345)
+train_one, test_one = one_df.randomSplit([0.7,0.3], seed=12345)
+
+# union datasets
+train = train_zero.union(train_one)
+test = test_zero.union(test_one)
+
+</pre>
+
+<h4 class="Heading">抽样偏误</h4>
+<p class="Para" id="Par27">我们已经看到了使用训练/测试分割的好处。然而，这种方法有一些缺点。假设您正在预测一些零售销售，并使用 11 月的数据。由于感恩节，商店推出了大折扣，销售额增加了百分之十。当您使用此数据建立模型并预测本月剩余时间的销售额时，您可能会得到一个不考虑假日折扣的模型。这被称为抽样偏差。</p>
+<p class="Para" id="Par28">当您的数据偏向于总体中的某一部分，并且没有考虑总体中的所有部分时，就会发生抽样偏差。作为建模者，您需要在构建模型之前理解数据。你还应该知道在什么情况下可以使用你的模型。否则，模型不会产生预期的结果。可以使用以下技术之一来最小化采样偏差:保持/超时或交叉验证。</p>
+<h5 class="Heading">保持/超时</h5>
+<p>维持概念扩展了训练/测试分割的思想，只是这次您有三个数据集，而不是两个。见图<a href="#Fig6"> 6-6 </a>。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig6_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig6_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-6</p><p class="SimplePara">抵制概念</p>
+
+
+<p>要在 PySpark 中创建维持数据集，您可能需要对我们之前看到的代码做一点小小的修改。这将产生 70/20/10 的分割。</p>
+<pre>train, test, holdout = df.randomSplit([0.7, 0.2, 0.1], seed=12345)
+
+</pre>
+<p class="Para" id="Par31">此外，在执行选项 2 之前，您可以有一个定型数据集和一个测试数据集，并使模型适合定型数据集，而不是整个数据集。这样，测试数据集就可以成为维持数据集。</p>
+<p class="Para" id="Par32">维持数据集部分解决了采样偏差问题，但数据仍然来自相同的时间范围。为了解决这个问题，您需要考虑过时的数据。在零售销售预测示例中，11 月将是培训/测试/保持期，然后某个其他月份(例如，6 月)将是过时的数据。<em class="EmphasisTypeItalic ">行业惯例建议您至少有两个过时的数据样本来验证您的模型</em>。这样，您可以在模型中考虑假日折扣的重要性，并使您的预测稳定。</p>
+
+
+<h4 class="Heading">人口稳定指数</h4>
+<p>另一个避免采样偏差和实现稳定模型的建议是对数据集变量(训练/测试/维持/超时)执行群体稳定性指数(PSI)检查。本质上，您是在测量每个变量相对于数据中目标的分布变化。您选择具有高特征重要性和低可变性(低 PSI 指数)的最佳变量。这样，您的模型会随着时间的推移产生稳定的预测。PSI 检查是一个简单的公式:<p> <img alt="$$ PSI=\sum \left( Actual\%- Expected\%\right)\ast \ln \left(\frac{Actual\%}{Expected\%}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equa.png" style="width:23.78em"/> </p></p>
+<p>这个等式应该类似于我们在第<a href="4.html"> 4 </a>章的证据权重部分看到的信息价值等式。【T2<img alt="$$ IV=\sum \left(\mathrm{Event}\%-\mathrm{Non}\kern0.17em \mathrm{Event}\%\right)\ast \ln\;\left(\frac{\mathrm{Event}\%}{\mathrm{NonEvent}\%}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equb.png" style="width:23.52em"/></p>
+<p>IV 和 PSI 之间的唯一区别在于，IV 值比较同一变量的事件和非事件的分布，而 PSI 比较两个不同时间段的变量的事件分布(例如，训练与超时)。因此，训练数据事件分布是<em class="EmphasisTypeItalic ">预期</em>结果，数据集事件分布的其余部分被认为是<em class="EmphasisTypeItalic ">实际</em>结果。对于 IV 值，选择具有高 IV 值的变量。对于 PSI，选择 PSI 值较低的变量。PSI 的截止值也与 IV 略有不同。见表<a href="#Tab1"> 6-1 </a>。</p>
+<p>表 6-1</p><p class="SimplePara">PSI 值</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-center"/>
+<col class="tcol2 align-center"/>
+</colgroup>
+<tbody><tr><td colspan="2" style="border-right: 0.5pt solid ; text-align: center;"><p class="SimplePara"><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Figa_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Figa_HTML.jpg" style="width:43.12em"/></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>让我们对单个变量的定型和维持数据集进行简单的 PSI 计算。参见表<a href="#Tab2"> 6-2 </a>中的结果。</p>
+<p>表 6-2</p><p class="SimplePara">定型数据集与维持数据集</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-center"/>
+<col class="tcol2 align-center"/>
+</colgroup>
+<tbody><tr><td colspan="2" style="border-right: 0.5pt solid ; text-align: center;"><p class="SimplePara"><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Figb_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Figb_HTML.jpg" style="width:43.12em"/></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+Note
+<p class="Para FirstParaInFormalPara" id="Par37">对定型数据集运行 WOE 代码，并对维持数据集应用箱。总是<strong class="EmphasisTypeBold ">训练</strong>数据集将是<strong class="EmphasisTypeBold ">预期</strong>值。</p>
+
+<p class="Para" id="Par38"><em class="EmphasisTypeItalic ">月</em>变量的 PSI 值是 0.016。这表明该变量在定型数据集和维持数据集之间是稳定的(可变性低)。您可以对模型中的所有变量执行相同的检查，并确保它们在两个数据集之间是稳定的。另一方面，您可以对模型输出进行 PSI 检查，并跨时间段监控模型的性能。</p>
+
+
+<h3 class="Heading">k 倍交叉验证</h3>
+<p>到目前为止，我们已经看到了一种能够处理采样偏差的保持/超时方法。如果您必须处理单个数据集，因此没有过时的数据集，该怎么办？这种情况在处理调查数据时尤其突出。在这些情况下，k 倍交叉验证可以帮助你。这个想法很简单。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par40">将数据随机分成<em class="EmphasisTypeItalic "> k </em>份(通常值为 5 或 10，一个可配置的参数)。</p></li>
+<li><p class="Para" id="Par41">将模型安装在<em class="EmphasisTypeItalic ">k</em>1 个折叠处，并在省去的折叠处(<em class="EmphasisTypeItalic "> k </em>个折叠处)测试模型。</p></li>
+<li><p class="Para" id="Par42">衡量该模型的指标(准确性/误差)。</p></li>
+<li><p class="Para" id="Par43">每次重复该过程，直到所有的折叠都被用作测试数据集。</p></li>
+<li><p class="Para" id="Par44">最终指标(准确度/误差)是所有 k 倍指标的平均值。</p></li>
+</ul>
+
+<p>图<a href="#Fig7"> 6-7 </a>显示了 k 倍(四倍)交叉验证的图示。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig7_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig7_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-7</p><p class="SimplePara">四重交叉验证</p>
+
+
+<p class="Para" id="Par47">在 k-fold 交叉验证中，每个数据点都用于训练和测试模型。在给定的时间点，每个数据点可以是训练或测试，但不能同时是两者。因此，训练和测试数据不是静态的，因此采样偏差被最小化。</p>
+<p>在 PySpark 中，可以使用<em class="EmphasisTypeItalic "> ML 调优</em>库执行 k 重交叉验证。</p>
+<pre>from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
+
+#model initialization
+lr = LogisticRegression(maxIter=10, featuresCol="features", labelCol="label")
+
+#model parameters to try
+paramGrid = ParamGridBuilder().addGrid(lr.regParam, [0.1, 0.01]).addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0]).build()
+
+# number of folds = 3
+crossval_clf = CrossValidator(estimator=lr, estimatorParamMaps=paramGrid, evaluator=BinaryClassificationEvaluator(), numFolds=3)
+
+# assembled_df is the output of the vector assembler
+model = crossval_clf.fit(assembled_df)
+
+</pre>
+<p class="Para" id="Par49">该代码进行了三重交叉验证。你能猜出用前面的代码训练的模型的数量吗？如果你的猜测是 18，那么你是对的。请注意我们用来训练交叉验证模型的参数网格。<em class="EmphasisTypeItalic "> elasticNet </em>有三个参数，<em class="EmphasisTypeItalic ">正则化参数</em>有两个，还有三个<em class="EmphasisTypeItalic ">褶皱</em> ( 3 * 2 * 3 = 18 个模型)。如你所见，当你增加网格参数的数量或折叠的数量时，交叉验证很快变得<em class="EmphasisTypeItalic ">昂贵</em>。然而，这种方法对于<em class="EmphasisTypeItalic ">超参数调整</em>变得有用，而不是手动尝试每个参数设置。</p>
+
+<h3 class="Heading">留一交叉验证</h3>
+<p>留一交叉验证是 k 重交叉验证的一种变体。其思想是使用单个观察值作为测试集，其余的数据作为训练集。图<a href="#Fig8"> 6-8 </a>显示了该方法的图示。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig8_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig8_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-8</p><p class="SimplePara">留一交叉验证</p>
+
+
+<p class="Para" id="Par51">这里，<em class="EmphasisTypeItalic "> n </em>是数据中的观察次数。在 PySpark 中，可以使用数据集<code>(</code> <em class="EmphasisTypeItalic "> n </em> <code>)</code>的大小作为前面显示的 k 重交叉验证代码中的折叠数来执行留一交叉验证。这种方法在计算上是昂贵的，因为对于一个参数设置，模型需要训练<em class="EmphasisTypeItalic "> n </em>次。</p>
+
+<h3 class="Heading">留一组交叉验证</h3>
+<p>这是 k 倍交叉验证的另一种变体。当您想要跨不同的人群测试模型性能时，它变得很有用。假设你正在做一项人口统计研究，想看看哪个年龄段的人会对营销活动做出积极的反应。这里不能使用 k 倍法，因为它没有考虑到每个倍中的年龄组段。在验证模型的性能时，您希望保持您的年龄组干净。这就是留一组交叉验证发挥作用的地方。该方法的图示如图<a href="#Fig9"> 6-9 </a>所示，共有四组。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig9_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig9_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-9</p><p class="SimplePara">留一组交叉验证</p>
+
+
+<p>PySpark 中目前没有这种方法。我们在这里展示了一个解决方法代码:</p>
+<pre>from pyspark.sql import SparkSession
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml import Pipeline
+from pyspark.sql.functions import countDistinct
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.sql import functions as F
+import numpy as np
+
+filename = "bank-full.csv"
+spark = SparkSession.builder.getOrCreate()
+df = spark.read.csv(filename, header=True, inferSchema=True, sep=';')
+df = df.withColumn('label', F.when(F.col("y") == 'yes', 1).otherwise(0))
+df = df.drop('y')
+df = df.select(['education', 'age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous', 'label'])
+features_list = ['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous']
+
+#assemble individual columns to one column - 'features'
+def assemble_vectors(df, features_list, target_variable_name, group_variable_name):
+    stages = []
+    #assemble vectors
+    assembler = VectorAssembler(inputCols=features_list, outputCol="features")
+    stages = [assembler]
+    #select all the columns + target + newly created 'features' column
+    selectedCols = [group_variable_name, target_variable_name, 'features']
+
+    #use pipeline to process sequentially
+
+
+
+
+    pipeline = Pipeline(stages=stages)
+    #assembler model
+    assembleModel = pipeline.fit(df)
+    #apply assembler model on data
+    df = assembleModel.transform(df).select(selectedCols)
+
+    return df
+
+# apply the function on our DataFrame
+joined_df = assemble_vectors(df, features_list, 'label', 'education')
+# find the groups to apply cross validation
+groups = list(joined_df.select('education').toPandas()['education'].unique())
+
+# leave-one-group-out validation
+def leave_one_group_out_validator(df, var_name, groups):
+
+    train_metric_score = []
+    test_metric_score = []
+
+    for i in groups:
+        train = df.filter(df[var_name]!=i)
+        test = df.filter(df[var_name]==i)
+
+        #model initialization
+        lr = LogisticRegression(maxIter=10, featuresCol="features", labelCol="label")
+        evaluator = BinaryClassificationEvaluator(labelCol='label', rawPredictionCol="rawPrediction",
+                                                 metricName='areaUnderROC')
+        #fit model
+        lrModel = lr.fit(train)
+        #make predicitons
+        predict_train = lrModel.transform(train)
+        predict_test = lrModel.transform(test)
+        train_metric_score.append(evaluator.evaluate(predict_train))
+        test_metric_score.append(evaluator.evaluate(predict_test))
+        print(str(i) + " Group evaluation")
+        print(" Train AUC - ", train_metric_score[-1])
+        print(" Test AUC - ", test_metric_score[-1])
+
+    print('Final evaluation for model')
+
+
+
+
+    print('Train ROC', np.mean(train_metric_score))
+    print('Test ROC', np.mean(test_metric_score))
+
+</pre>
+
+<h3 class="Heading">时间序列模型验证</h3>
+<p class="Para" id="Par54">当涉及到时间序列验证时，训练/测试分割与我们目前所看到的略有不同。假设您正在处理过去一年的月度时间序列数据，并且想要执行 70/30 分割。您应该选择前八个月的数据用于训练，后四个月的数据用于测试。这里仍然可以使用 k 重交叉验证；然而，在所有折叠中，训练数据应该总是发生在测试数据之前。</p>
+
+
+<h2 class="Heading">渗漏</h2>
+<p class="Para" id="Par55">机器学习的另一个常见问题是泄漏，当你使用预测时不可用的信息训练模型时，就会发生泄漏。数据和目标中都可能发生泄漏。在这两种情况下，模型在部署到生产环境中时都不会像预期的那样执行。</p>
+<h3 class="Heading">目标泄漏</h3>
+<p class="Para" id="Par56">让我们用一个简单的例子来理解这个问题。问题陈述:“<em class="EmphasisTypeItalic ">预测下个月有可能购买产品的客户。”</em>您使用的是 7 月份的数据，理想情况下，您的目标应该来自 8 月份。相反，您基于七月创建目标。在这种情况下，你是在事件发生后预测它。这不能解决所定义的问题陈述，是目标泄漏的一个例子。</p>
+<p class="Para" id="Par57">当使用输入要素派生目标变量时，可能会发生另一种目标泄漏。假设你想预测一栋房子是否会卖到一百万美元以上。您从销售价格中得出目标值(高于 100 万美元-1，低于 100 万美元-0)。在这种情况下，当您在模型定型中包含销售价格变量时，会发生目标泄漏，因为它是目标的代理。当目标定义复杂时，这个问题更容易发生。</p>
+
+<h3 class="Heading">数据泄露</h3>
+<p class="Para" id="Par58">这种类型的泄漏比目标泄漏更常见。让我们假设你有一个 70/30(培训/测试)的分割。不是在 70%的训练数据上训练模型，而是在整个数据集(100%)上训练模型。在这种情况下，模型已经看到了测试数据。因此，模型的评估指标是有偏差的。</p>
+<p class="Para" id="Par59">当您在训练/测试分割之前引导数据集时，会出现此问题的另一种变体。自举是一个概念，通过它你可以随机复制数据点。它也被称为替换随机抽样。在引导后拆分数据时，两个数据集中更有可能出现相同的数据点，从而导致数据泄漏。在时间序列数据中，当您随机分割数据而不是遵循标准(在测试之前进行训练)时，会导致数据泄漏。</p>
+
+<h3 class="Heading">泄漏问题</h3>
+<p>目标或数据泄漏可能会导致重大问题，如下所示:</p>
+<ol><li class="ListItem"><p class="Para" id="Par61">无法部署模型，因为数据不可用。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par62">模型性能指标有偏差。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par63">模型输出不稳定，因此模型在生产中无法工作。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par64">正确的业务理解、功能工程、与业务利益相关者一起评估您的数据/目标定义以及过时的数据集可以帮助您解决泄漏问题。</p>
+
+
+<h2 class="Heading">模型评估</h2>
+<p>到目前为止，我们已经讨论了相关的概念。现在，是时候深入研究模型评估指标了。根据模型的类型，PySpark 为您提供了多种模型评估指标，如图<a href="#Fig10"> 6-10 </a>所示。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig10_HTML.png" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig10_HTML.png" style="width:43.35em"/></p>
+<p>图 6-10</p><p class="SimplePara">模型评估指标</p>
+
+
+<h3 class="Heading">连续目标</h3>
+<p>您可以使用 PySpark <em class="EmphasisTypeItalic "> ML Tuning </em>包中的<code>RegressionEvaluator</code>选项来评估连续目标。让我们看看样本数据。</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">x1</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">x2</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">目标</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Fifty-eight</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Fifty</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Twelve</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Thirty-seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Ninety-five</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Twenty-seven</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Twenty-nine</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and thirty-seven</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Thirty-nine</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Nineteen</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">One hundred and fifty</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Forty-five</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>图<a href="#Fig11"> 6-11 </a>显示了回归趋势线(拟合)的数据图。我们用 Excel 制作了这个图。使用图中所示的 PySpark <code>LinearRegression</code>模型，您将得到相同的输出。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig11_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig11_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-11</p><p class="SimplePara">回归评估</p>
+
+
+<p class="Para" id="Par68">我们将使用<em class="EmphasisTypeItalic "> x1 对 y </em>分析来检查整个回归评估指标。</p>
+<h4 class="Heading">使用 PySpark 复制输出的代码</h4>
+<p>
+ 
+</p>
+<pre>from pyspark.sql.types import IntegerType
+
+
+
+
+from pyspark.sql.types import StructField, StructType
+cSchema = StructType([StructField("x1", IntegerType())\
+                      ,StructField("x2", IntegerType())\
+                      ,StructField("y", IntegerType())])
+df_list = [[58, 50, 12], [37, 95, 27], [29, 137, 39], [19, 150, 45]]
+df = spark.createDataFrame(df_list, schema=cSchema)
+# vector assembler we have used in earlier chapters
+assembled_df = assemble_vectors(df, ['x1'], 'y')
+
+#Build regression model
+from pyspark.ml.regression import LinearRegression
+reg = LinearRegression(featuresCol='features', labelCol="y")
+reg_model = reg.fit(assembled_df) # fit model
+# print coefficient and intercept
+
+
+
+
+print(reg_model.coefficients[0], reg_model.intercept)
+# Output: -0.8705560619872369 61.87237921604372
+#prediction result
+pred_result = reg_model.transform(assembled_df)
+# model summary
+reg_summary = reg_model.summary
+
+</pre>
+
+<h4 class="Heading">模型方程</h4>
+<p>
+ 
+</p>
+<pre>y-hat = -0.8706* x1 + 61.8723
+
+
+
+
+
+</pre>
+
+<h4 class="Heading">错误</h4>
+<p><em class="EmphasisTypeItalic ">误差</em>定义为预测值与实际目标值之差。我们将使用以下等式来预测<em class="EmphasisTypeItalic "> y-hat </em>值:</p>
+<pre>Obs1 = -0.8706 * 58.0 + 61.8723 = 11.38
+Obs2 = -0.8706 * 37.0 + 61.8723 = 29.66
+Obs3 = -0.8706 * 29.0 + 61.8723 = 36.63
+Obs4 = -0.8706 * 19.0 + 61.8723 = 45.33
+
+</pre>
+<p>我们现在有了预测。让我们计算每个预测的误差。</p>
+<pre>Error1 = 12 – 11.38 = 0.62
+Error2 = 27 – 29.66 = -2.66
+Error3 = 39 – 36.62 = 2.37
+Error4 = 45 – 45.33 = -0.33
+
+</pre>
+<p>当我们添加误差来量化我们的模型预测结果时会发生什么？</p>
+<pre>Total error= 0.62 – 2.66 + 2.37 – 0.33 = 0.0078
+
+</pre>
+<p>这是没有意义的，因为误差没有正确量化我们的评估结果。正误差抵消了负误差，使我们的误差值非常小。当您的数据中有异常值时，这种影响会更加深远，在这种情况下，一两个值可以补偿其余的误差。因此，我们需要使用一些其他的度量来量化我们的误差。表<a href="#Tab3"> 6-3 </a>总结了每个选择指标以及如何使用它们来评估连续模型性能。</p>
+<p>表 6-3</p><p class="SimplePara">选择指标</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公制的</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">模型性能</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">均方误差</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越低越好</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">均方根误差(RMSE)</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越低越好</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">绝对平均误差</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越低越好</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">r 平方</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">调整后的 R 平方</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">解释方差</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">越高越好</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h4 class="Heading">均方误差</h4>
+<p>均方误差取误差平方的平均值。首先，让我们计算平方误差。我们将使用先前计算的误差。</p>
+<pre>Sum Squared Error (SSE) = (0.62)2 + (-2.66)2 + (2.37)2 + (-0.33)2 = 13.21
+
+</pre>
+<p>现在，均方误差是上述值的平均值。</p>
+<pre>Mean Squared Error (MSE) = 13.21/4 = 3.303
+
+</pre>
+<p>让我们用 PySpark 做同样的计算。</p>
+<pre>from pyspark.ml.evaluation import RegressionEvaluator
+evaluator = RegressionEvaluator(labelCol='y', predictionCol="prediction", metricName="mse")
+evaluator.evaluate(pred_result)
+# using model summary
+print('Mean Squared error', reg_summary.meanSquaredError)
+
+
+
+
+
+
+
+</pre>
+
+<h4 class="Heading">均方根误差(RMSE)</h4>
+<p>均方根误差取均方误差(MSE)的平方根。<p><img alt="$$ \mathrm{RMSE}=\sqrt[2]{MSE}=\sqrt[2]{3.303}=1.817 $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equc.png" style="width:16.06em"/>T2】</p></p>
+<p>让我们用 PySpark 做同样的计算。</p>
+<pre>evaluator = RegressionEvaluator(labelCol='y', predictionCol="prediction", metricName="rmse")
+evaluator.evaluate(pred_result)
+# using model summary
+print('Root mean squared error', reg_summary.rootMeanSquaredError)
+
+</pre>
+
+<h4 class="Heading">平均绝对误差</h4>
+<p>平均绝对误差取误差绝对值的平均值。让我们计算一下我们预测的绝对误差。</p>
+<pre>Sum Absolute Error (SAE) = 0.62 + 2.66 + 2.37 + 0.33 = 5.989
+
+</pre>
+<p>平均绝对误差取该值的平均值。</p>
+<pre>Mean absolute error = 5.989/4 = 1.497
+
+</pre>
+<p>让我们在 PySpark 中做同样的计算。</p>
+<pre>evaluator = RegressionEvaluator(labelCol='y', predictionCol="prediction", metricName="mae")
+evaluator.evaluate(pred_result)
+# using model summary
+print('Mean Absolute error', reg_summary.meanAbsoluteError)
+
+</pre>
+
+<h4 class="Heading">R 平方(R <sup> 2 </sup></h4>
+<p class="Para" id="Par83">r 平方是决定回归模型的系数。它测量拟合优度；即模型与数据的拟合程度。R 平方方程有多种表示方式。</p>
+<h5 class="Heading">使用模型拟合</h5>
+<p>比方说，</p>
+<pre>SST = SSM + SSE
+where
+SST = Sum of squares total
+SSM = Sum of squares model
+SSE = Sum of squares error
+Then
+R-squared = SSM/ SST = 1 – (SSE/SST)
+
+</pre>
+
+<h5 class="Heading">使用模型方差</h5>
+<p>
+ 
+</p>
+<pre>var(model) = variance of model = MSE
+
+
+
+
+var(mean) = Average of sum of squared error around target mean (MSM)
+R squared = 1 – (var(model)/var(mean)) = 1 – (MSE/MSM)
+
+</pre>
+<p>让我们手动计算一下。这一次，我们将使用模型方差法，因为我们已经计算了 MSE。</p>
+<pre>Mean of target (mean) = (12 + 27 + 39 + 45)/4 = 30.75
+SS(mean) = (12 – 30.75)2 + (27 – 30.75)2 + (39 – 30.75)2 + (45 – 30.75)2
+var(mean) = (351.56 + 14.06 + 68.06 + 203.06)/4 = 636.75/4 = 159.19
+var(model) = MSE = 3.303
+R-squared = 1 – (3.303/159.19) = 0.9792
+
+</pre>
+Note
+<p class="Para FirstParaInFormalPara" id="Par87"><code>SS (mean)</code>与<code>SST</code>相同。让我们在 PySpark 中做同样的计算。</p>
+
+<p>
+ 
+</p>
+<pre>evaluator = RegressionEvaluator(labelCol='y', predictionCol="prediction", metricName="r2")
+evaluator.evaluate(pred_result)
+print('R squared', reg_summary.r2)
+
+</pre>
+
+
+<h4 class="Heading">解释方差(Var)</h4>
+<p>解释方差是基线模型方差和拟合模型方差之间的差异。</p>
+<pre>Explained variance (var) = var(mean) – var(model)
+Var = 159.19 – 3.303 = 155.884
+
+</pre>
+<p>让我们在 PySpark 中做同样的计算。</p>
+<pre># option available for Pyspark 3.0 and above
+evaluator = RegressionEvaluator(labelCol='y', predictionCol="prediction", metricName="var")
+evaluator.evaluate(pred_result)
+
+
+
+
+# PySpark &lt; 3.0
+print('Explained Variance', reg_summary.explainedVariance)
+
+</pre>
+
+<h4 class="Heading">调整后的 R 平方(调整 R <sup> 2 </sup></h4>
+<p>r 平方是一个有偏估计，因为参数的数量会影响值。当添加噪声参数或完全随机的参数时，R 平方值会增加。因此，根据模型中参数的数量来调整 R 平方值是很好的。这里提供了公式:<p> <img alt="$$ {R}_{adjusted}^2=1-\frac{\left(1-{R}^2\right)\;\left(N-1\right)}{N-p-1} $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equd.png" style="width:14.02em"/> </p></p>
+<p class="Para" id="Par92">n–观察数量(在我们的示例中为 4)</p>
+<p class="Para" id="Par93">p–参数数量(在我们的示例中为 1，“x1”)</p>
+<p class="Para" id="Par94">R <sup> 2 </sup> <sub>调整后</sub>= 1-(((1-0.97924)* 3)/(4-1-1))= 0.96886</p>
+<p class="Para" id="Par95">让我们使用 PySpark 进行计算。</p>
+<p class="Para" id="Par96">print('R 平方'，reg_summary.r2adj)</p>
+
+
+<h3 class="Heading">二元目标</h3>
+<p>当谈到二元目标时，PySpark 提供了<code>BinaryClassificationEvaluator</code>和<code>MulticlassClassificationEvaluator</code>来评估模型性能。这些选项在 PySpark <em class="EmphasisTypeItalic "> ML 调谐</em>封装中提供。此外，您也可以使用<code>BinaryClassificationMetrics</code>和<code>MulticlassMetrics</code>选项。不幸的是，PySpark 不支持 Scala 版本中的所有求值方法。有时，您需要使用变通方法来获得指标。我们建议您将预测转换成 pandas 数据集，并使用<em class="EmphasisTypeItalic "> scikit-learn </em>来生成指标。这将是另一种方法。对于本书，我们将使用本机 PySpark 方法。表<a href="#Tab4"> 6-4 </a>提供了样本数据(或逻辑门)。</p>
+<p>表 6-4</p><p class="SimplePara">抽样资料</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">x1</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">x2</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">目标</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>让我们用 x1 和 x2 这两个特征对照目标来绘制数据。该图如图<a href="#Fig12"> 6-12 </a>所示。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig12_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig12_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-12</p><p class="SimplePara">样本数据图</p>
+
+
+<p class="Para" id="Par99">我们将使用<em class="EmphasisTypeItalic "> x1 对目标</em>来评估分类指标。</p>
+<h4 class="Heading">使用 PySpark 复制输出的代码</h4>
+<p>
+ 
+</p>
+<pre>from pyspark.sql.types import IntegerType, DoubleType
+
+
+
+
+from pyspark.sql.types import StructField, StructType
+cSchema = StructType([StructField("x1", IntegerType())\
+                      ,StructField("x2", IntegerType())\
+                      ,StructField("target", IntegerType())])
+df_list = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
+df = spark.createDataFrame(df_list, schema=cSchema)
+assembled_df = assemble_vectors(df, ['x1'], 'target')
+from pyspark.ml.classification import LogisticRegression
+clf = LogisticRegression(featuresCol='features', labelCol="target")
+clf_model = clf.fit(assembled_df)
+print(clf_model.coefficients[0], clf_model.intercept)
+#Output: 22.453868180687905 2.0548845847848323e-06
+
+</pre>
+<p class="Para" id="Par101"><code>pred_result = clf_model.transform(assembled_df)</code></p>
+
+<h4 class="Heading">模型方程</h4>
+<p>
+ 
+</p>
+<pre>y-hat = 22.45* x1 + 0.0000021
+
+
+
+
+
+</pre>
+
+<h4 class="Heading">6.4.2.3 y 帽预测到概率到最终预测</h4>
+<p>我们将使用 Sigmoid 函数将我们的<code>y-hat</code>预测转换成概率。<p> <img alt="$$ Sigmoid\kern0.17em function, Probability=\left(\frac{1}{1+\mathit{\exp}\left(-x\right)}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Eque.png" style="width:21.04em"/> </p></p>
+<p>让我们首先使用前面的 y-hat 公式来计算预测。</p>
+<pre>Obs1 = 22.45* 0 + 0.0000021 = 0.0000021
+
+</pre>
+<p>类似地，Obs2、Obs3 和 Obs4 分别得到 0.0000021、22.45 和 22.45。现在，让我们使用 Sigmoid 函数将我们的预测转换成概率。这将分别产生 0.5、0.5、1.0 和 1.0 的值。我们通过使用截止值将概率转换为预测。大多数算法默认使用 0.5 作为截止值。这个截止值也可以修改以适合你的情况。在我们的示例中，我们也将使用 0.5。</p>
+<pre>probability &gt;= cut-off = 1
+probability &lt; cut-off = 0
+
+</pre>
+<p class="Para" id="Par106">基于这个截止点，我们得到<em class="EmphasisTypeItalic ">最终预测</em>分别为 1、1、1 和 1。</p>
+
+<h4 class="Heading">混淆矩阵</h4>
+<p>然后，我们将预测值与实际目标值进行叠加，得到图<a href="#Fig13"> 6-13 </a>所示的混淆矩阵。提供生成矩阵的代码以供参考。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig13_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig13_HTML.jpg" style="width:26.58em"/></p>
+<p>图 6-13</p><p class="SimplePara">混淆矩阵</p>
+
+
+<p>
+ 
+</p>
+<pre>from pyspark.mllib.evaluation import BinaryClassificationMetrics, MulticlassMetrics
+# select the required columns from prediction result
+predictionAndTarget = pred_result.select("prediction", "target")
+predictionAndTarget = predictionAndTarget.withColumn("target", predictionAndTarget["target"].cast(DoubleType()))
+predictionAndTarget = predictionAndTarget.withColumn("prediction", predictionAndTarget["prediction"].cast(DoubleType()))
+metrics = MulticlassMetrics(predictionAndTarget.rdd.map(tuple))
+# confusion matrix
+cm = metrics.confusionMatrix().toArray()
+#plotting functions
+import seaborn as sns
+import matplotlib.pyplot as plt
+def make_confusion_matrix_chart(cf_matrix):
+
+    list_values = ['0', '1']
+    plt.subplot(111)
+    sns.heatmap(cf_matrix, annot=True, yticklabels=list_values,
+                                xticklabels=list_values, fmt="g")
+    plt.ylabel("Actual")
+
+
+
+
+
+
+    plt.xlabel("Pred")
+    plt.ylim([0,2])
+    plt.title('OR Logic Gate predictions')
+    plt.tight_layout()
+    return None
+make_confusion_matrix_chart(cm) #make confusion matrix plot
+
+</pre>
+<p>抽象的混淆矩阵如下所示。</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th colspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">预测</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">否定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">积极的</p>
+</td>
+</tr>
+<tr><td rowspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">实际的</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">积极的</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">假阴性(FN)</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">真阳性(TP)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">否定</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">真阴性(TN)</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">假阳性</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>通过将抽象术语矩阵叠加到我们的结果矩阵上，我们得到以下结果:</p>
+<pre>True Positive, TP = 3
+True Negative, TN = 0
+False Positive, FP = 1
+False Negative, FN = 0
+
+</pre>
+<p>让我们逐一计算分类指标来评价这个模型(表<a href="#Tab5"> 6-5 </a>)。在此之前，我们将通过代码一次性计算它们。</p>
+<p>表 6-5</p><p class="SimplePara">分类指标</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公制的</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">范围</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">模型性能</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">什么时候用？</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">例子</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">准确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0 到 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">所有的课程都很重要。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">目标分布比较均衡。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">错误分类率</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0 到 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越低越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">所有的课程都很重要。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">目标分布比较均衡。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0 到 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">误报的成本很高。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">科学测试(怀孕，新冠肺炎)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回忆</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0 到 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">假阴性的成本很高。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">不平衡的数据(欺诈检测)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">f1-分数</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0 到 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">假阳性和假阴性的成本都很高。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">信息检索任务</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">ROC 或 AUC</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.5 比 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">所有的课程都很重要。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">演示文稿，业务利益相关者</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">KS 统计</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0 和 1 之间的分隔很重要。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">双样本分析</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">十分位数</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">将概率从最高到最低分为十个部分。排名应该不会破。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">观察值的排序很重要。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">营销活动</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">混淆矩阵</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">结果(TP、TN、FP、FN)</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">所有的课程都很重要。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">演示文稿，业务利益相关者</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">受试者工作特征曲线</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.5 比 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">性能图</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">所有的课程都很重要。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">演示文稿，业务利益相关者</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确召回曲线</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正班的目标分布(平衡班为 0.5)比 1</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">性能图</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">不平衡的班级</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">信息检索任务</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">基尼系数(不在本书范围内)</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0 到 1</p>
+<p class="SimplePara">公式:(2 * AUC–1)</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">越高越好。</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">所有的课程都很重要。</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">信用评分模型</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>from pyspark.ml.evaluation import BinaryClassificationEvaluator
+acc = metrics.accuracy
+misclassification_rate = 1 - acc
+precision = metrics.precision(1.0)
+recall = metrics.recall(1.0)
+f1 = metrics.fMeasure(1.0)
+evaluator = BinaryClassificationEvaluator(labelCol='target', rawPredictionCol="rawPrediction", metricName="areaUnderROC")
+roc = evaluator.evaluate(pred_result)
+print(acc, misclassification_rate, precision, recall, f1, roc)
+
+</pre>
+
+<h4 class="Heading">准确</h4>
+<p>精确度衡量算法预测与实际目标匹配的次数<em class="EmphasisTypeItalic ">。它由以下公式定义:<p> <img alt="$$ Accuracy=\left(\frac{TP+ TN}{TP+ TN+ FP+ FN}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equf.png" style="width:16em"/> </p></em></p>
+<p class="Para" id="Par113">该模型的计算精度值为<code>0.75</code>。或者，你可以认为四分之一的预测是错误的。所以我们的精度是<code>0.75</code>。</p>
+
+<h4 class="Heading">错误分类率</h4>
+<p>错误分类率衡量算法的预测与实际目标不匹配的次数<em class="EmphasisTypeItalic ">。它也被称为错误率。它由以下公式定义:</em></p>
+<pre>Misclassification rate = 1 – Accuracy
+
+</pre>
+<p class="Para" id="Par115">模型的错误分类率为<code>0.25</code>。或者，你可以认为四分之一的预测是错误的。所以，我们的错误率是<code>0.25</code>。</p>
+
+<h4 class="Heading">精确</h4>
+<p>Precision 测量<em class="EmphasisTypeItalic ">算法根据其预测</em>返回相关匹配的次数。它也被称为阳性预测值。它由以下公式定义:<p> <img alt="$$ Precision=\left(\frac{TP}{TP+ FP}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equg.png" style="width:10.69em"/> </p></p>
+<p class="Para" id="Par117">我们的模型精度是<code>0.75</code>。</p>
+
+<h4 class="Heading">回忆</h4>
+<p>召回衡量算法根据所有相关项目返回相关匹配的次数<em class="EmphasisTypeItalic ">。它也被称为敏感度或真阳性率。它由以下公式定义:<p> <img alt="$$ Recall=\left(\frac{TP}{TP+ FN}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equh.png" style="width:9.34em"/> </p></em></p>
+<p class="Para" id="Par119">我们的车型召回是<code>1</code>。</p>
+
+<h4 class="Heading">f1-分数</h4>
+<p>F1 分数衡量精确度和召回率之间的调和平均值。它由以下公式定义:<p> <img alt="$$ F1- score=2\ast \left(\frac{Precision\ast Recall}{Precision+ Recall}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equi.png" style="width:17.01em"/> </p></p>
+<p class="Para" id="Par121">我们的 f1-score 车型是<code>0.86</code>。</p>
+
+<h4 class="Heading">受试者工作特征(ROC)/曲线下面积(AUC)</h4>
+<p>ROC 或 AUC 测量灵敏度和 1 特异性曲线下的面积。在图<a href="#Fig14"> 6-14 </a>中用浅色阴影显示。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig14_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig14_HTML.jpg" style="width:32.48em"/></p>
+<p>图 6-14</p><p class="SimplePara">皇家对空观察队</p>
+
+
+<p>这个图表是怎么生成的？嗯，我们已经知道了敏感性(回忆)。特异性由以下公式定义:<p> <img alt="$$ Specificity=\left(\frac{TN}{TN+ FP}\right)=1- FPR $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equj.png" style="width:16.74em"/> </p></p>
+<p>其中<p> <img alt="$$ False\kern0.17em Positive\kern0.17em Rate=\left(\frac{FP}{FP+ TN}\right) $$" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Chapter_TeX_Equk.png" style="width:15.06em"/> </p></p>
+<p class="Para" id="Par125">还记得我们用来将概率转换为预测的临界值吗——我们在初始计算时将其设置为 0.5。正如我们之前提到的，这个值是可定制的。使用来自<code>0 to 1 (0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)</code>的一系列值作为临界值，我们可以使用公式计算灵敏度和特异性。</p>
+<p class="Para" id="Par126">然后，我们使用所有范围的灵敏度和特异性计算值创建一个图表，如图所示。要获得图表中更详细的信息，您可以在 0 和 1 之间增加值的范围。最后，我们计算图形形成的曲线下的面积。</p>
+<p class="Para" id="Par127">红线代表一个<em class="EmphasisTypeItalic ">随机模型</em>。由于地块是正方形，红线形成的三角形面积<code>= 0.5 * base * height = 0.5 * 1 * 1 = 0.5</code>。这意味着 ROC 的基线值为 0.5。这个正方形的面积是 1。因此，ROC 的最大值为 1。要手工计算曲线(蓝线)和红线形成的面积，可以创建正方形和三角形，分别计算每个图形的面积。将所有面积相加，我们得到最终的 ROC 值。</p>
+<p>在 PySpark 中，您可以执行以下代码来绘制 ROC 图:</p>
+<pre>from pyspark.mllib.evaluation import BinaryClassificationMetrics
+# calculate fpr, tpr using CurveMetrics
+class CurveMetrics(BinaryClassificationMetrics):
+    def __init__(self, *args):
+        super(CurveMetrics, self).__init__(*args)
+
+    def _to_list(self, rdd):
+        points = []
+        results_collect = rdd.collect()
+        for row in results_collect:
+            points += [(float(row._1()), float(row._2()))]
+        return points
+
+    def get_curve(self, method):
+        rdd = getattr(self._java_model, method)().toJavaRDD()
+        return self._to_list(rdd)
+# use the probability colum to apply cut-offs
+preds = pred_result.select('target','probability').rdd.map(lambda row: (float(row['probability'][1]), float(row['target'])))
+# Returns as a list (false positive rate, true positive rate)
+points = CurveMetrics(preds).get_curve('roc')
+# make plot
+import matplotlib.pyplot as plt
+plt.figure()
+x_val = [x[0] for x in points]
+y_val = [x[1] for x in points]
+plt.title('ROC')
+plt.xlabel('False Positive Rate (1-Specificity)')
+plt.ylabel('True Positive Rate (Sensitivity)')
+plt.plot(x_val, y_val, label = 'AUC = %0.2f' % roc)
+plt.plot([0, 1], [0, 1], color="red", linestyle="--")
+plt.legend(loc = 'lower right')
+
+</pre>
+<h5 class="Heading">分类器不好 ROC 曲线会怎么样？</h5>
+<p class="Para" id="Par129">该曲线将与红线随机模型重叠，因此 ROC 值将接近 0.5。</p>
+
+
+<h4 class="Heading">精确召回曲线</h4>
+<p>精确召回曲线是精确和召回之间的权衡曲线。这对于不平衡的分类练习很有用。与 ROC 类似，针对不同的截断点计算精度和召回值，最终生成图，如图<a href="#Fig15"> 6-15 </a>所示。红线是根据数据中 1 的目标分布生成的。在我们的例子中，50%的目标是 1。因此，模型基线设置为 0.5。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig15_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig15_HTML.jpg" style="width:26.58em"/></p>
+<p>图 6-15</p><p class="SimplePara">精确召回曲线</p>
+
+
+<p>我们可以通过对不同截止点的精度值求平均值来计算蓝线下的面积。对于这张图表，手工计算面积很容易。图形顶部被忽略的三角形的面积= <code>0.33 * 0.25 * 0.5 = 0.0416</code>。因此，PR 曲线下的面积= <code>1 – 0.0416 = 0.9584</code>。让我们使用 PySpark 来完成同样的任务。</p>
+<pre>evaluator = BinaryClassificationEvaluator(labelCol='target', rawPredictionCol="rawPrediction", metricName="areaUnderPR")
+pr = evaluator.evaluate(pred_result)
+preds = pred_result.select('target','probability').rdd.map(lambda row: (float(row['probability'][1]), float(row['target'])))
+points = CurveMetrics(preds).get_curve('pr')
+plt.figure()
+x_val = [x[0] for x in points]
+y_val = [x[1] for x in points]
+
+
+
+
+plt.title('PR curve')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.plot(x_val, y_val, label = 'Average Precision = %0.2f' % pr)
+plt.plot([0, 1], [0.5, 0.5], color="red", linestyle="--")
+plt.legend(loc = 'lower right')
+
+</pre>
+<h5 class="Heading">分类器不好的时候 PR 曲线会怎么样？</h5>
+<p>PR 曲线下的面积将类似于所有目标值都等于 1 的分布面积。在我们的例子中，该值将接近 0.5。让我们用一个随机值发生器来证明(图<a href="#Fig16"> 6-16 </a>)。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig16_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig16_HTML.jpg" style="width:26.58em"/></p>
+<p>图 6-16</p><p class="SimplePara">分类器错误的 PR 曲线</p>
+
+
+<pre>from sklearn.metrics import precision_recall_curve, average_precision_score
+# random target and probabilities
+rand_y = [random.choice([1, 0]) for i in range(0, 100)]
+rand_prob = [random.uniform(0, 1) for i in range(0, 100)]
+rand_precision, rand_recall, _ = precision_recall_curve(rand_y, rand_prob)
+pr = average_precision_score(rand_y, rand_prob)
+#plot random predictions
+plt.figure()
+plt.title('PR curve')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.plot(rand_recall, rand_precision, label = 'Average Precision = %0.2f' % pr)
+plt.plot([0, 1], [0.5, 0.5], color="red", linestyle="--")
+plt.legend(loc = 'lower right')
+
+</pre>
+
+
+<h4 class="Heading">Kolmogorov Smirnov (KS)统计和十分位数</h4>
+<p class="Para" id="Par133">KS 统计测量目标与非目标分布的差异。这是非参数评估。为了进行知识共享，你需要首先创建十分位数。</p>
+<h5 class="Heading">十分位数</h5>
+<p>为了得到一个模型的十分位数，</p>
+<ol><li class="ListItem"><p class="Para" id="Par135">对数据集应用模型；</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par136">根据递减概率对分数进行排序(隐式处理平局)；和</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par137">把分数分成十个桶(十分之一)。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par138">现在你有十分之一了。十分位数帮助您进行各种分析，尤其是在活动中。基于十分位数，您可以测量前 10%和前 30%的转换率，以此类推。此外，您可以测量提升和实际与预测的统计数据。</p>
+
+<h5 class="Heading">KS 统计</h5>
+<p class="Para" id="Par139">我们将按十分位数计算目标和非目标的累积分布。这两个值的差给出了分布的扩散，扩散的最大值就是 KS。</p>
+<p>PySpark 没有提供直接的方法来执行这种分析。我们已经提供了一个解决方法。在接下来的工作中，我们使用了银行数据集。</p>
+<pre>#load dataset, cleanup and fit model
+from pyspark.sql import SparkSession
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml import Pipeline
+from pyspark.sql.functions import countDistinct
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.sql import functions as F
+import numpy as np
+filename = "bank-full.csv"
+spark = SparkSession.builder.getOrCreate()
+df = spark.read.csv(filename, header=True, inferSchema=True, sep=';')
+df = df.withColumn('label', F.when(F.col("y") == 'yes', 1).otherwise(0))
+df = df.drop('y')
+#assemble individual columns to one column - 'features'
+def assemble_vectors(df, features_list, target_variable_name):
+    stages = []
+    #assemble vectors
+    assembler = VectorAssembler(inputCols=features_list, outputCol="features")
+    stages = [assembler]
+    #select all the columns + target + newly created 'features' column
+    selectedCols = [target_variable_name, 'features']
+    #use pipeline to process sequentially
+    pipeline = Pipeline(stages=stages)
+    #assembler model
+
+
+
+
+
+
+    assembleModel = pipeline.fit(df)
+    #apply assembler model on data
+    df = assembleModel.transform(df).select(selectedCols)
+    return df
+
+df = df.select(['education', 'age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous', 'label'])
+features_list = ['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous']
+assembled_df = assemble_vectors(df, features_list, 'label')
+clf = LogisticRegression(featuresCol='features', labelCol="label")
+train, test = assembled_df.randomSplit([0.7, 0.3], seed=12345)
+clf_model = clf.fit(train)
+
+#Deciling and KS calculation begins here
+from pyspark.sql import Window
+
+
+
+
+
+
+
+def create_deciles(df, clf, score, prediction, target, buckets):
+
+    # get predictions from model
+    pred = clf.transform(df)
+    #probability of 1's, prediction and target
+    pred = pred.select(F.col(score), F.col(prediction), F.col(target)).rdd.map(lambda row: (float(row[score][1]), float(row['prediction']), float(row[target])))
+    predDF = pred.toDF(schema=[score, prediction, target])
+    # remove ties in scores work around
+    window = Window.orderBy(F.desc(score))
+    predDF = predDF.withColumn("row_number", F.row_number().over(window))
+    predDF.cache()
+    predDF = predDF.withColumn("row_number", predDF['row_number'].cast("double"))
+    # partition into 10 buckets
+    window2 = Window.orderBy("row_number")
+    final_predDF = predDF.withColumn("deciles", F.ntile(buckets).over(window2))
+    final_predDF = final_predDF.withColumn("deciles", final_predDF['deciles'].cast("int"))
+    # create non target column
+    final_predDF = final_predDF.withColumn("non_target", 1 - final_predDF[target])
+    final_predDF.cache()    #final predicted df
+
+    #ks calculation starts here
+
+
+
+
+
+
+    temp_deciles = final_predDF.groupby('deciles').agg(F.sum(target).alias(target)).toPandas()
+    non_target_cnt = final_predDF.groupby('deciles').agg(F.sum('non_target').alias('non_target')).toPandas()
+    temp_deciles = temp_deciles.merge(non_target_cnt, on="deciles", how="inner")
+    temp_deciles = temp_deciles.sort_values(by='deciles', ascending=True)
+    temp_deciles['total'] = temp_deciles[target] + temp_deciles['non_target']
+    temp_deciles['target_%'] = (temp_deciles[target] / temp_deciles['total'])*100
+    temp_deciles['cum_target'] = temp_deciles[target].cumsum()
+    temp_deciles['cum_non_target'] = temp_deciles['non_target'].cumsum()
+    temp_deciles['target_dist'] = (temp_deciles['cum_target']/temp_deciles[target].sum())*100
+    temp_deciles['non_target_dist'] = (temp_deciles['cum_non_target']/temp_deciles['non_target'].sum())*100
+    temp_deciles['spread'] = temp_deciles['target_dist'] - temp_deciles['non_target_dist']
+    decile_table=temp_deciles.round(2)
+    decile_table = decile_table[['deciles', 'total', 'label', 'non_target', 'target_%', 'cum_target', 'cum_non_target', 'target_dist', 'non_target_dist', 'spread']]
+    print("KS Value - ", round(temp_deciles['spread'].max(), 2))
+    return final_predDF, decile_table
+
+#create deciles on the train and test datasets
+
+
+
+
+
+
+pred_train, train_deciles = create_deciles(train, clf_model, 'probability', 'prediction', 'label', 10)
+pred_test, test_deciles = create_deciles(test, clf_model, 'probability', 'prediction', 'label', 10)
+
+#pandas styling functions
+from collections import OrderedDict
+import pandas as pd
+import sys
+%matplotlib inline
+
+def plot_pandas_style(styler):
+    from IPython.core.display import HTML
+    html = '\n'.join([line.lstrip() for line in styler.render().split('\n')])
+    return HTML(html)
+
+def highlight_max(s,color='yellow'):
+    '''
+    highlight the maximum in a Series yellow.
+    '''
+    is_max = s == s.max()
+    return ['background-color: {}'.format(color) if v else '' for v in is_max]
+
+def decile_labels(agg1, target, color="skyblue"):
+    agg1 = agg1.round(2)
+
+
+
+
+
+
+    agg1 = agg1.style.apply(highlight_max, color = 'yellow', subset=['spread']).set_precision(2)
+    agg1.bar(subset=[target], color='{}'.format(color), vmin=0)
+    agg1.bar(subset=['total'], color='{}'.format(color), vmin=0)
+    agg1.bar(subset=['target_%'], color='{}'.format(color), vmin=0)
+    return agg1
+
+#train deciles and KS
+plot_decile_train = decile_labels(train_deciles, 'label', color="skyblue")
+plot_pandas_style(plot_decile_train)
+
+</pre>
+<p>
+ 
+</p>
+<pre>#test deciles and KS
+plot_decile_test = decile_labels(test_deciles, 'label', color="skyblue")
+plot_pandas_style(plot_decile_test)
+
+</pre>
+<p><code>training</code>和<code>testing,</code>的 KS 值分别为<code>50.28</code>和<code>49.63</code>，如图<a href="#Fig17"> 6-17 </a>和<a href="#Fig18"> 6-18 </a>所示。测试 KS 值在从<em class="EmphasisTypeItalic ">到</em>串<em class="EmphasisTypeItalic ">到</em> KS <em class="EmphasisTypeItalic ">值</em>的 3 个值之内。此外，你还可以看到，十分位数在排名上没有突破。所以，这个模型是稳定的。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig18_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig18_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-18</p><p class="SimplePara">测试数据集</p>
+
+
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig17_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig17_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-17</p><p class="SimplePara">训练数据集</p>
+
+
+
+
+<h4 class="Heading">实际与预测、收益图、提升图</h4>
+<p>让我们在 PySpark 中实现它们，然后详细查看每个指标。我们将使用上一步的输出。</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig19a_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig19a_HTML.jpg" style="width:43.12em"/></p>
+<p>数字</p><p class="SimplePara">6-19a。</p>
+
+
+<pre>import matplotlib.pyplot as plt
+
+def plots(agg1,target,type):
+
+    plt.figure(1,figsize=(20, 5))
+
+    plt.subplot(131)
+    plt.plot(agg1['DECILE'],agg1['ACTUAL'],label='Actual')
+    plt.plot(agg1['DECILE'],agg1['PRED'],label='Pred')
+    plt.xticks(range(10,110,10))
+    plt.legend(fontsize=15)
+    plt.grid(True)
+    plt.title('Actual vs Predicted', fontsize=20)
+    plt.xlabel("Population %",fontsize=15)
+    plt.ylabel(str(target) + " " + str(type) + " %",fontsize=15)
+
+    plt.subplot(132)
+    X = agg1['DECILE'].tolist()
+    X.append(0)
+    Y = agg1['DIST_TAR'].tolist()
+    Y.append(0)
+    plt.plot(sorted(X),sorted(Y))
+    plt.plot([0, 100], [0, 100],'r--')
+    plt.xticks(range(0,110,10))
+    plt.yticks(range(0,110,10))
+    plt.grid(True)
+
+
+
+
+    plt.title('Gains Chart', fontsize=20)
+    plt.xlabel("Population %",fontsize=15)
+    plt.ylabel(str(target) + str(" DISTRIBUTION") + " %",fontsize=15)
+    plt.annotate(round(agg1[agg1['DECILE'] == 30].DIST_TAR.item(),2),xy=[30,30],
+            xytext=(25, agg1[agg1['DECILE'] == 30].DIST_TAR.item() + 5),fontsize = 13)
+    plt.annotate(round(agg1[agg1['DECILE'] == 50].DIST_TAR.item(),2),xy=[50,50],
+            xytext=(45, agg1[agg1['DECILE'] == 50].DIST_TAR.item() + 5),fontsize = 13)
+
+    plt.subplot(133)
+    plt.plot(agg1['DECILE'],agg1['LIFT'])
+    plt.xticks(range(10,110,10))
+    plt.grid(True)
+    plt.title('Lift Chart', fontsize=20)
+    plt.xlabel("Population %",fontsize=15)
+    plt.ylabel("Lift",fontsize=15)
+
+    plt.tight_layout()
+# aggregations for actual vs predicted, gains and lift
+def gains(data, decile_df, decile_by, target, score):
+
+    agg1 = pd.DataFrame({},index=[])
+    agg1 = data.groupby(decile_by).agg(F.avg(target).alias('ACTUAL')).toPandas()
+    score_agg = data.groupby(decile_by).agg(F.avg(score).alias('PRED')).toPandas()
+    agg1 = agg1.merge(score_agg, on=decile_by, how="inner").merge(decile_df, on=decile_by, how="inner")
+    agg1 = agg1.sort_values(by=decile_by, ascending=True)
+    agg1 = agg1[[decile_by, 'ACTUAL', 'PRED', 'target_dist']]
+    agg1 = agg1.rename(columns={'target_dist':'DIST_TAR', 'deciles': 'DECILE'})
+    decile_by = 'DECILE'
+    agg1[decile_by] = agg1[decile_by]*10
+    agg1['LIFT'] = agg1['DIST_TAR']/agg1[decile_by]
+    agg1.columns = [x.upper() for x in agg1.columns]
+    plots(agg1,target,'Distribution')
+
+# train metrics
+
+
+
+
+gains(pred_train, train_deciles, 'deciles', 'label','probability')
+
+</pre>
+<p>
+ 
+ 
+</p>
+<p><img alt="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig19b_HTML.jpg" src="../images/500182_1_En_6_Chapter/500182_1_En_6_Fig19b_HTML.jpg" style="width:43.12em"/></p>
+<p>图 6-19b</p><p class="SimplePara">实际与预测、收益图、提升图</p>
+
+
+<pre>#test metrics
+gains(pred_test, test_deciles, 'deciles', 'label','probability')
+
+</pre>
+<p class="Para" id="Par146">好的，我们知道这些指标看起来像什么。让我们深入了解每一个问题。</p>
+<h5 class="Heading">实际与预测</h5>
+<p class="Para" id="Par147">这将目标和预测的平均分布叠加在一起。当预测值非常接近实际值时，这表明模型做得很好，反之亦然。</p>
+
+<h5 class="Heading">收益图表</h5>
+<p class="Para" id="Par148">这个图表具体说明了针对一定比例的人群可以达到的转化率。在我们的例子中，通过接触前 30%的客户，目标的转化率是 74%。这意味着，在我们的模型中，几乎所有的目标都位于前三位。增益图表值越高，模型越好。对于向营销团队解释你的模型来说，这是一个非常有用的指标，因为他们更关注基于转化率的指标。</p>
+
+<h5 class="Heading">电梯图表</h5>
+<p class="Para" id="Par149">提升图是查看转换的另一种方式。基线模型的升力为 1。这意味着当你瞄准 10%的人口时，你会得到 10%的转化率。同样，当你的目标是 20%时，你会得到 20%，以此类推。然而，通过建立一个机器学习模型，你现在能够在人口的前 10%中实现 40%的转化。因此，您的模型在人口前 10%中实现的提升是基线模型的四倍。当你进一步进入十分位数时，你的模型的升力值减小，最终变为 1。营销团队可以使用这一指标来了解他们在活动中应该在十分位数上走多远。</p>
+
+
+<h4 class="Heading">多类别、多标签评估指标</h4>
+<p class="Para" id="Par150">这些话题超出了本书的范围。我们已经在二元模型评估中使用了一些多类度量。您可以应用本章中获得的见解，将本章中学到的指标扩展到多类和多标签分类任务。</p>
+
+
+
+<h2 class="Heading">摘要</h2>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par152">我们详细讨论了模型的复杂性。</p></li>
+<li><p class="Para" id="Par153">我们讨论了不同类型的模型验证技术。</p></li>
+<li><p class="Para" id="Par154">我们研究了数据泄漏以及如何处理它以获得更好的模型性能。</p></li>
+<li><p class="Para" id="Par155">最后，我们详细讨论了回归和二元模型的模型评估指标。</p></li>
+</ul>
+
+<p class="Para" id="Par156">干得好！在下一章，我们将学习无监督技术、主题建模和推荐。继续学习，敬请关注。</p>
+
+
+
+</body>
+</html>

@@ -1,0 +1,1389 @@
+<html lang="en">
+<head><title>Partial Differential Equations</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">8.偏微分方程</h1>
+
+ 
+<!--End Abstract--><p>偏微分方程(PDE)在一个方程中涉及多元函数及其各种偏导数的量。前一章讨论的普通偏微分方程是偏微分方程的一个子类，因为普通偏微分方程处理的是一个变量的函数。偏微分方程比普通的偏微分方程更难求解，因为一个简单的偏微分方程可以有一大类解。例如，对于这个简单的 PDE，</p><p><img alt="$$ \frac{\partial^2v}{\partial x\partial y}=0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equa.png" style="width:4.32em"/></p>
+
+
+
+
+<p class="Para" id="Par3">任意一元函数<em class="EmphasisTypeItalic "> f </em>和<em class="EmphasisTypeItalic "> g </em>的任意函数<em class="EmphasisTypeItalic "> v </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic ">y</em>)=<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">x</em>)+<em class="EmphasisTypeItalic ">g</em>(<em class="EmphasisTypeItalic ">y</em>)将满足等式。这远远超出了 ODE 求解公式中可用的选择，后者通常允许自由选择一些数字或系数。在偏微分方程的研究中，人们通常可以自由选择函数。</p>
+<p class="Para" id="Par4">一般来说，除了少数几类问题，偏微分方程很少用解析方法求解。大多数偏微分方程没有通用公式。因此，对于某些偏微分方程的数值近似解的方法，有大量的现代数学和科学研究。偏微分方程在数学、科学和工程中无处不在。例如，它们是现代科学理解声音、热、扩散、静电学、电动力学、流体动力学、弹性、广义相对论和量子力学的基础。它们也来自许多纯数学的考虑，如微分几何和变分法。千年难题之一<sup> <a epub:type="noteref" href="#Fn1" id="Fn1_source" role="doc-noteref"> 1 </a> </sup>就是证明著名的偏微分方程 Navier-Stokes 方程的存在唯一性。偏微分方程形成了一个非常大的话题。在这一章中，我们甚至不能触及表面。我们将简要讨论偏微分方程的一个小子类(即二阶线性 PDEs)以及如何使用一种特定的数值方法(即有限差分)来求解它们。</p>
+<h2 class="Heading">8.1 二阶线性偏微分方程</h2>
+<p>二阶偏微分方程具有以下形式:</p><p><img alt="$$ a\left(\ast \right)\frac{\partial^2u}{\partial {x}^2}+b\left(\ast \right)\frac{\partial^2u}{\partial x\partial y}+c\left(\ast \right)\frac{\partial^2u}{\partial {y}^2}+d\left(\ast \right)\frac{\partial u}{\partial x}+e\left(\ast \right)\frac{\partial u}{\partial y}+f\left(\ast \right)u+g\left(\ast \right)=0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equb.png" style="width:32.25em"/></p>
+
+
+
+
+<p class="Para" id="Par7">根据系数<em class="EmphasisTypeItalic ">a</em>(∫)<em class="EmphasisTypeItalic ">b</em>(∫)<em class="EmphasisTypeItalic ">c</em>(∫)<em class="EmphasisTypeItalic ">d</em>(∫)<em class="EmphasisTypeItalic ">e</em>(∫)<em class="EmphasisTypeItalic ">f</em>(∫)<em class="EmphasisTypeItalic ">g</em>(∫)的函数形式，我们将它们分为三类。</p>
+<p>如果系数只依赖于变量而不依赖于导数，我们称这个偏微分方程为线性偏微分方程。也就是说，</p><p><img alt="$$ \ast =x,y $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equc.png" style="width:3.49em"/></p>
+
+
+
+
+<p>如果系数依赖于变量和低阶导数，我们称这个偏微分方程为拟线性偏微分方程。也就是说，</p><p><img alt="$$ \ast =x,y,\frac{\partial {u}^{n-1}}{\partial x},\frac{\partial {u}^{n-1}}{\partial y},\dots $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equd.png" style="width:11.16em"/></p>
+
+
+
+
+<p>如果系数依赖于最高阶导数，我们称这个偏微分方程为非线性偏微分方程。也就是说，</p><p><img alt="$$ \ast =x,y,\frac{\partial {u}^n}{\partial x},\frac{\partial {u}^n}{\partial y},\dots $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Eque.png" style="width:9.46em"/></p>
+
+
+
+
+<h3 class="Heading">抛物线方程</h3>
+<p>如果下列条件成立，则二阶偏微分方程为抛物线形式:</p><p><img alt="$$ {b}^2\left(\ast \right)-a\left(\ast \right)c\left(\ast \right)=0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equf.png" style="width:9.57em"/></p>
+
+
+
+
+<p>抛物型偏微分方程的一个最简单但最受欢迎的例子是一维热方程，如下所示:</p><p><img alt="$$ {u}_t=\frac{\partial u}{\partial t}=\alpha \frac{\partial^2u}{\partial {x}^2}=\alpha {u}_{xx} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equg.png" style="width:10.35em"/></p>
+
+
+
+
+<p><em class="EmphasisTypeItalic "> u </em> ( <em class="EmphasisTypeItalic "> t </em>、<em class="EmphasisTypeItalic "> x </em>)是沿一根细杆在时间<em class="EmphasisTypeItalic "> t </em>和位置<em class="EmphasisTypeItalic "> x </em>的温度。<em class="EmphasisTypeItalic "> α </em>是热扩散率，正常数。热量方程粗略地描述了热力学第二定律:热量将从较热的物体流向相邻的较冷的物体，与它们之间的温差和材料的导热系数成正比。当热量流入(流出)一种材料时，其温度的升高(降低)与热量除以材料的数量(质量)成比例，比例因子称为材料的比热扩散率。简单地说，给定时间和点的温度上升或下降的速度与该点的温度和该点附近的平均温度之差成正比。这个概念可以推广到三维热方程，如下所示:</p><p><img alt="$$ {u}_t=\frac{\partial u}{\partial t}=\alpha \left(\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}+\frac{\partial^2u}{\partial {z}^2}\right)=\Delta  u $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equh.png" style="width:16.25em"/></p>
+
+
+
+
+<p class="Para" id="Par14">∆是拉普拉斯算子。它给出了函数在一个点的邻域内的平均值之差。在我们的例子中，它测量温度距离满足调和函数的平均值属性有多远。</p>
+<p class="Para" id="Par15">一个偏微分方程可以代表一大类方程或现象。热量方程具有非常广泛的适用性。金融数学的万亿美元布莱克-斯科尔斯方程是热量方程的变体。量子力学的薛定谔方程可以看作虚时间中的热方程。在图像分析中，热量方程用于解决像素化和识别边缘。热方程的解在流体动力冲击的数学公式中是有用的。</p>
+<p class="Para" id="Par16">如同求解常微分方程一样，我们需要某些初始条件或边界条件或约束来缩小求解偏微分方程的范围。有三种典型的边界条件对应于三个边值问题。</p>
+<p>第一类边值问题有一个边界条件，规定了函数本身在函数定义域边界上的值。它也被称为狄利克雷边界条件。例如，如果一根铁棒的一端保持恒温，那么问题的值(计算一个区域的热量或温度)就是空间中该点的已知值。见图<a href="#Fig1"> 8-1 </a>。</p>
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig1_HTML.png" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig1_HTML.png" style="width:29.52em"/></p>
+<p>图 8-1</p><p class="SimplePara">热传导方程的初边值问题</p>
+
+
+<p>数学上，我们这样写:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial u}{\partial t}-a\frac{\partial^2u}{\partial {x}^2}=0,0&amp;lt;t&amp;lt;T,0&amp;lt;x&amp;lt;l\\ {}u\left(x,0\right)=\phi (x),0\le x\le l\\ {}u\left(0,t\right)={g}_1(t),u\left(l,t\right)={g}_2(t),0\le t\le T\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equi.png" style="width:18.33em"/></p>
+
+
+
+
+<p>第一个(微分)方程描述了热系统的动力学。第二个方程是初始条件，描述了杆中任何地方的初始温度。第三个方程是边界条件，规定了杆两端在任何时候的温度。边界条件<em class="EmphasisTypeItalic "> u </em> (0，<em class="EmphasisTypeItalic ">t</em>)=<em class="EmphasisTypeItalic ">g</em><sub>1</sub>(<em class="EmphasisTypeItalic ">t</em>)，<em class="EmphasisTypeItalic "> u </em> ( <em class="EmphasisTypeItalic "> l </em>，<em class="EmphasisTypeItalic ">t</em>)=<em class="EmphasisTypeItalic ">g</em><sub>2</sub>(<em class="EmphasisTypeItalic ">t</em>)称为第一类边界条件。<em class="EmphasisTypeItalic "> ϕ </em> ( <em class="EmphasisTypeItalic "> x </em>)，<em class="EmphasisTypeItalic ">g</em><sub>1</sub>(<em class="EmphasisTypeItalic ">t</em>)和<em class="EmphasisTypeItalic ">g</em><sub>2</sub>(<em class="EmphasisTypeItalic ">t</em>)是已知函数。它们也满足连接条件。</p><p><img alt="$$ \left\{\begin{array}{c}\phi (0)={g}_1(0)\\ {}\phi (l)={g}_2(0)\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equj.png" style="width:6.87em"/></p>
+
+
+
+
+<p>第二种边界条件叫做诺依曼边界条件。它指定函数在边界上的法向导数的值。法向导数是在垂直于(即正交于)空间中某个表面的方向上得到的方向导数。如果法线方向，即边界<em class="EmphasisTypeItalic ">γ</em>的外法线方向由<em>T3】nT5】表示，那么函数<em class="EmphasisTypeItalic "> f </em>的方向导数有时表示如下:</em></p><p><img alt="$$ \frac{\partial f}{\partial \boldsymbol{n}}=\nabla f(x)\bullet \boldsymbol{n}=\frac{\partial f}{\partial \boldsymbol{x}}\bullet \boldsymbol{n} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equk.png" style="width:11.25em"/></p>
+
+
+
+
+<p class="Para" id="Par21">一个例子是，如果在一根铁棒的一端有一个加热器，那么能量将以一个恒定的速率增加，但是实际的温度是未知的。</p>
+<p class="Para" id="Par22">第三种边界条件也称为柯西边界条件。它指定了函数值和定义域边界上的正常导数。这相当于施加狄利克雷和诺依曼边界条件。</p>
+<p>形式上，第二和第三类边界条件可以表示如下:</p><p><img alt="$$ \left\{\begin{array}{c}{\left[\frac{\partial u}{\partial x}-{\lambda}_1(t)u\right]}_{x=0}={g}_1(t)\\ {}{\left[\frac{\partial u}{\partial x}-{\lambda}_2(t)u\right]}_{x=l}={g}_1(t)\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equl.png" style="width:11.4em"/></p>
+
+
+
+
+<p class="Para" id="Par24">当<em class="EmphasisTypeItalic ">λ</em><sub>1</sub>(<em class="EmphasisTypeItalic ">t</em>)=<em class="EmphasisTypeItalic ">λ</em><sub>2</sub>(<em class="EmphasisTypeItalic ">t</em>)= 0 时，为第二类边界条件。当<em class="EmphasisTypeItalic ">λ</em><sub>1</sub>(<em class="EmphasisTypeItalic ">t</em>)≥0 且<em class="EmphasisTypeItalic ">λ</em><sub>2</sub>(<em class="EmphasisTypeItalic ">t</em>)≥0 时，为第三类边界条件。</p>
+
+<h3 class="Heading">双曲线方程</h3>
+<p>如果下列条件成立，则二阶偏微分方程为双曲线形式:</p><p><img alt="$$ {b}^2\left(\ast \right)-a\left(\ast \right)c\left(\ast \right)&amp;gt;0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equm.png" style="width:9.57em"/></p>
+
+
+
+
+<p>双曲型偏微分方程最简单也最流行的例子是一维波动方程。</p><p><img alt="$$ {u}_{tt}=\frac{\partial^2u}{\partial {t}^2}={c}^2\frac{\partial^2u}{\partial {x}^2}={c}^2{\nabla}^2u $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equn.png" style="width:11.81em"/></p>
+
+
+
+
+<p>双曲型方程的解是“波状的”如果在一个双曲微分方程的初始数据中产生扰动，那么不是空间中的每一点都会立刻感受到扰动。相对于固定的时间坐标，扰动具有有限的传播速度。它们沿着方程的特征行进。这个特征定性地区分了双曲型方程与抛物型偏微分方程和椭圆型偏微分方程。椭圆或抛物线方程的初始(或边界)数据的扰动，基本上立刻被区域中的所有点感觉到。参见图<a href="#Fig2"> 8-2 </a>。</p>
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig2_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig2_HTML.jpg" style="width:23.42em"/></p>
+<p>图 8-2</p><p class="SimplePara">行波脉冲可以用波动方程来模拟</p>
+
+
+<p class="Para" id="Par28">波动方程本身并不指定一个物理解；一个独特的解决方案通常是通过设置一个问题与进一步的条件，如初始条件，规定了波的振幅和相位。另一类重要的问题发生在由边界条件规定的封闭空间中，其解代表驻波或谐波，类似于乐器的谐波。</p>
+<p>双曲型方程的初值问题如下:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial^2u}{\partial {t}^2}={c}^2\frac{\partial^2u}{\partial {x}^2},t&amp;gt;0\\ {}u\left(x,0\right)=\phi (x)\\ {}{\left.\frac{\partial u}{\partial t}\right|}_{t=0}=\psi (x)\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equo.png" style="width:8.78em"/></p>
+
+
+
+
+<p class="Para" id="Par30">可以证明这个方程具有这样的性质:如果<em class="EmphasisTypeItalic "> u </em>及其一阶导数是直线<em class="EmphasisTypeItalic "> t </em> = 0 上任意指定的初始数据(具有充分的光滑性)，那么对于所有时间<em class="EmphasisTypeItalic "> t </em>都存在解。</p>
+<p>边值问题如下:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial^2u}{\partial {t}^2}={c}^2\frac{\partial^2u}{\partial {x}^2},t&amp;gt;0\\ {}{\left.u\left(x,0\right)=\phi (x),\frac{\partial u}{\partial t}\right|}_{t=0}=\psi (x)\ \\ {}u\left(0,t\right)={g}_1(t),u\left(l,t\right)={g}_2(t)\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equp.png" style="width:13.74em"/></p>
+
+
+
+
+<p class="Para" id="Par32">最后一组边界条件是第一类边界条件。</p>
+
+<h3 class="Heading">椭圆方程</h3>
+<p>如果下列条件成立，则二阶偏微分方程为椭圆形式:</p><p><img alt="$$ {b}^2\left(\ast \right)-a\left(\ast \right)c\left(\ast \right)&amp;lt;0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equq.png" style="width:9.57em"/></p>
+
+
+
+
+<p>最简单的形式是泊松方程。</p><p><img alt="$$ \varDelta u={\nabla}^2u=\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}=f\left(x,y\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equr.png" style="width:14.34em"/></p>
+
+
+
+
+<p>特别是当<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em> ) = 0 时，就是拉普拉斯方程，也叫调和方程。</p><p><img alt="$$ \varDelta u=\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}=0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equs.png" style="width:8.96em"/></p>
+
+
+
+
+<p>例如，关于标量势<em class="EmphasisTypeItalic "> ϕ </em>和吸引质量<em class="EmphasisTypeItalic "> ρ </em>的引力泊松方程如下:</p><p><img alt="$$ {\nabla}^2\phi =4\pi G\rho $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equt.png" style="width:5.65em"/></p>
+
+
+
+
+<p>泊松方程的第一类边值问题如下:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}=f\left(x,y\right),\left(x,y\right)\in \varOmega \\ {}{\left.u\left(x,y\right)\right|}_{\left(x,y\right)\in \varGamma }=\phi \left(x,y\right),\varGamma =\partial \varOmega \end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equu.png" style="width:15.18em"/></p>
+
+
+
+
+<p class="Para" id="Par38"><em class="EmphasisTypeItalic ">ω</em>是解域或区域；<em class="EmphasisTypeItalic ">γ</em>是<em class="EmphasisTypeItalic ">ω</em>的边界(或边缘)。<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em>)和<em class="EmphasisTypeItalic "> ϕ </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em>)是<em class="EmphasisTypeItalic ">ω</em>∩<em class="EmphasisTypeItalic ">γ</em>上已知的连续函数。<em class="EmphasisTypeItalic "> u </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em>)是我们要求解的求解函数。</p>
+<p>第二种和第三种边界条件可以表示如下:</p><p><img alt="$$ {\left.\left(\frac{\partial u}{\partial n}+\alpha u\right)\right|}_{\left(x,y\right)\in \varGamma }=\phi \left(x,y\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equv.png" style="width:11.49em"/></p>
+
+
+
+
+<p class="Para" id="Par40">当<em class="EmphasisTypeItalic "> α </em> = 0 时，为第二类边界条件。当<em class="EmphasisTypeItalic "> α </em> ≠ 0 时，为第三类边界条件。</p>
+
+
+<h2 class="Heading">8.2 有限差分法</h2>
+<p class="Para" id="Par41">有三种主要的数值方法来计算偏微分方程的数值解。它们是有限元法、有限体积法和有限差分法。在撰写本文时，NM Dev 只支持有限差分法，也称为网格法。</p>
+<p>我们已经在第<a href="06.html"> 6 </a>章和第<a href="07.html"> 7 </a>章中讲述了有限差分法的基本概念。这个想法是相同的，除了我们把它扩展到偏微分方程的多变量的更高维度。以下是这些步骤的总结:</p>
+<ol><li class="ListItem"><p class="Para" id="Par43">在求解域上添加网格或栅格。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par44">用一组有限的离散节点(网格节点)代替独立变量的连续变量域。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par45">定义网格节点处的函数值。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par46">将网格节点处的导数值替换为它们的差商。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par47">偏微分方程现在被简化为一个代数方程组，差分方程，带有有限数量的未知数。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par48">分析收敛性并估计误差。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par49">如果差分方程组有解，并且在网格无限小时解收敛到原微分方程的解，那么差分方程组的解就是原问题的近似解(或数值解)。</p>
+ </li>
+</ol>
+
+<h3 class="Heading">8.2.1 双曲方程的数值解</h3>
+<p>考虑这个一维波动方程:</p><p><img alt="$$ \frac{\partial^2u}{\partial {t}^2}={c}^2\frac{\partial^2u}{\partial {x}^2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equw.png" style="width:5.69em"/></p>
+
+
+
+
+<p>两个边界端点都固定为 0。也就是说，</p><p><img alt="$$ u\left(t,0\right)=u\left(t,a\right)=0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equx.png" style="width:8.82em"/></p>
+
+
+
+
+<p>两个初始条件，即<em class="EmphasisTypeItalic "> u </em>及其在<em class="EmphasisTypeItalic "> t </em> = 0 时的一阶导数<em class="EmphasisTypeItalic ">u</em><sub>T5】t</sub>如下:</p><p><img alt="$$ \left\{\begin{array}{c}u\left(0,x\right)=f(x),0&amp;lt;x&amp;lt;a\\ {}{u}_t\left(0,x\right)=g(x),0&amp;lt;x&amp;lt;a\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equy.png" style="width:12.45em"/></p>
+
+
+
+
+<p>在 NM Dev 中，类<code>WaveEquation1D</code>可以用来构造这样的一维波动方程。签名如下:</p>
+<pre>/**
+ * Constructs an one-dimensional wave equation.
+ *
+ * @param c2 the wave coefficient &lt;i&gt;&amp;c^2;&lt;/i&gt; in the equation
+ * @param T   the time period of interest &lt;i&gt;(0, T)&lt;/i&gt;
+ * @param a   the region of interest &lt;i&gt;(0, a)&lt;/i&gt;
+ * @param f   the initial condition of &lt;i&gt;u&lt;/i&gt;, i.e., &lt;i&gt;u(0, x)&lt;/i&gt;
+ * @param g   the initial condition of the time-derivative of &lt;i&gt;u&lt;/i&gt;, i.e.,
+ * &lt;i&gt;u&lt;sub&gt;t&lt;/sub&gt;(0,x)&lt;/i&gt;
+ */
+public WaveEquation1D(
+    double c2,
+    double T,
+    double a,
+    UnivariateRealFunction f,
+    UnivariateRealFunction g)
+
+</pre>
+<p>由于时间和空间导数都是二阶的，我们用中心差分来近似它们。设时间步长为∈<em class="EmphasisTypeItalic ">t</em>，空间步长为∈<em class="EmphasisTypeItalic ">x</em>。将<img alt="$$ {u}_j^k=u\left({t}_k,{x}_j\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq1.png" style="width:5.92em"/>表示为网格中(<em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em>)处的近似值。差值公式如下:</p><p><img alt="$$ \frac{u_j^{k+1}-2{u}_j^k+{u}_j^{k-1}}{{\left(\Delta  t\right)}^2}={c}^2\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{{\left(\Delta  x\right)}^2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equz.png" style="width:17.25em"/></p>
+
+
+
+
+<p>让</p><p><img alt="$$ s={c}^2\frac{{\left(\Delta  t\right)}^2}{{\left(\Delta  x\right)}^2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equaa.png" style="width:5.37em"/></p>
+
+
+
+
+<p>求解<img alt="$$ {u}_j^{k+1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq2.png" style="width:2.01em"/>给出了以下结果:</p><p><img alt="$$ {u}_j^{k+1}=s\left({u}_{j+1}^k+{u}_{j-1}^k\right)+2\left(1-s\right){u}_j^k-{u}_j^{k-1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equab.png" style="width:18.12em"/></p>
+
+
+
+
+<p class="Para" id="Par57">注意，为了计算每个<img alt="$$ {u}_j^{k+1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq3.png" style="width:2.01em"/>,我们使用了前两个时间步的四个节点。因此，这是一个为<img alt="$$ {u}_j^k=u\left({t}_k,{x}_j\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq4.png" style="width:5.92em"/>寻找数值解的显式方案。</p>
+<p>作为显式格式，它不是无条件稳定的。可以证明，只有当这种情况成立时，该方案才是稳定的。</p><p><img alt="$$ s={c}^2\frac{{\left(\Delta  t\right)}^2}{{\left(\Delta  x\right)}^2}\le 1 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equac.png" style="width:7.2em"/></p>
+
+
+
+
+<p>如果我们定义∈<em class="EmphasisTypeItalic ">t</em>/∈<em class="EmphasisTypeItalic ">x</em>为格式的速度，那么稳定性条件就意味着格式的速度至少要和<em class="EmphasisTypeItalic "> c </em>一样大，也就是波速(精确解)。</p><p><img alt="$$ \Delta  x\ge c\Delta  t $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equad.png" style="width:4.23em"/></p>
+
+
+
+
+<p>这种方法叫做中心差分法，是一种二阶方法，截断误差为<em class="EmphasisTypeItalic ">O</em>((∈<em class="EmphasisTypeItalic ">t</em>)<sup>2</sup>+(∈<em class="EmphasisTypeItalic ">x</em>)<sup>2</sup>)。参见图<a href="#Fig3"> 8-3 </a>。</p>
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig3_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig3_HTML.jpg" style="width:35.45em"/></p>
+<p>图 8-3</p><p class="SimplePara">求解一维波动方程的显式格式</p>
+
+
+<p>以下 NM Dev 代码求解区域[0，1] × [0，2]中的波动方程，其中<em class="EmphasisTypeItalic ">c</em>T2】2= 4，并且具有这些初始条件:</p><p><img alt="$$ \left\{\begin{array}{c}u\left(0,x\right)=0.1\sin \left(\pi x\right)\\ {}{u}_t\left(0,x\right)=0.2\pi \sin \left(\pi x\right)\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equae.png" style="width:11.37em"/></p>
+
+
+
+
+<p>
+ 
+</p>
+<pre>final double c2 = 4.0; // c^2
+final double T = 1.0; // time upper bond
+final double a = 2.0; // x upper bound
+WaveEquation1D pde
+        = new WaveEquation1D(
+                c2,
+                T,
+                a,
+                new AbstractUnivariateRealFunction() {
+            @Override
+            public double evaluate(double x) {
+                return 0.1 * sin(PI * x); // 0.1 * sin(π x)
+            }
+        },
+                new AbstractUnivariateRealFunction() {
+            @Override
+            public double evaluate(double x) {
+                return 0.2 * PI * sin(PI * x); // 0.2π * sin(π x)
+            }
+        });
+
+int m = 80; // dt = T/m
+int n = 39; // dx = a/n
+PDESolutionTimeSpaceGrid1D soln = new ExplicitCentralDifference1D().solve(pde, m, n);
+
+int t = 0; // time index
+int x = 1; // x index
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 0;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 0;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+t = 20;
+x = 1;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 20;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 20;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+t = 40;
+x = 1;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 40;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 40;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+t = 60;
+x = 1;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 60;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 60;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>u(0,1) = 0.015643
+u(0,16) = 0.058779
+u(0,31) = -0.098769
+u(20,1) = 0.015691
+u(20,16) = 0.058956
+u(20,31) = -0.099066
+u(40,1) = -0.015605
+u(40,16) = -0.058636
+u(40,31) = 0.098529
+u(60,1) = -0.015728
+u(60,16) = -0.059098
+u(60,31) = 0.099305
+
+</pre>
+<p>类<code>WaveEquation1D</code>构造一维波动方程 PDE。我们需要指定解域和初始边界条件。签名如下:</p>
+<pre>/**
+ * Constructs an one-dimensional wave equation.
+ *
+ * @param beta the wave coefficient &lt;i&gt;&amp;beta;&lt;/i&gt; in the equation
+ * @param T    the time period of interest &lt;i&gt;(0, T)&lt;/i&gt;
+ * @param a    the region of interest &lt;i&gt;(0, a)&lt;/i&gt;
+ * @param f    the initial condition of &lt;i&gt;u&lt;/i&gt;, i.e., &lt;i&gt;u(0, x)&lt;/i&gt;
+ * @param g    the initial condition of the time-derivative of &lt;i&gt;u&lt;/i&gt;,
+ *             i.e.,
+ * &lt;i&gt;u&lt;sub&gt;t&lt;/sub&gt;(0,x)&lt;/i&gt;
+ */
+public WaveEquation1D(
+        double beta,
+        double T,
+        double a,
+        UnivariateRealFunction f,
+        UnivariateRealFunction g)
+
+</pre>
+<p><code>ExplicitCentralDifference1D</code>是一个 PDE 求解器，使用中心差分法求解一维波动方程。签名如下:</p>
+<pre>/**
+ * Solves a one-dimensional wave equation, with the resolution parameters of
+ * the solution grid.
+ *
+ * @param pde the wave equation problem
+ * @param m   the number of grid points along the time-axis
+ * @param n   the number of grid points along the space-axis
+ * @return the solution grid
+ */
+public PDESolutionTimeSpaceGrid1D solve(
+        WaveEquation1D pde,
+        final int m,
+        final int n
+)
+
+</pre>
+<p>解决方案在<code>PDESolutionTimeSpaceGrid1D</code>对象中表示。它适用于将解生成为时间和空间网格的方法。签名如下:</p>
+<pre>public interface PDESolutionTimeSpaceGrid1D {
+
+    /**
+     * Gets the value of the grid point at &lt;i&gt;(t&lt;sub&gt;m&lt;/sub&gt;,
+     * x&lt;sub&gt;n&lt;/sub&gt;)&lt;/i&gt;.
+     *
+     * @param m the index along the time axis
+     * @param n the index along the space axis
+     * @return the value at that point
+     */
+    double u(int m, int n);
+
+    /**
+     * Gets the value on the time axis at index {@code k}.
+     *
+     * @param m the index of the grid point
+     * @return &lt;i&gt;t&lt;sub&gt;m&lt;/sub&gt;&lt;/i&gt;
+     */
+    double t(int m);
+
+    /**
+     * Gets the value on the space axis at index {@code j}.
+     *
+     * @param n the index of the grid point
+     * @return &lt;i&gt;x&lt;sub&gt;n&lt;/sub&gt;&lt;/i&gt;
+     */
+    double x(int n);
+
+    /**
+     * Gets the number of interior time-axis grid points in the solution.
+     *
+     * @return the number of solution grid points along the time-axis
+     */
+    int M();
+
+    /**
+     * Gets the number of interior space-axis grid points in the solution.
+     *
+     * @return the number of solution grid points along the space-axis
+     */
+    int N();
+}
+
+</pre>
+<p>NM Dev 支持求解高达二维的波动方程。二维波动方程问题定义如下:</p><p><img alt="$$ \frac{\partial^2u}{\partial {t}^2}={c}^2\left(\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equaf.png" style="width:9.5em"/></p>
+
+
+
+
+<p>两个边界端点都固定为 0。也就是说，</p><p><img alt="$$ u\left(t,0,0\right)=u\left(t,a,0\right)=u\left(t,0,b\right)=u\left(t,a,b\right)=0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equag.png" style="width:20.8em"/></p>
+
+
+
+
+<p>在<em class="EmphasisTypeItalic "> t </em> = 0 时的两个初始条件，即<em class="EmphasisTypeItalic "> u </em>及其一阶时间导数<em class="EmphasisTypeItalic ">u</em><sub>T5】t</sub>如下:</p><p><img alt="$$ \left\{\begin{array}{c}u\left(0,x,y\right)=f\left(x,y\right),0&amp;lt;x&amp;lt;a,0&amp;lt;y&amp;lt;b\\ {}{u}_t\left(0,x,y\right)=g\left(x,y\right),0&amp;lt;x&amp;lt;a,0&amp;lt;y&amp;lt;b\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equah.png" style="width:19.21em"/></p>
+
+
+
+
+<p>在 NM Dev 中，类<code>WaveEquation2D</code>可以用来构造这样的二维波动方程。签名如下:</p>
+<pre>/**
+ * Constructs a two-dimensional wave equation.
+ *
+ * @param c2 the c^2 in the equation
+ * @param T  the time period of interest &lt;i&gt;(0, T)&lt;/i&gt;
+ * @param a  the size of the region along the x-axis, &lt;i&gt;x &amp;isin; (0,
+ *           a)&lt;/i&gt;
+ * @param b  the size of the region along the y-axis &lt;i&gt;y &amp;isin; (0,
+ *           b)&lt;/i&gt;
+ * @param f  the initial condition of &lt;i&gt;u&lt;/i&gt;, i.e., &lt;i&gt;u(0, x, y)&lt;/i&gt;
+ * @param g  the initial condition of the time-derivative of &lt;i&gt;u&lt;/i&gt;,
+ *           i.e.,
+ * &lt;i&gt;u&lt;sub&gt;t&lt;/sub&gt;(0,x,y)&lt;/i&gt;
+ */
+public WaveEquation2D(
+        double c2,
+        double T,
+        double a,
+        double b,
+        BivariateRealFunction f,
+        BivariateRealFunction g
+)
+
+</pre>
+<p>二维中心差分格式如下:</p><p><img alt="$$ \frac{u_{ij}^{k+1}-2{u}_{ij}^k+{u}_{ij}^{k-1}}{{\left(\Delta t\right)}^2}={c}^2\left(\frac{u_{i+1j}^k-2{u}_{ij}^k+{u}_{i-1j}^k}{{\left(\Delta x\right)}^2}+\frac{u_{ij+1}^k-2{u}_{ij}^k+{u}_{ij-1}^k}{{\left(\Delta y\right)}^2}\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equai.png" style="width:28.24em"/></p>
+
+
+
+
+<p>当以下条件成立时，该方案是稳定的:</p><p><img alt="$$ \frac{{\left(\Delta x\right)}^2+{\left(\Delta y\right)}^2}{{\left(\Delta t\right)}^2}\ge 4{c}^2 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equaj.png" style="width:8.9em"/></p>
+
+
+
+
+<p class="Para" id="Par73">截断误差的阶为<em class="EmphasisTypeItalic ">O</em>((δ<em class="EmphasisTypeItalic ">t</em>)<sup>2</sup>+(δ<em class="EmphasisTypeItalic ">x</em>)<sup>2</sup>+(δ<em class="EmphasisTypeItalic ">y</em>)<sup>2</sup>)。</p>
+<p>例如，下面的 NM Dev 代码使用<img alt="$$ {c}^2=\frac{1}{4} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq5.png" style="width:2.93em"/>和这些初始条件求解区域[0，2] × [0，2] × [0，2]中的二维波动方程:</p>
+<pre>double c2 = 1. / 4; // wave speed squared
+double T = 2., a = 2., b = 2.; // the solution domain bounds
+WaveEquation2D pde = new WaveEquation2D(
+        c2, T, a, b,
+        new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        return 0.1 * sin(PI * x) * sin(PI * y / 2.);
+    }
+},
+        new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        return 0.;
+    }
+});
+
+int m = 40; // dt = T/m
+int n = 39; // dx = a/n
+int p = 39; // dy = b/p
+PDESolutionTimeSpaceGrid2D soln = new ExplicitCentralDifference2D().solve(pde, m, n, p);
+
+int t = 40; // t index
+int x = 1; // x index
+int y = 1; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 40; // t index
+x = 1; // x index
+y = 16; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 40; // t index
+x = 1; // x index
+y = 31; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+
+t = 40; // t index
+x = 16; // x index
+y = 1; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 40; // t index
+x = 16; // x index
+y = 16; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 40; // t index
+x = 16; // x index
+y = 31; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+
+t = 40; // t index
+x = 31; // x index
+y = 1; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 40; // t index
+x = 31; // x index
+y = 16; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 40; // t index
+x = 31; // x index
+y = 31; // y index
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>u(40,1,1) = -0.001145
+u(40,1,16) = -0.013877
+u(40,1,31) = -0.009476
+u(40,16,1) = -0.004302
+u(40,16,16) = -0.052141
+u(40,16,31) = -0.035606
+u(40,31,1) = 0.007228
+u(40,31,16) = 0.087616
+u(40,31,31) = 0.059830
+
+</pre>
+<p><code>ExplicitCentralDifference2D</code>是一个 PDE 求解器，使用中心差分法求解二维波动方程。签名如下:</p>
+<pre>/**
+ * Solves a two-dimensional wave equation, with the resolution parameters of
+ * the solution grid.
+ *
+ * @param pde the wave equation problem
+ * @param m   the number of grid points along the time-axis (excluding the
+ *            initial condition)
+ * @param n   the number of grid points along the x-axis (excluding the two
+ *            boundaries)
+ * @param p   the number of grid points along the y-axis (excluding the two
+ *            boundaries)
+ * @return the solution grid
+ */
+public PDESolutionTimeSpaceGrid2D solve(
+        WaveEquation2D pde,
+        final int m,
+        final int n,
+        final int p
+)
+
+</pre>
+<p>解决方案在<code>PDESolutionTimeSpaceGrid2D</code>对象中表示。它适用于将解生成为时间和空间网格的方法。签名如下:</p>
+<pre>public interface PDESolutionTimeSpaceGrid2D {
+
+    /**
+     * Gets the value of the grid point at &lt;i&gt;(t&lt;sub&gt;k&lt;/sub&gt;, x&lt;sub&gt;i&lt;/sub&gt;,
+     * y&lt;sub&gt;j&lt;/sub&gt;)&lt;/i&gt;.
+     *
+     * @param k the index along the time-axis
+     * @param i the index along the x-axis
+     * @param j the index along the y-axis
+     * @return the value at the grid point
+     */
+    double u(int k, int i, int j);
+
+    /**
+     * Gets the value on the time-axis at index {@code k}.
+     *
+     * @param k the index of the grid point
+     * @return &lt;i&gt;t&lt;sub&gt;k&lt;/sub&gt;&lt;/i&gt;
+     */
+    double t(int k);
+
+    /**
+     * Gets the value on the x-axis at index {@code i}.
+     *
+     * @param i the index of the grid point
+     * @return &lt;i&gt;x&lt;sub&gt;i&lt;/sub&gt;&lt;/i&gt;
+     */
+    double x(int i);
+
+    /**
+     * Gets the value on the y-axis at index {@code j}.
+     *
+     * @param j the index of the grid point
+     * @return &lt;i&gt;y&lt;sub&gt;j&lt;/sub&gt;&lt;/i&gt;
+     */
+    double y(int j);
+
+    /**
+     * Gets the number of interior time-axis grid points in the solution.
+     *
+     * @return the number of solution grid points along the time-axis
+     */
+    int m();
+
+    /**
+     * Gets the number of interior x-axis grid points in the solution.
+     *
+     * @return the number of solution grid points along the x-axis
+     */
+    int n();
+
+    /**
+     * Gets the number of interior y-axis grid points in the solution.
+     *
+     * @return the number of solution grid points along the y-axis
+     */
+    int p();
+}
+
+</pre>
+
+<h3 class="Heading">8.2.2 椭圆方程的数值解</h3>
+<p>考虑泊松方程的第一类边值问题(图<a href="#Fig4"> 8-4 </a>)，如下所示:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}=f\left(x,y\right),\left(x,y\right)\in \varOmega \\ {}{\left.u\left(x,y\right)\right|}_{\left(x,y\right)\in \varGamma }=\phi \left(x,y\right),\varGamma =\partial \varOmega \end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equak.png" style="width:15.18em"/></p>
+
+
+
+ 
+
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig4_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig4_HTML.jpg" style="width:23.38em"/></p>
+<p>图 8-4</p><p class="SimplePara">二维域上的网格</p>
+
+
+<p class="Para" id="Par79">分别以<em class="EmphasisTypeItalic "> h </em>和<em class="EmphasisTypeItalic "> τ </em>为<em class="EmphasisTypeItalic "> x </em>和<em class="EmphasisTypeItalic "> y </em>方向的步长。网格内的节点表示为{(<em class="EmphasisTypeItalic ">x</em><sub><em class="EmphasisTypeItalic ">k</em></sub>，<em class="EmphasisTypeItalic ">y</em><sub><em class="EmphasisTypeItalic ">j</em></sub>)|<em class="EmphasisTypeItalic ">x</em><sub><em class="EmphasisTypeItalic ">k</em></sub>=<em class="EmphasisTypeItalic ">KH</em>，<em class="EmphasisTypeItalic ">y</em><sub><em class="EmphasisTypeItalic ">j</em></sub>=<em class="EmphasisTypeItalic ">jτ解决方案域内的节点称为内部节点。他们属于<em class="EmphasisTypeItalic ">ω</em>∩<em class="EmphasisTypeItalic ">γ</em>。对于每一个节点，在<em class="EmphasisTypeItalic "> x </em>和<em class="EmphasisTypeItalic "> y </em>两个方向都有四个相邻的节点仅一步之遥，(<em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em> = 1，2)。如果一个节点的所有四个相邻节点都是内部节点，我们称该节点为正则内部节点。规则内部节点的集合表示为<em class="EmphasisTypeItalic ">ω</em>T60】(1)。如果其中一个相邻的节点不是内部节点，我们称这个节点为非正则内部节点。非规则内部节点的集合表示为<em class="EmphasisTypeItalic ">ω</em>T64】(2)。边界<em class="EmphasisTypeItalic ">γ</em>与网格线的交点称为边界节点。偏微分方程的数值解确定了所有内部节点处的函数<em class="EmphasisTypeItalic "> u </em>的值。</em></p>
+<p>为了简化符号，我们用<img alt="$$ {f}_j^k=f\left({x}_k,{y}_j\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq6.png" style="width:6.27em"/>来表示。对于一个规则的内部节点(<em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic ">j</em>)∈ω<sup>(1)</sup>，二阶中心差商公式如下:</p><p><img alt="$$ {\left.\frac{\partial^2u}{\partial {x}^2}\right|}_{\left(k,j\right)}=\frac{\frac{u_j^{k+1}-{u}_j^k}{h}-\frac{u_j^k-{u}_j^{k-1}}{h}}{h}-\frac{h^2}{12}{u}_{x^4}^{(4)}\left({x}_k+{\theta}_1h,{y}_j\right)=\frac{u_j^{k+1}-2{u}_j^k+{u}_j^{k-1}}{h^2}-\frac{h^2}{12}{u}_{x^4}^{(4)}\left({x}_k+{\theta}_1h,{y}_j\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equal.png" style="width:39.42em"/></p>
+
+
+
+<p><img alt="$$ {\left.\frac{\partial^2u}{\partial {y}^2}\right|}_{\left(k,j\right)}=\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{\tau^2}-\frac{\tau^2}{12}{u}_{y^4}^{(4)}\left({x}_k,{y}_j+{\theta}_2\tau \right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equam.png" style="width:21.78em"/></p>
+
+
+
+
+<p class="Para" id="Par81">其中 0  θ  <sub> 1 </sub>，<em class="EmphasisTypeItalic ">θ</em>T6】2T8】1。</p>
+<p>节点(<em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em>)处的泊松方程<img alt="$$ \frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}=f\left(x,y\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq7.png" style="width:8.16em"/>可以表示如下:</p><p><img alt="$$ \frac{u_j^{k+1}-2{u}_j^k+{u}_j^{k-1}}{h^2}+\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{\tau^2}={f}_j^k+R\left(k,j\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equan.png" style="width:22.65em"/></p>
+
+
+
+
+<p>截断误差如下:</p><p><img alt="$$ R\left(k,j\right)=\frac{h^2}{12}{u}_{x^4}^{(4)}\left({x}_k+{\theta}_1h,{y}_j\right)+\frac{\tau^2}{12}{u}_{x^4}^{(4)}\left({x}_k,{y}_j+{\theta}_2\tau \right)=O\left({h}^2+{\tau}^2\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equao.png" style="width:28.38em"/></p>
+
+
+
+
+<p>通过忽略误差项<em class="EmphasisTypeItalic "> R </em> ( <em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em>)，对泊松方程的差分方程近似如下:</p><p><img alt="$$ \frac{u_j^{k+1}-2{u}_j^k+{u}_j^{k-1}}{h^2}+\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{\tau^2}={f}_j^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equap.png" style="width:18.52em"/></p>
+
+
+
+
+<p class="Para" id="Par85">差分方程的个数等于正则内部节点的个数<em class="EmphasisTypeItalic "> u </em> <sub> <em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em> </sub>。每个差分方程不仅包含在规则内部节点的解<em class="EmphasisTypeItalic "> u </em> <sub> <em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em> </sub>的近似值，还包含非规则内部节点的近似值。因此，方程的数量比需要求解的未知数的数量要少。非规则内部节点的近似值由边界条件给出。有各种方案来处理边界条件。接下来我们描述两个更简单的。</p>
+<h4 class="Heading">8.2.2.1 直接转账</h4>
+<p class="Para" id="Par87">最接近非规则内部节点的边界节点集中的<em class="EmphasisTypeItalic "> u </em>值被用作该节点处的<em class="EmphasisTypeItalic "> u </em> <sub> <em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em> </sub>值的近似值。我们称之为边界条件的直接转换。</p>
+<p>例如，假设节点<em class="EmphasisTypeItalic "> P </em> ( <em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em>)是非规则内部节点，最近的边界节点是<em class="EmphasisTypeItalic "> Q </em>节点；然后我们有以下内容:</p><p><img alt="$$ {u}_j^k=u(Q)=\phi (Q),\left(k,j\right)\in {\varOmega}^{(2)} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equaq.png" style="width:13.32em"/></p>
+
+
+
+
+<p class="Para" id="Par89">该公式可视为节点的零阶插值。很容易，截断误差为<em class="EmphasisTypeItalic "> O </em> ( <em class="EmphasisTypeItalic "> h </em> + <em class="EmphasisTypeItalic "> τ </em>)。利用前面的代换，方程的个数等于未知数的个数。我们现在可以解线性方程组了。</p>
+
+<h4 class="Heading">8.2.2.2 线性插值</h4>
+<p>该方案是通过对同一网格线上的边界节点<em class="EmphasisTypeItalic "> Q </em>和与节点<em class="EmphasisTypeItalic "> P </em>相邻的内部节点<em class="EmphasisTypeItalic "> R </em>进行线性插值，来逼近非规则内部节点<em class="EmphasisTypeItalic "> P </em> ( <em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em>)处<em class="EmphasisTypeItalic "> u </em> <sub> <em class="EmphasisTypeItalic "> k </em>，<em class="EmphasisTypeItalic "> j </em> </sub>的值。也就是说，</p><p><img alt="$$ {u}_j^k=\frac{h}{h+d}\phi (Q)+\frac{d}{h+d}\phi (R) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equar.png" style="width:12.51em"/></p>
+
+
+
+
+<p class="Para" id="Par92"><em class="EmphasisTypeItalic "> d </em> = | <em class="EmphasisTypeItalic "> QR </em> |，截断误差为<em class="EmphasisTypeItalic ">O</em>(<em class="EmphasisTypeItalic ">h</em>T8】2)。利用前面的代换，方程的个数等于未知数的个数。我们现在可以解线性方程组了。</p>
+<p>注意，每个差分方程涉及五个节点:<img alt="$$ \left\{{u}_j^{k+1},2{u}_j^k,{u}_j^{k-1},{u}_{j+1}^k,{u}_{j-1}^k\right\} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq8.png" style="width:11.22em"/>。这被称为网格中节点的五点模板或五点菱形方案。</p><p><img alt="$$ \frac{u_j^{k+1}-2{u}_j^k+{u}_j^{k-1}}{h^2}+\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{\tau^2}={f}_j^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equas.png" style="width:18.52em"/></p>
+
+
+
+
+<p>在实践中，我们经常设置<em class="EmphasisTypeItalic ">h</em><em><strong class="EmphasisTypeBoldItalic ">=</strong></em><em class="EmphasisTypeItalic ">τ</em>。五点菱形方案简化如下:</p><p><img alt="$$ \frac{1}{h^2}\left({u}_j^{k+1}+{u}_j^{k-1}+{u}_{j+1}^k+{u}_{j-1}^k-4{u}_j^k\right)={f}_j^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equat.png" style="width:17.66em"/></p>
+
+
+
+
+<p class="Para" id="Par95">缩写如下:</p>
+<p class="Para"><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Figa_HTML.gif" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Figa_HTML.gif" style="width:2.69em"/></p>
+<p>哪里<img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Figb_HTML.gif" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Figb_HTML.gif" style="width:1.44em"/>。见图<a href="#Fig5"> 8-5 </a>。</p>
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig5_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig5_HTML.jpg" style="width:14.78em"/></p>
+<p>图 8-5</p><p class="SimplePara">网格中节点的五点模具</p>
+
+
+<p>例如，考虑使用五点菱形方案求解拉普拉斯方程的以下第一类边值问题，如下所示:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}=0\\ {}{\left.u\left(x,y\right)\right|}_{\varGamma }=\log \left[{\left(1+x\right)}^2+{y}^2\right]\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equav.png" style="width:14.2em"/></p>
+
+
+
+<p><img alt="$$ \varOmega =\left\{\left(x,y\right)\left|0\le x,y\le 1\right.\right\} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equaw.png" style="width:10.76em"/></p>
+
+
+
+
+<p>我们采取<img alt="$$ h=\tau =\frac{1}{3} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq9.png" style="width:4.38em"/>。网格中有四个内部节点(红色)，它们都是常规内部节点。根据五点菱形方案，线性方程组如下:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{1}{h^2}\left({u}_1^2+{u}_1^0+{u}_2^1+{u}_0^1-4{u}_1^1\right)=0\\ {}\frac{1}{h^2}\left({u}_1^3+{u}_1^1+{u}_2^2+{u}_0^2-4{u}_1^2\right)=0\\ {}\frac{1}{h^2}\left({u}_2^2+{u}_2^0+{u}_3^1+{u}_1^1-4{u}_2^1\right)=0\\ {}\frac{1}{h^2}\left({u}_2^3+{u}_2^1+{u}_3^2+{u}_1^2-4{u}_2^2\right)=0\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equax.png" style="width:15.06em"/></p>
+
+
+
+
+<p>从<em class="EmphasisTypeItalic "> u </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic ">y</em>)|<sub><em class="EmphasisTypeItalic ">γ</em></sub>可以直接计算出的边界值(蓝色)如下:</p><p><img alt="$$ \left\{\begin{array}{c}{u}_0^1=\log \frac{16}{9},\kern0.5em {u}_0^2=\log \frac{25}{9}\\ {}{u}_1^0=\log \frac{10}{9},\kern0.5em {u}_2^0=\log \frac{13}{9}\\ {}{u}_3^1=\log \frac{25}{9},\kern0.5em {u}_3^2=\log \frac{34}{9}\\ {}{u}_1^3=\log \frac{37}{9},\kern0.5em {u}_2^3=\log \frac{40}{9}\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equay.png" style="width:11.86em"/></p>
+
+
+
+
+<p>线性方程组的解如下(见图<a href="#Fig6"> 8-6 </a>):</p><p><img alt="$$ \left\{\begin{array}{c}{u}_1^1=0.634804\\ {}{u}_1^2=1.059992\\ {}\begin{array}{c}{u}_2^1=0.798500\\ {}{u}_2^2=1.169821\end{array}\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equaz.png" style="width:8.42em"/></p>
+
+
+
+ 
+
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig6_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig6_HTML.jpg" style="width:35.45em"/></p>
+<p>图 8-6</p><p class="SimplePara">拉普拉斯方程的网格和解</p>
+
+
+<p>以下 NM Dev 代码解决了这个示例:</p>
+<pre>BivariateRealFunction ZERO // a constant zero function, f = 0
+        = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        return 0;
+    }
+
+    @Override
+    public Double evaluate(Vector x) {
+        return 0.;
+    }
+};
+
+// the boundary conditions
+BivariateRealFunction g = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        return log((1. + x) * (1. + x) + y * y);
+    }
+};
+
+double a = 1.; // width of the x-dimension
+double b = 1.; // height of the y-dimension
+PoissonEquation2D pde = new PoissonEquation2D(a, b, ZERO, g);
+IterativeCentralDifference solver = new IterativeCentralDifference(
+        1e-8, // precision
+        100); // max number of iterations
+PDESolutionGrid2D soln = solver.solve(pde, 2, 2);
+int k = 1, j = 1; // node indices
+double u_11 = soln.u(k, j); // x = 0.3, y = 0.3
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_11));
+k = 1;
+j = 2;
+double u_12 = soln.u(k, j); // x = 0.3, y = 0.6
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_12));
+k = 2;
+j = 1;
+double u_21 = soln.u(k, j); // x = 0.6, y = 0.3
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_21));
+k = 2;
+j = 2;
+double u_22 = soln.u(k, j); // x = 0.6, y = 0.6
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_22));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>u_1,1 = u(0.333333,0.333333): 0.634804
+u_1,2 = u(0.333333,0.666667): 0.798500
+u_2,1 = u(0.666667,0.333333): 1.059992
+u_2,2 = u(0.666667,0.666667): 1.169821
+
+</pre>
+<p>为了建立一个泊松 PDE 问题，我们首先需要建立一个<code>PoissonEquation2D</code>对象。其签名如下:</p>
+<pre>/**
+ * Constructs a Poisson's equation problem.
+ *
+ * @param a the region of interest &lt;i&gt;[0, a]&lt;/i&gt;
+ * @param b the region of interest &lt;i&gt;[0, b]&lt;/i&gt;
+ * @param f the forcing term in the equation &lt;i&gt;f(x, y)&lt;/i&gt;
+ * @param g the Dirichlet boundary condition &lt;i&gt;g(x, y)&lt;/i&gt;
+ */
+public PoissonEquation2D(
+    double a,
+    double b,
+    BivariateRealFunction f,
+    BivariateRealFunction g)
+
+</pre>
+<p class="Para" id="Par104"><code>f</code>是泊松方程右边的一项。当<em class="EmphasisTypeItalic "> f </em> = 0 时，就变成了拉普拉斯方程。<code>g</code>指定 PDE 问题的第一类边界条件。<code>PoissonEquation2D</code>类的域解是[0，<em class="EmphasisTypeItalic ">a</em>×[0，<em class="EmphasisTypeItalic "> b </em>。为了求解另一个域范围，用户需要在编码前进行转换。</p>
+<p><code>IterativeCentralDifference</code>是一个 PDE 求解器，使用中心差分公式求解泊松方程问题。签名如下:</p>
+<pre>/**
+ * Constructs an instance of this method with the given precision as the
+ * convergence criterion, and the maximum number of iterations allowed. The
+ * iteration stops when the difference between successive iterations is
+ * within the given precision.
+ *
+ * @param precision     the convergence threshold
+ * @param maxIterations the maximum number of iterations allowed
+ */
+public IterativeCentralDifference(
+        double precision,
+        int maxIterations
+) {
+
+/**
+ * Solves a Poisson's equation problem, with the given grid resolution
+ * parameters.
+ *
+ * {@link UnsatisfiableErrorCriterionException} is thrown when the iteration
+ * cannot converge to the specified error bound within the maximum allowed
+ * number of iterations.
+ *
+ * @param pde the Poisson's equation
+ * @param m   the number of interior points along the x-axis of the grid
+ * @param n   the number of interior points along the y-axis of the grid
+ * @return the solution grid
+ */
+public PDESolutionGrid2D solve(
+        final PoissonEquation2D pde,
+        final int m,
+        final int n
+)
+
+</pre>
+<p>在 NM Dev 中，用有限差分法求解一个二维 PDE 问题会生成一个<code>PDESolutionGrid2D</code>对象。它包含关于网格、节点和每个节点的近似值的所有信息。签名如下:</p>
+<pre>/**
+ * A solution to a bivariate PDE, which is applicable to methods which produce
+ * the solution as a two-dimensional grid. The indices are within ranges 0 &lt;= k &lt;= (m+1), where the boundaries
+ * lie at &lt;i&gt;0&lt;/i&gt; and &lt;i&gt;(m+1)&lt;/i&gt; and &lt;i&gt;0&lt;/i&gt; and &lt;i&gt;(n+1)&lt;/i&gt; respectively.
+ *
+*/
+public interface PDESolutionGrid2D {
+
+    /**
+     * Gets the value of the grid point at &lt;i&gt;(x&lt;sub&gt;k&lt;/sub&gt;,
+     * y&lt;sub&gt;j&lt;/sub&gt;)&lt;/i&gt;.
+     *
+     * @param k the index along the x-axis
+     * @param j the index along the y-axis
+     * @return the value at that point
+     */
+    double u(int k, int j);
+
+    /**
+     * Gets the value on the x-axis at index {@code k}.
+     *
+     * @param k the index of the grid point
+     * @return &lt;i&gt;x&lt;sub&gt;k&lt;/sub&gt;&lt;/i&gt;
+     */
+    double x(int k);
+
+    /**
+     * Gets the value on the y-axis at index {@code j}.
+     *
+     * @param j the index of the grid point
+     * @return &lt;i&gt;y&lt;sub&gt;j&lt;/sub&gt;&lt;/i&gt;
+     */
+    double y(int j);
+
+    /**
+     * Gets the number of interior x-axis grid points in the solution.
+     *
+     * @return the number of solution grid points along the x-axis
+     */
+    int m();
+
+    /**
+     * Gets the number of interior y-axis grid points in the solution.
+     *
+     * @return the number of solution grid points along the y-axis
+     */
+    int n();
+}
+
+</pre>
+<p class="Para" id="Par107">注意，函数<code>double u(int k, int j)</code>将节点索引作为输入，而不是域值。<code>PDESolutionGrid2D</code>只包含网格节点的信息。如果我们需要不在网格节点上的函数的近似值，就需要一些插值。</p>
+<p>作为另一个例子，下面的 NM Dev 代码用 0 ≤ <em class="EmphasisTypeItalic "> x </em> ≤ 0.5，0 ≤ <em class="EmphasisTypeItalic "> y </em> ≤ 0.5 的初始和边界条件求解拉普拉斯方程:</p><p><img alt="$$ \left\{\begin{array}{c}u\left(0,y\right)=u\left(x,0\right)=0\\ {}u\left(x,0.5\right)=200x\\ {}u\left(0.5,y\right)=200y\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equba.png" style="width:10.48em"/></p>
+
+
+
+
+<p>
+ 
+</p>
+<pre>BivariateRealFunction ZERO // a constant zero function, f = 0
+        = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        return 0;
+    }
+
+    @Override
+    public Double evaluate(Vector x) {
+        return 0.;
+    }
+};
+
+// the boundary conditions
+final double EPSION = 1e-8;
+BivariateRealFunction g = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        if (DoubleUtils.isZero(x, EPSION) || DoubleUtils.isZero(y, EPSION)) {
+            return 0;
+        } else if (DoubleUtils.equal(x, 0.5, EPSION)) {
+            return 200. * y;
+        } else if (DoubleUtils.equal(y, 0.5, EPSION)) {
+            return 200. * x;
+        }
+
+        // not reachable; don't matter
+        return Double.NaN;
+    }
+};
+
+double a = 0.5; // width of the x-dimension
+double b = 0.5; // height of the y-dimension
+PoissonEquation2D pde = new PoissonEquation2D(a, b, ZERO, g);
+IterativeCentralDifference solver = new IterativeCentralDifference(
+        EPSION, // precision
+        40); // max number of iterations
+PDESolutionGrid2D soln = solver.solve(pde, 4, 4);
+int k = 1, j = 1; // node indices
+double u_11 = soln.u(k, j);
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_11));
+k = 1;
+j = 2;
+double u_12 = soln.u(k, j);
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_12));
+k = 2;
+j = 1;
+double u_21 = soln.u(k, j);
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_21));
+k = 2;
+j = 2;
+double u_22 = soln.u(k, j);
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_22));
+k = 3;
+j = 3;
+double u_33 = soln.u(k, j);
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_33));
+k = 4;
+j = 4;
+double u_44 = soln.u(k, j);
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_44));
+k = 5;
+j = 5;
+double u_55 = soln.u(k, j);
+System.out.println(String.format("u_%d,%d = u(%f,%f): %f", k, j, soln.x(k), soln.y(j), u_55));
+
+</pre>
+<p>输出如下(见图<a href="#Fig7"> 8-7 </a>):</p>
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig7_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig7_HTML.jpg" style="width:26.62em"/></p>
+<p>图 8-7</p><p class="SimplePara">5×5 解决方案网格</p>
+
+
+<pre>u_1,1 = u(0.100000,0.100000): 4.000000
+u_1,2 = u(0.100000,0.200000): 8.000000
+u_2,1 = u(0.200000,0.100000): 8.000000
+u_2,2 = u(0.200000,0.200000): 16.000000
+u_3,3 = u(0.300000,0.300000): 36.000000
+u_4,4 = u(0.400000,0.400000): 64.000000
+u_5,5 = u(0.500000,0.500000): 100.000000
+
+</pre>
+
+
+<h3 class="Heading">8.2.3 抛物方程的数值解</h3>
+<p>考虑这个一维热方程:</p><p><img alt="$$ \frac{\partial u}{\partial t}=a\frac{\partial^2u}{\partial {x}^2},a&amp;gt;0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbb.png" style="width:7.76em"/></p>
+
+
+
+
+<p>这个改变了历史进程的 PDE 最著名的应用可能是确定欧式期权价格的 Black-Scholes 方程。布莱克-斯科尔斯方程催生了华尔街上万亿美元的衍生品业务。变量改变后，布莱克-斯科尔斯方程可以写成如下形式:</p><p><img alt="$$ \frac{\partial u}{\partial \tau }=\frac{\partial^2u}{\partial {x}^2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbc.png" style="width:4.41em"/></p>
+
+
+
+
+<p><em class="EmphasisTypeItalic "> τ </em>是期权到期的时间。期权在<em class="EmphasisTypeItalic "> τ </em> = 0 时到期。<em class="EmphasisTypeItalic "> x </em>是期权参考的标的股票的价格。初始条件(<em class="EmphasisTypeItalic "> E </em>是期权的执行价格)就是支付函数，如下所示:</p><p><img alt="$$ u\left(0,x\right)=\max \left(x-E,0\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbd.png" style="width:10.65em"/></p>
+
+
+
+
+<p>边界条件说，当股票变得一文不值时，期权也变得一文不值。</p><p><img alt="$$ u\left(\tau, 0\right)=0 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Eqube.png" style="width:4.94em"/></p>
+
+
+
+
+<p>当股价远远高于执行价时，期权的表现就像股票一样。</p><p><img alt="$$ \underset{x\to \infty }{\lim }u\left(\tau, x\right)=x $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbf.png" style="width:6.66em"/></p>
+
+
+
+
+<p>近似 PDE 的一种直接方法是用前向差分代替时间导数，用中心差分代替二阶导数。也就是说，</p><p><img alt="$$ \frac{u_j^{k+1}-{u}_j^k}{\Delta  \tau }=\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{{\left(\Delta  x\right)}^2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbg.png" style="width:12.92em"/></p>
+
+
+
+
+<p>求解<img alt="$$ {u}_j^{k+1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq10.png" style="width:2.01em"/>，我们得到这个(见图<a href="#Fig8"> 8-8 </a>):</p><p><img alt="$$ {u}_j^{k+1}=\alpha {u}_{j+1}^k+\left(1-2\alpha \right){u}_j^k+\alpha {u}_{j-1}^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbh.png" style="width:15.04em"/></p>
+
+
+
+<p><img alt="$$ \alpha =\frac{\Delta  \tau }{{\left(\Delta  x\right)}^2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbi.png" style="width:4.66em"/></p>
+
+
+
+ 
+
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig8_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig8_HTML.jpg" style="width:35.48em"/></p>
+<p>图 8-8</p><p class="SimplePara">热方程的显式格式</p>
+
+
+<p>这是一个显式公式，因为在时间步<em class="EmphasisTypeItalic "> k </em>我们知道所有<em class="EmphasisTypeItalic "> j </em>的所有<img alt="$$ {u}_j^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq11.png" style="width:1.16em"/>。我们可以使用三个节点(红色)通过这个公式显式计算<img alt="$$ {u}_j^{k+1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq12.png" style="width:2.01em"/>(蓝色)。这个显式方案不是条件稳定的。可以证明，只有当下列条件成立时，它才是稳定的:</p><p><img alt="$$ 0&amp;lt;\alpha \le \frac{1}{2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbj.png" style="width:4.66em"/></p>
+
+
+
+
+<p>或者，这行得通:</p><p><img alt="$$ 2\Delta  \tau \le {\left(\Delta  x\right)}^2 $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbk.png" style="width:5.61em"/></p>
+
+
+
+
+<p class="Para" id="Par120">因此，如果我们想要将<em class="EmphasisTypeItalic "> x </em>中的节点数量增加一倍，我们需要将时间步长分成四分之一。每个时间步长需要两倍的时间(在<em class="EmphasisTypeItalic "> x </em>中的节点数量是两倍)，时间步长是四倍。将<em class="EmphasisTypeItalic "> x </em>中的节点数量增加一倍意味着需要八倍的时间来寻找解决方案。</p>
+<p>或者，我们可以用后向差分来近似时间导数。差分方程近似如下:</p><p><img alt="$$ \frac{u_j^k-{u}_j^{k-1}}{\Delta  \tau }=\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{{\left(\Delta  x\right)}^2} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbl.png" style="width:12.92em"/></p>
+
+
+
+
+<p>重新排列左侧的时间项<em class="EmphasisTypeItalic "> k </em>，我们得到这个(见图<a href="#Fig9"> 8-9 </a>):</p><p><img alt="$$ -\alpha {u}_{j-1}^k+\left(1+2\alpha \right){u}_j^k-\alpha {u}_{j+1}^k={u}_j^{k-1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbm.png" style="width:15.74em"/></p>
+
+
+
+ 
+
+<p><img alt="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig9_HTML.jpg" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Fig9_HTML.jpg" style="width:35.45em"/></p>
+<p>图 8-9</p><p class="SimplePara">热传导方程的隐式格式</p>
+
+
+<p>下一时间步<em class="EmphasisTypeItalic "> k </em>的(三个)值不能根据<em class="EmphasisTypeItalic ">k</em>1 的旧值立即计算。我们可以收集时间步长<em class="EmphasisTypeItalic "> k </em>和<em class="EmphasisTypeItalic "> k </em> + 1 的值，并将它们写在线性方程组中。</p><p><img alt="$$ \left[\begin{array}{ccccc}1+2\alpha &amp;amp; -\alpha &amp;amp; 0&amp;amp; \cdots &amp;amp; 0\\ {}-\alpha &amp;amp; 1+2\alpha &amp;amp; -\alpha &amp;amp; &amp;amp; 0\\ {}0&amp;amp; -\alpha &amp;amp; \ddots &amp;amp; \ddots &amp;amp; \\ {}\mathbf{\vdots}&amp;amp; &amp;amp; \ddots &amp;amp; \ddots &amp;amp; -\alpha \\ {}0&amp;amp; 0&amp;amp; &amp;amp; -\alpha &amp;amp; 1+2\alpha \end{array}\right]\kern0.5em \left[\begin{array}{c}{u}_{N^{-}+1}^k\\ {}\vdots \\ {}\begin{array}{c}{u}_0^k\\ {}\vdots \\ {}{u}_{N^{+}-1}^k\end{array}\end{array}\right] $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbn.png" style="width:20.56em"/></p>
+
+
+
+<p><img alt="$$ =\left[\begin{array}{c}{u}_{N^{-}+1}^{k-1}\\ {}\vdots \\ {}\begin{array}{c}{u}_0^{k-1}\\ {}\vdots \\ {}{u}_{N^{+}-1}^{k-1}\end{array}\end{array}\right]+\alpha \left[\begin{array}{c}{u}_{N^{-}}^k\\ {}0\\ {}\begin{array}{c}\vdots \\ {}0\\ {}{u}_{N^{+}}^k\end{array}\end{array}\right]=\left[\begin{array}{c}{b}_{N^{-}+1}^k\\ {}\vdots \\ {}\begin{array}{c}{b}_0^k\\ {}\vdots \\ {}{b}_{N^{+}-1}^k\end{array}\end{array}\right] $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbo.png" style="width:16.94em"/></p>
+
+
+
+
+<p><img alt="$$ {u}_{N^{-}+1}^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq13.png" style="width:2.64em"/>、<img alt="$$ {u}_{N^{+}-1}^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq14.png" style="width:2.64em"/>、<img alt="$$ {u}_{N^{-}+1}^{k-1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq15.png" style="width:2.64em"/>、<img alt="$$ {u}_{N^{+}-1}^{k-1} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq16.png" style="width:2.64em"/>、<img alt="$$ {u}_{N^{-}}^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq17.png" style="width:1.8em"/>、<img alt="$$ {u}_{N^{+}}^k $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_IEq18.png" style="width:1.8em"/>来自边界条件。在矩阵形式中，我们可以这样写:</p><p><img alt="$$ \boldsymbol{M}{\boldsymbol{u}}^{\boldsymbol{k}}={\boldsymbol{b}}^{\boldsymbol{m}} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbp.png" style="width:4.86em"/></p>
+
+
+
+
+<p>或者，我们可以这样写:</p><p><img alt="$$ {\boldsymbol{u}}^{\boldsymbol{k}}={\boldsymbol{M}}^{-\mathbf{1}}{\boldsymbol{b}}^{\boldsymbol{m}} $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbq.png" style="width:5.74em"/></p>
+
+
+
+
+<p class="Para" id="Par126">在实践中，我们几乎从不计算逆矩阵，因为求逆矩阵的计算量非常大，而且容易产生舍入误差。在计算量和存储量方面，使用更有效的方法，例如 LU 分解、连续超松弛(SOR)或 Gauss-Seidel 方法。NM Dev 库已经实现了所有这些方法。隐式有限差分算法是无条件稳定的。</p>
+<p>克兰克-梁君诺有限差分法进一步改进了显式和隐式方法，使得它是无条件稳定的，并且具有阶为<em class="EmphasisTypeItalic ">O</em>((∈<em class="EmphasisTypeItalic ">τ</em>)<sup>2</sup>)的截断误差(而不是其他两种方法的<em class="EmphasisTypeItalic ">O</em>(∈<em class="EmphasisTypeItalic ">τ</em>)。克兰克-梁君诺有限差分法取前向差分和后向差分近似的平均值。这两个方程的平均值如下:</p><p><img alt="$$ \frac{u_j^{k+1}-{u}_j^k}{\Delta  \tau }=\frac{1}{2}\left(\frac{u_{j+1}^k-2{u}_j^k+{u}_{j-1}^k}{{\left(\Delta  x\right)}^2}+\frac{u_{j+1}^{k+1}-2{u}_j^{k+1}+{u}_{j-1}^{k+1}}{{\left(\Delta  x\right)}^2}\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbr.png" style="width:24.1em"/></p>
+
+
+
+
+<p>重新排列项，使时间步<em class="EmphasisTypeItalic "> k </em> + 1 的项在左手边，时间步<em class="EmphasisTypeItalic "> k </em>的项在右手边，我们得到:</p><p><img alt="$$ {u}_j^{k+1}-\frac{1}{2}\alpha \left({u}_{j+1}^{k+1}-2{u}_j^{k+1}+{u}_{j-1}^{k+1}\right)={u}_j^k+\frac{1}{2}\alpha \left({u}_{j+1}^k-2{u}_j^k+{u}_{j-1}^k\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbs.png" style="width:26.46em"/></p>
+
+
+
+
+<p>我们可以把这个线性方程组写成矩阵形式。</p><p><img alt="$$ \left[\begin{array}{ccccc}1+\alpha &amp;amp; -\frac{1}{2}\alpha &amp;amp; 0&amp;amp; \cdots &amp;amp; 0\\ {}-\frac{1}{2}\alpha &amp;amp; 1+\alpha &amp;amp; -\frac{1}{2}\alpha &amp;amp; &amp;amp; 0\\ {}0&amp;amp; -\frac{1}{2}\alpha &amp;amp; \ddots &amp;amp; \ddots &amp;amp; \\ {}\mathbf{\vdots}&amp;amp; &amp;amp; \ddots &amp;amp; \ddots &amp;amp; -\frac{1}{2}\alpha \\ {}0&amp;amp; 0&amp;amp; &amp;amp; -\frac{1}{2}\alpha &amp;amp; 1+\alpha \end{array}\right]\kern0.5em \left[\begin{array}{c}{u}_{N^{-}+1}^{k+1}\\ {}\vdots \\ {}\begin{array}{c}{u}_0^{k+1}\\ {}\vdots \\ {}{u}_{N^{+}-1}^{k+1}\end{array}\end{array}\right] $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbt.png" style="width:20em"/></p>
+
+
+
+<p><img alt="$$ =\left[\begin{array}{c}{Z}_{N^{-}+1}^k\\ {}\vdots \\ {}\begin{array}{c}{Z}_0^k\\ {}\vdots \\ {}{Z}_{N^{+}-1}^k\end{array}\end{array}\right]+\frac{1}{2}\alpha \left[\begin{array}{c}{u}_{N^{-}}^{k+1}\\ {}0\\ {}\begin{array}{c}\vdots \\ {}0\\ {}{u}_{N^{+}}^{k+1}\end{array}\end{array}\right] $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbu.png" style="width:12.18em"/></p>
+
+
+
+<p><img alt="$$ {Z}_j^k=\left(1-\alpha \right){u}_j^k+\frac{1}{2}\alpha \left({u}_{j-1}^k+{u}_{j+1}^k\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbv.png" style="width:14.77em"/></p>
+
+
+
+
+<p class="Para" id="Par130">然后可以通过 SOR(NM Dev 中的默认值)求解该系统。</p>
+<p>例如，下面的 NM Dev 代码使用克兰克-梁君诺在区域[0，6000] × [0，1]上求解这个热方程:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial u}{\partial t}={10}^{-5}\frac{\partial^2u}{\partial {x}^2}\\ {}u\left(0,x\right)=2x+\sin \left(2\pi x\right)\\ {}\begin{array}{c}u\left(t,0\right)=0\\ {}u\left(t,1\right)=2\end{array}\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbw.png" style="width:11.79em"/></p>
+
+
+
+
+<p>
+ 
+</p>
+<pre>HeatEquation1D pde = new HeatEquation1D(
+        1e-5, // heat equation coefficient
+        1., 6000., // solution domain bounds
+        new AbstractUnivariateRealFunction() {
+    @Override
+    public double evaluate(double x) {
+        return 2.0 * x + sin(2.0 * PI * x); // initial condition
+    }
+},
+        0., new AbstractUnivariateRealFunction() {
+    @Override
+    public double evaluate(double t) {
+        return 0.; // boundary condition at x = 0
+    }
+},
+        0., new AbstractUnivariateRealFunction() {
+    @Override
+    public double evaluate(double t) {
+        return 2.; // boundary condition at x = 6000
+    }
+});
+
+// c_k are 0 for Dirichlet boundary conditions
+int m = 50;
+int n = 39;
+
+PDESolutionTimeSpaceGrid1D soln
+        = new CrankNicolsonHeatEquation1D().solve(pde, m, n);
+
+int t = 0;
+int x = 1;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 0;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 0;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+t = 15;
+x = 1;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 15;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 15;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+t = 30;
+x = 1;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 30;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 30;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+t = 45;
+x = 1;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 45;
+x = 16;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+t = 45;
+x = 31;
+System.out.println(String.format("u(%d,%d) = %f", t, x, soln.u(t, x)));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>u(0,1) = 0.206434
+u(0,16) = 1.387785
+u(0,31) = 0.562312
+u(15,1) = 0.126965
+u(15,16) = 1.089188
+u(15,31) = 1.064061
+u(30,1) = 0.087867
+u(30,16) = 0.942280
+u(30,31) = 1.310920
+u(45,1) = 0.068630
+u(45,16) = 0.870001
+u(45,31) = 1.432373
+
+</pre>
+<p>类<code>HeatEquation1D</code>构造了这样一个热方程问题。签名如下:</p>
+<pre>/**
+ * Constructs a heat equation problem.
+ *
+ * @param beta the beta in the equation
+ * @param a    the region of interest &lt;i&gt;(0, a)&lt;/i&gt;
+ * @param T    the time period of interest &lt;i&gt;(0, T)&lt;/i&gt;
+ * @param f    the initial condition of &lt;i&gt;u&lt;/i&gt;, i.e., &lt;i&gt;u(0,x)&lt;/i&gt;
+ * @param c1   the coefficient in the mixed boundary condition at &lt;i&gt;x =
+ *             0&lt;/i&gt;
+ * @param g1   the mixed boundary condition at &lt;i&gt;x = 0&lt;/i&gt;
+ * @param c2   the coefficient in the mixed boundary condition at &lt;i&gt;x =
+ *             a&lt;/i&gt;
+ * @param g2   the mixed boundary condition at &lt;i&gt;x = a&lt;/i&gt;
+ */
+public HeatEquation1D(
+        double beta,
+        double a,
+        double T,
+        UnivariateRealFunction f,
+        double c1,
+        UnivariateRealFunction g1,
+        double c2,
+        UnivariateRealFunction g2)
+
+</pre>
+<p>类<code>CrankNicolsonHeatEquation1D</code>使用克兰克-梁君诺有限差分算法求解一维热方程。签名如下:</p>
+<pre>/**
+ * Solves the given one-dimensional heat equation.
+ *
+ * @param pde the PDE problem
+ * @param M   the number of grid points along the time-axis (excluding the
+ *            initial condition)
+ * @param N   the number of grid points along the space-axis (excluding the
+ *            two boundaries)
+ * @return the solution \(u(t,x)\) at the grid points
+ */
+public PDESolutionTimeSpaceGrid1D solve(
+        final HeatEquation1D pde,
+        final int M,
+        final int N
+)
+
+</pre>
+<p>此外，NM Dev 库支持求解二维热方程。它有这样的形式:</p><p><img alt="$$ \frac{\partial u}{\partial t}=\beta \left(\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbx.png" style="width:8.76em"/></p>
+
+
+
+
+<p>初始条件如下:</p><p><img alt="$$ u\left(0,x,y\right)=f\left(x,y\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equby.png" style="width:8.38em"/></p>
+
+
+
+
+<p>边界条件如下:</p><p><img alt="$$ u\left(t,x,y\right)=g\left(t,x,y\right) $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equbz.png" style="width:8.85em"/></p>
+
+
+
+
+<p class="Para" id="Par139">(<em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em> ) ∈ <em class="EmphasisTypeItalic "> δR </em>，其中<em class="EmphasisTypeItalic "> δR </em>为曲面<em class="EmphasisTypeItalic "> R </em>的边界。</p>
+<p>NM Dev 类<code>HeatEquation2D</code>构造了 object。签名如下:</p>
+<pre>/**
+ * Constructs a two-dimensional heat equation problem.
+ *
+ * @param beta the beta in the equation
+ * @param T    the time period of interest &lt;i&gt;(0, T)&lt;/i&gt;
+ * @param a    the size of the region along the x-axis, &lt;i&gt;x &amp;isin; (0, a)&lt;/i&gt;
+ * @param b    the size of the region along the y-axis &lt;i&gt;y &amp;isin; (0, b)&lt;/i&gt;
+ * @param f    the initial condition of &lt;i&gt;u&lt;/i&gt;, i.e., &lt;i&gt;u(0,x,y)&lt;/i&gt;
+ * @param g    the boundary condition at &lt;i&gt;x = 0, a&lt;/i&gt; and &lt;i&gt;y = 0, b&lt;/i&gt;
+ */
+public HeatEquation2D(
+    double beta,
+    double T,
+    double a,
+    double b,
+    BivariateRealFunction f,
+    TrivariateRealFunction g
+)
+
+</pre>
+<p class="Para" id="Par141">NM Dev 类<code>AlternatingDirectionImplicitMethod</code>使用交替方向隐式(ADI)方法求解二维热方程。ADI 方法背后的思想是将有限差分方程一分为二，一个隐式采用<em class="EmphasisTypeItalic "> x </em>导数，另一个隐式采用<em class="EmphasisTypeItalic "> y </em>导数。这允许在每一步通过使用 LU 分解来求解对称和三对角线性方程组。解是在三维网格上计算的(时间和<em class="EmphasisTypeItalic "> x </em> -和<em class="EmphasisTypeItalic ">y</em>-坐标)。ADI 是隐式方法，是无条件稳定的；是一种二阶方法，截断误差为<em class="EmphasisTypeItalic ">O</em>(∈<em class="EmphasisTypeItalic ">t</em><sup>2</sup>+∈<em class="EmphasisTypeItalic ">x</em><sup>2</sup>+∈<em class="EmphasisTypeItalic ">y</em><sup>2</sup>)。</p>
+<p>以下代码解决了这个示例 PDE 问题:</p><p><img alt="$$ \left\{\begin{array}{c}\frac{\partial u}{\partial t}={10}^{-4}\left(\frac{\partial^2u}{\partial {x}^2}+\frac{\partial^2u}{\partial {y}^2}\right)\\ {}u\left(0,x,y\right)=0\\ {}u\left(t,x,y\right)={e}^y\cos x-{e}^x\cos y\end{array}\right. $$" src="../images/500382_1_En_8_Chapter/500382_1_En_8_Chapter_TeX_Equca.png" style="width:13.95em"/></p>
+
+
+
+
+<p>
+ 
+</p>
+<pre>// solution domain
+final double a = 4.0, b = 4.0;
+// time domain
+final double T = 5000;
+
+// heat equation coefficient
+final double beta = 1e-4;
+
+// initial condition
+final BivariateRealFunction f
+        = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x1, double x2) {
+        return 0.;
+    }
+};
+
+// boundary condition
+final TrivariateRealFunction g
+        = new AbstractTrivariateRealFunction() {
+    @Override
+    public double evaluate(double t, double x, double y) {
+        return exp(y) * cos(x) - exp(x) * cos(y);
+    }
+};
+final HeatEquation2D PDE = new HeatEquation2D(beta, T, a, b, f, g);
+
+AlternatingDirectionImplicitMethod adi
+        = new AlternatingDirectionImplicitMethod(1e-5);
+PDESolutionTimeSpaceGrid2D soln = adi.solve(PDE, 50, 39, 39);
+
+int t = 50;
+int x = 1;
+int y = 1;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 50;
+x = 1;
+y = 16;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 50;
+x = 1;
+y = 31;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+
+t = 50;
+x = 16;
+y = 1;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 50;
+x = 16;
+y = 16;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 50;
+x = 16;
+y = 31;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+
+t = 50;
+x = 31;
+y = 1;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 50;
+x = 31;
+y = 16;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+t = 50;
+x = 31;
+y = 31;
+System.out.println(String.format("u(%d,%d,%d) = %f", t, x, y, soln.u(t, x, y)));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>u(50,1,1) = -0.000000
+u(50,1,16) = 4.771024
+u(50,1,31) = 22.814937
+u(50,16,1) = -4.771024
+u(50,16,16) = -0.000000
+u(50,16,31) = 2.415165
+u(50,31,1) = -22.814937
+u(50,31,16) = -2.415165
+u(50,31,31) = -0.000000
+
+</pre>
+<p>类别<code>AlternatingDirectionImplicitMethod</code>的签名如下:</p>
+<pre>/**
+ * Constructs an ADI method with the given precision parameter. By default,
+ * multi-core parallel computation is used for higher performance.
+ *
+ * @param epsilon the precision parameter
+ */
+public AlternatingDirectionImplicitMethod(double epsilon)
+
+/**
+ * Solves the given two-dimensional heat equation problem, with the given
+ * numbers of points along the three axes in the grid (time, x, and y).
+ *
+ * @param pde the heat equation problem
+ * @param m   the number of grid points along the time-axis (excluding the
+ *            initial condition)
+ * @param n   the number of grid points along the x-axis (excluding the
+ *            boundary)
+ * @param p   the number of grid points along the y-axis (excluding the
+ *            boundary)
+ * @return the solution grid
+ */
+public PDESolutionTimeSpaceGrid2D solve(
+        HeatEquation2D pde,
+        final int m,
+        final int n,
+        final int p
+)
+
+</pre>
+
+
+<aside aria-label="Footnotes" class="FootnoteSection" epub:type="footnotes">Footnotes
+<a href="#Fn1_source">1</a><p class="Para" id="Par5">作为第一个解决六千年问题的人，你会得到一百万美元。因此，从理论上讲，你可以通过解决数学问题来建立自己的事业，从而获得 600 万美元的收入。</p>
+
+ 
+
+</aside>
+
+
+</body>
+</html>

@@ -1,0 +1,694 @@
+<html lang="en">
+<head><title>Heuristics</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">11.探索法</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">在计算机科学和数学优化中，当我们在过去几章中讨论的经典方法(LP、QP、SOCP、SDP、SQP)失败、太慢、不可行或不适用时，启发式算法是一种旨在为优化问题找到足够好的解决方案的程序。当问题太大(例如，超出有限的计算能力)、具有不完整或不完美的信息(例如，缺少用于修剪的结构)、具有复杂的目标函数(例如，不可微)或具有困难的约束(基于规则的约束、例外)时，尤其如此。启发式算法通常通过使用特别的规则来消除候选解的大的子集来加速计算。等效地，它只搜索解决方案空间的子集，否则该子集太大而不能被完全枚举或探索。这些特别的规则通常对正在解决的问题以及解决方案空间做出假设。它们可能会也可能不会消除真正的解决方案。尽管这些特别的规则通常没有被证明或给出它们的性质，但在实践中，启发式算法通常会为许多无法解决的问题返回好的可用解决方案，例如像旅行推销员问题这样的整个 NP 完全问题。</p>
+<p class="Para" id="Par3">经典的优化算法被设计成寻找全局最优解，并且它们通常在本质上是迭代的和确定的。相反，启发式的特别规则通常是实验性的。它们被设计成有效地探索搜索空间，以便找到足够好的解决方案。他们经常利用一些随机性来探索搜索空间，因此找到的解决方案依赖于生成的随机变量集。这些特别算法的范围从简单的局部搜索过程(例如爬山算法)到复杂的学习过程(例如遗传算法)。</p>
+<p class="Para" id="Par4">在组合优化中，例如旅行推销员问题，随着问题规模的增加，候选解的搜索空间比指数增长得更快。同样，高维问题也遭受维数灾难。对这些问题的最优解的穷举搜索或分析方法是不可行的。与其他穷举优化算法(例如模拟退火)相比，启发式算法可以在大量可行解中搜索，从而以更少的计算量找到近似解。</p>
+<h2 class="Heading">11.1 罚函数法</h2>
+<p>罚函数法是一种通过将约束转化为罚项来将约束优化问题转化为无约束优化问题的方法。其思想是当解在可行域时，罚项为零。当解在可行域之外时，惩罚项为正。我们通常给惩罚项分配一个大的正数<em class="EmphasisTypeItalic "> M </em>作为系数，称为惩罚因子，以确保原问题的约束将得到满足。这种方法是在可行域的内部搜索，约束边界就像一堵墙。如果当前解远离约束边界，则惩罚项值很小，表示解在可行区域中。无约束优化问题，<em class="EmphasisTypeItalic "> F </em> ( <em> <strong class="EmphasisTypeBoldItalic "> x </strong> </em>，<em class="EmphasisTypeItalic "> M </em>)，与原约束优化问题<em class="EmphasisTypeItalic ">F</em>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)相同。否则，惩罚项值接近无穷大，表明解决方案违反了某些约束。原则上，等价的无约束优化问题可以由任何无约束优化器来解决，就像我们在第<a href="09.html"> 9 </a>章中讨论的那些。默认情况下，NM Dev 使用 BFGS 极小值<code>BFGSMinimizer</code>。见图<a href="#Fig1"> 11-1 </a>。</p>
+<p><img alt="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig1_HTML.jpg" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig1_HTML.jpg" style="width:35.48em"/></p>
+<p>图 11-1</p><p class="SimplePara">罚函数法</p>
+
+
+<p class="Para" id="Par6">为了搜索最优解<em class="EmphasisTypeItalic ">x</em><sup>∫</sup>，我们可以从可行或不可行区域的初始猜测开始。如果我们从可行域开始，约束边界就像墙一样，我们无法走出可行域。当当前解远离约束边界时，罚函数值很小；否则，罚函数值接近无穷大，防止解离开可行域。然而，为大规模的问题实例寻找可行的解决方案可能是 NP-hard 的，因此使得这种方法不可能应用。或者，我们可以在任何地方或不可行区域开始搜索，然后逐渐移动到可行区域。那么就不存在初始可行解的前提条件。</p>
+<p class="Para" id="Par7">考虑一个一般的约束优化问题，如下所示:</p>
+<p class="Para" id="Par8"><img alt="$$ \underset{x}{\min }f(x) $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_IEq1.png" style="width:3.78em"/>，s.t .，</p>
+<p class="Para" id="Par9"><strong class="EmphasisTypeBoldItalic "> h </strong>  <sub> <em>【我】<strong class="EmphasisTypeBoldItalic "/></em></sub>(<em><strong class="EmphasisTypeBoldItalic "/></em>)<em/></p>
+<p class="Para" id="Par10"><em class="EmphasisTypeItalic "/><sub>【j】</sub>(<em><strong class="EmphasisTypeBoldItalic "/></em>)≤0，<em class="EmphasisTypeItalic ">【j】</em><em class="EmphasisTypeItalic ">【I】</em></p>
+<p class="Para" id="Par11">{<em class="EmphasisTypeItalic ">h</em><sub><em class="EmphasisTypeItalic ">I</em></sub>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)}是等式约束，{<em class="EmphasisTypeItalic ">g</em><sub><em class="EmphasisTypeItalic ">j</em></sub>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)}是不等式约束。</p>
+<p>通过惩罚任何违反约束的行为，我们可以将问题转化为一个等价的无约束优化问题。罚函数法的一般形式如下:<p> <img alt="$$ F(x)=f(x)+M\left(H+G\right) $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Equa.png" style="width:11.24em"/> </p></p>
+<p class="Para" id="Par13"><em class="EmphasisTypeItalic ">F</em>(<em>T3】xT5)是新的目标函数。<em class="EmphasisTypeItalic "> H </em>和<em class="EmphasisTypeItalic "> G </em>为惩罚项，分别是约束{<em class="EmphasisTypeItalic ">H</em><sub><em class="EmphasisTypeItalic ">I</em></sub>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)}和{<em class="EmphasisTypeItalic ">G</em><sub><em class="EmphasisTypeItalic ">j</em></sub>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)}的函数。<em class="EmphasisTypeItalic "> M </em>是惩罚因子。</em></p>
+<p>将等式约束{<em class="EmphasisTypeItalic ">H</em><sub><em class="EmphasisTypeItalic ">I</em></sub>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)}转换成罚项<em class="EmphasisTypeItalic "> H </em>的一种方法是对它们的绝对值求和。具体来说，我们有这样的:<p> <img alt="$$ H=\sum \limits_{i=1}^m{p}_i\left|{h}_i(x)\right| $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Equb.png" style="width:7.47em"/> </p></p>
+<p class="Para" id="Par15">{ <em class="EmphasisTypeItalic "> p </em> <sub> <em class="EmphasisTypeItalic "> i </em> </sub> }是对每个等式约束的权重。</p>
+<p>NM Dev 类<code>AbsoluteErrorPenalty</code>从等式约束的集合中构造了这样一个罚函数。签名如下:</p>
+<pre>/**
+ * Construct an absolute value penalty function from a collection of
+ * equality constraints.
+ *
+ * @param constraints a collection of equality constraints
+ * @param weights     the weights assigned to the constraints
+ */
+public AbsoluteErrorPenalty(EqualityConstraints constraints, double[] weights)
+
+</pre>
+<p>Courant penalty 是将等式约束{<em class="EmphasisTypeItalic ">H</em><sub><em class="EmphasisTypeItalic ">I</em></sub>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)}转换为罚项<em class="EmphasisTypeItalic "> H </em>的另一种方法。它对平方值求和。具体来说，我们有这样的:<p> <img alt="$$ H=\sum \limits_{i=1}^m{p}_i{\left|{h}_i(x)\right|}^2 $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Equc.png" style="width:7.7em"/> </p></p>
+<p class="Para" id="Par18">{ <em class="EmphasisTypeItalic "> p </em> <sub> <em class="EmphasisTypeItalic "> i </em> </sub> }是对每个等式约束的权重。</p>
+<p>NM Dev 类<code>CourantPenalty</code>从等式约束的集合中构造一个 Courant 罚函数。签名如下:</p>
+<pre>/**
+ * Construct a CourantPenalty penalty function from a collection of equality
+ * constraints.
+ *
+ * @param constraints a collection of equality constraints
+ * @param weights     the weights assigned to the constraints
+ */
+public CourantPenalty(EqualityConstraints constraints, double[] weights)
+
+</pre>
+<p>弗莱彻罚是将不等式约束{<em class="EmphasisTypeItalic ">G</em><sub><em class="EmphasisTypeItalic ">j</em></sub>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em>)}转化为罚项<em class="EmphasisTypeItalic "> G </em>的一种方法。它将大于 0 的平方误差相加。具体来说，我们有这样的:<p> <img alt="$$ H=\sum \limits_{j=1}^n{q}_j\max {\left({g}_j(x),0\right)}^2 $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Equd.png" style="width:11.37em"/> </p></p>
+<p class="Para" id="Par21">{ <em class="EmphasisTypeItalic "> q </em> <sub> <em class="EmphasisTypeItalic "> j </em> </sub> }由对每个不等式的权重约束组成。</p>
+<p>NM Dev 类<code>FletcherPenalty</code>从小于约束的集合中构造 Fletcher 罚函数。(也可以通过反转符号将大于约束转换为小于约束。)签名如下:</p>
+<pre>/**
+ * Construct a Fletcher penalty function from a collection of less-than inequality constraints.
+ *
+ * @param constraints a collection of less-than inequality constraints
+ * @param weights     the weights assigned to the constraints
+ */
+public FletcherPenalty(LessThanConstraints constraints, double[] weights)
+
+</pre>
+<p class="Para" id="Par23">虽然罚函数法在理论上是可行的，但它的缺点是罚因子<em class="EmphasisTypeItalic "> M </em>的值难以估计。如果太小，返回的解可能不可行，并且违反约束。如果它太大，并且最优解位于(或接近于)可行区域的边界，则搜索将很快被推入可行区域，并且不会返回到接近可行区域的边界。在搜索过程的开始，大的惩罚因子会阻碍对不可行区域的搜索。还会造成严重的数值误差，即使存在也可能找不到解。</p>
+<p class="Para" id="Par24">这个缺点可以通过下面的迭代过程来改善。首先，我们从一个较小但仍然很大的正数<em class="EmphasisTypeItalic "> M </em>开始，找到最优解<em><strong class="EmphasisTypeBoldItalic ">x</strong></em><sup>∫</sup>到<em class="EmphasisTypeItalic "> F </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> M </em>)。如果<em><strong class="EmphasisTypeBoldItalic ">x</strong></em><sup>∫</sup>不满足原约束优化问题的约束，我们就增加<em class="EmphasisTypeItalic "> M </em>(比如乘以 10)。重复该过程，直到<em><strong class="EmphasisTypeBoldItalic ">x</strong></em><sup>∑</sup>满足原约束优化问题的约束。</p>
+<p class="Para" id="Par25">在 NM Dev 中，类<code>PenaltyMethodMinimizer</code>实现罚函数方法。下面的代码解决了这个约束优化问题:</p>
+<p><img alt="$$ \underset{x,y}{\min }{\left(x+1\right)}^2+{\left(y+1\right)}^2 $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_IEq2.png" style="width:9.74em"/><p><img alt="$$ y=0 $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Eque.png" style="width:2.54em"/></p><p><img alt="$$ x\ge 1 $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Equf.png" style="width:2.59em"/></p></p>
+<p>
+ 
+</p>
+<pre>RealScalarFunction f = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        // f = (x+1)^2 + (y+1)^2
+        return (x + 1) * (x + 1) + (y + 1) * (y + 1);
+    }
+};
+
+RealScalarFunction c1 = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        // y = 0
+        return y;
+    }
+};
+
+RealScalarFunction c2 = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        // x &gt;= 1
+        return 1 - x;
+    }
+};
+
+ConstrainedOptimProblemImpl1 problem
+        = new ConstrainedOptimProblemImpl1(
+                f,
+                new GeneralEqualityConstraints(c1), // y = 0
+                new GeneralLessThanConstraints(c2)); // x &gt;= 1
+
+double M = 1e30; // the penalty factor
+PenaltyMethodMinimizer optim
+        = new PenaltyMethodMinimizer(
+                PenaltyMethodMinimizer.DEFAULT_PENALTY_FUNCTION_FACTORY,
+                M,
+                // the solver to solve the equivalent unconstrained optimization problem
+                new BFGSMinimizer(false, 1e-8, 200)
+        );
+IterativeSolution&lt;Vector&gt; soln = optim.solve(problem);
+
+Vector xmin = soln.search( // the minimizer
+        new DenseVector(new double[]{0, 0}) // an initial guess
+);
+double fxmin = f.evaluate(xmin); // the mimimum
+System.out.println(String.format("f(%s) = %f", xmin, fxmin));
+
+// alternatively
+System.out.println(String.format("f(%s) = %f", soln.minimizer(), soln.minimum()));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>f([1.000000, 0.000000] ) = 5.000000
+f([1.000000, 0.000000] ) = 5.000000
+
+</pre>
+<p class="Para" id="Par29"><code>PenaltyFunctionFactory DEFAULT_PENALTY_FUNCTION_FACTORY</code>从等式和不等式约束中构造惩罚项。它将<code>CourantPenalty</code>用于等式约束，将<code>FletcherPenalty</code>用于不等式约束。如果我们想构造不同于默认实现的惩罚项，我们可以使用定制的<code>PenaltyFunctionFactory</code>。</p>
+
+<h2 class="Heading">11.2 遗传算法</h2>
+<p class="Para" id="Par30">遗传算法是一种反映自然界生物进化规律的元启发式算法。它是模拟达尔文自然选择和遗传变异的生物进化过程的计算模型。该算法通过数学和计算机模拟运算，将寻找优化问题的最优解转化为类似于生物进化中染色体基因的交叉、变异和选择的过程。与经典优化算法相比，在解决大规模复杂问题时，遗传算法可以在更短的时间内返回解。遗传算法已广泛应用于组合优化、机器学习、信号处理、自适应控制等领域。遗传算法是在 20 世纪 70 年代早期由密歇根大学安娜堡分校的霍兰德教授和他的学生流行起来的。他还引入了一个预测下一代质量的形式化框架，被称为霍兰德图式定理。</p>
+<p class="Para" id="Par31">遗传算法的一个经典应用是函数优化。GA 已经在很多复杂函数上进行了测试:连续和离散，凸和凹，低维和高维，单峰和多峰。对于一些非线性、不可微、多模态、多目标的函数优化问题，具有许多复杂的约束条件，用其他优化方法很难解决，遗传算法可以给出更好的结果。此外，随着现代组合优化问题规模和搜索空间的迅速增加，很难通过枚举找到最优解。对于这样复杂的问题，从业者往往乐于得到满意的解，而不是最优解。事实证明，遗传算法是寻求满意解的最有效的工具之一，尤其是对于 NP 难的组合优化问题。例如，遗传算法已经成功地应用于解决旅行商问题、背包问题、装箱问题、图划分问题等。值得注意的是，NM Optim Limited ( <a href="https://nmoptim.com/"> <code>https://nmoptim.com/</code> </a>)，一家工业优化公司，已经为钢铁制造工厂建立了一个作业车间调度系统，该系统使用遗传算法处理许多复杂和特别的约束。</p>
+<p class="Para" id="Par32">从数学上讲，遗传算法从一个优化问题的候选解群体开始。对每个候选解进行编码，以使其适合度(对优化问题的价值)可以被评估，并且编码可以被改变(突变)或与另一个候选解混合(交叉)以产生新的候选解(新编码)。迭代地，种群进化以产生下一代候选解，直到达到令人满意的适应度水平或者产生了最大数量的代。基本的遗传算法框架如下。</p>
+<p class="Para ParaOneEmphasisChild" id="Par33"><strong class="EmphasisTypeBold ">编码</strong></p>
+<p>遗传算法不能直接处理或操纵一个问题的候选解，例如作业调度。我们必须首先设计一个解决方案的表示，称为编码或染色体，GA 可以使用它进行操作。每个候选解的标准表示或染色体是由 0 和 1 位组成的数组或字符串。编码策略需要满足这些要求，以使 GA 搜索有效。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par35">完备性:问题空间中的所有候选解都可以表示为 GA 空间中的染色体。</p></li>
+<li><p class="Para" id="Par36">健全性:GA 空间中的染色体对应于问题空间中的所有候选解。</p></li>
+<li><p class="Para" id="Par37">非冗余性:候选解对应的染色体是一对一的关系。</p></li>
+</ul>
+
+<p class="Para ParaOneEmphasisChild" id="Par38"><strong class="EmphasisTypeBold ">健身功能</strong></p>
+<p>进化论中的生存适应度是指生物对环境的适应程度和繁殖后代的能力。它是对候选解决方案有多好的衡量。在优化方面，它是表明我们对一个问题的目标函数的优化程度的值。注意，适应度函数(值)不同于目标函数(值)，尽管它们是正相关的。通常，我们需要在目标函数值和适应函数值之间有一个映射。需要对候选人的适应值进行比较和排序。它也是被(随机)选择用于变异和交叉的基础，因此需要是正数(用于计算被选择的概率)并且有界。遗传算法在搜索和进化过程中一般不需要其他外部信息，只使用适应度函数来评价候选解的优劣。适应度函数的设计是遗传算法成功运行的关键。它应符合以下条件:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par40">单值，连续，非负，有界</p></li>
+<li><p class="Para" id="Par41">合理一致</p></li>
+<li><p class="Para" id="Par42">易于计算</p></li>
+<li><p class="Para" id="Par43">强大的通用性</p></li>
+</ul>
+
+<p class="Para ParaOneEmphasisChild" id="Par44"><strong class="EmphasisTypeBold ">初始人口</strong></p>
+<p>遗传算法从迭代的个体候选解的初始群体开始。群体大小取决于问题的性质，但通常包含数百或数千个可能的个体。通常，初始群体是随机生成的，并且应该合理地覆盖可能的解决方案的整个范围(搜索空间)。有时，解决方案可能被“播种”在可能找到最优解决方案的区域。典型的初始设置策略如下:</p>
+<ol><li class="ListItem"><p class="Para" id="Par46">利用一些关于问题的知识，我们可以试着对解空间的分布或范围有一个大致的概念。初始种群应该根据最优解所在位置的先验分布来分布。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par47">首先随机产生一定数量的个体；然后从中选出最优秀的个体，加入初始种群。重复该过程，直到初始群体中的个体数量达到预定的大小。</p>
+ </li>
+</ol>
+
+<p class="Para ParaOneEmphasisChild" id="Par48"><strong class="EmphasisTypeBold ">操作过程</strong></p>
+<p>基本的遗传算法操作过程如下:</p>
+<ol><li class="ListItem"><p class="Para" id="Par50">初始化:设置进化计数器<code>t=0</code>，最大进化次数<code>T</code>，随机产生<code>M</code>个体作为初始种群<code>P(0)</code>。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par51">评估:计算群体中每个个体的适应度<code>P(t)</code>。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par52">选择:对组应用选择运算符。选择的目的是通过交叉和变异把好的染色体(基因)传递给下一代。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par53">交叉:将交叉算子应用于群体，通过将两个选定的个体配对来为下一代生成新的候选解。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par54">变异:对群体应用变异算子，通过改变所选个体代表的某些位点的基因，为下一代产生新的候选解。下一代是<code>P(t+1)</code>。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par55">终止条件:如果<code>t=T</code>，返回进化过程中获得的适应度最好的个体作为最优解；计算被终止。或者，当最佳个体的适应度达到给定阈值时，或者当群体的适应度不再提高时，计算停止。代数一般设置为 100 ~ 500 代。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par56">三种主要的基本遗传操作是选择、交叉和变异。</p>
+<p class="Para ParaOneEmphasisChild" id="Par57"><strong class="EmphasisTypeBold ">选择</strong></p>
+<p class="Para" id="Par58">选择操作是挑选出优秀的个体，并从群体中淘汰较差的个体。这项手术确保下一代将继承好的基因，而不会有坏的基因。这是一种爬山搜索。选择是基于个体的适合度。个体的适应度越好，它被选中的概率就越高(但不能保证)。注意，即使不太适合的个体也可能被选择，尽管可能性较低。这是为了确保种群的多样性和摆脱局部最优。常用的选择算子有适应度比法、随机遍历抽样法和局部选择法。</p>
+<p class="Para ParaOneEmphasisChild" id="Par59"><strong class="EmphasisTypeBold ">交叉</strong></p>
+<p class="Para" id="Par60">生物基因的重组(也称突变)在自然生物的进化中起着核心作用。同样，遗传算法中的关键操作是候选解的表示或编码的交叉算子。交叉算子替换和重组两个父个体的(随机)部分结构，以产生两个新个体。位数组的常用交叉方法有单点交叉、两点和 k 点交叉以及均匀交叉。</p>
+<p>在单点杂交中，随机选取双亲染色体上的一个点，并指定为“交叉点”该点右侧的位在两个亲代染色体之间交换。这就产生了两个后代，每个都携带着父母双方的一些遗传信息。见图<a href="#Fig2"> 11-2 </a>。</p>
+<p><img alt="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig2_HTML.jpg" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig2_HTML.jpg" style="width:20.65em"/></p>
+<p>图 11-2</p><p class="SimplePara">单点交叉</p>
+
+
+<p>在两点交叉中，从父代染色体中随机选取两个交叉点。两个点之间的比特在亲代生物体之间交换。相当于进行两次交叉点不同的单点交叉。这个策略可以推广到任意正整数 k 的 k 点交叉，挑选 k 个交叉点。见图<a href="#Fig3"> 11-3 </a>。</p>
+<p><img alt="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig3_HTML.jpg" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig3_HTML.jpg" style="width:20.68em"/></p>
+<p>图 11-3</p><p class="SimplePara">两点交叉</p>
+
+
+<p class="Para" id="Par63">在均匀交叉中，通常每个比特以相等的概率从父代中选择。有时使用其他混合比例，导致后代从父母一方继承的遗传信息比另一方多。</p>
+<p class="Para ParaOneEmphasisChild" id="Par64"><strong class="EmphasisTypeBold ">突变</strong></p>
+<p class="Para" id="Par65">遗传算法引入变异有两个目的。第一个原因是确保遗传算法染色体群体从一代到下一代的遗传多样性。突变改变了染色体中一个或多个基因的值。解决方案可能完全不同于其父，因此 GA 可能得到更好的解决方案。根据预定的突变概率，在进化过程中发生突变。这个概率应该设置得较低。如果设置得太高，搜索将变成原始的随机搜索。</p>
+<p class="Para" id="Par66">第二个原因是在接近最优解时控制局部搜索。当遗传算法通过交叉算子接近最优解时，变异算子的局部随机搜索可以加速收敛到最优解。在这种情况下，突变概率应该很小；否则，接近最优解的积木块会因变异而被破坏。另一方面，为了避免局部最优并保持群体多样性，变异概率应该取较大的值，以防止染色体变得过于相似，从而减缓甚至停止收敛到全局最优。</p>
+<p>根据编码的不同，有许多方法可以定义变异操作符。一个经典的例子是，基因序列中的任意一位有可能会从其原始状态翻转过来。实现变异操作符的一种常见方法是为序列中的每一位生成一个随机变量。这个随机变量告诉我们某个特定的位是否会被翻转。这种基于生物点突变的突变过程称为单点突变。其他类型有倒位和浮点变异。当基因编码像排列问题一样受到限制时，突变就是交换、倒位和打乱。见图<a href="#Fig4"> 11-4 </a>。</p>
+<p><img alt="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig4_HTML.jpg" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig4_HTML.jpg" style="width:4.72em"/></p>
+<p>图 11-4</p><p class="SimplePara">位串突变。随机位置的比特翻转</p>
+
+
+<p>在 NM Dev 中，类<code>GeneticAlgorithm</code>和接口<code>Chromosome</code>提供了实现定制遗传算法的框架。<code>GeneticAlgorithm</code>允许用户定义如何初始化第一个群体和终止条件。事实上，该类中的大多数方法都是受保护的，这意味着用户可以重写它们以提供不同的实现。签名如下:</p>
+<pre>public abstract class GeneticAlgorithm {
+
+    /**
+     * Initialize the first population.
+     *
+     * @return the first population
+     */
+    protected abstract List&lt;? extends Chromosome&gt; getFirstGeneration();
+
+    /**
+     * This is the convergence criterion.
+     *
+     * @return {@code true} if the search has converged
+     */
+    protected abstract boolean isConverged();
+
+    /**
+     * Run the genetic algorithm.
+     */
+    public void run() {
+        population.addAll(getFirstGeneration());
+
+        for (; !isConverged();) {
+            step();
+        }
+    }
+
+    /**
+     * Run a step in genetic algorithm: produce the next generation of chromosome pool.
+     *
+     * @return true
+     */
+    protected Object step();
+
+    /**
+     * Produce a child chromosome.
+     * &lt;p/&gt;
+     * This implementation first applies the crossover and then the mutation operators.
+     *
+     * @param i an index that ranges from 0 to (population size - 1)
+     * @return a child chromosome
+     */
+    protected Chromosome getChild(int i);
+
+    /**
+     * Pick a chromosome for mutation/crossover.
+     * &lt;p/&gt;
+     * This implementation uniformly and randomly chooses from the population.
+     *
+     * @return a chromosome
+     */
+    protected Chromosome getOne();
+
+    /**
+     * Populate the next generation using the parent and children chromosome pools.
+     * &lt;p/&gt;
+     * This implementation chooses the best chromosomes among the parents and children.
+     *
+     * @param parents  the parent chromosome pool
+     * @param children the children chromosome pool
+     * @return the next generation population
+
+
+
+     */
+    protected List&lt;Chromosome&gt; getNextGeneration(List&lt;Chromosome&gt; parents, List&lt;Chromosome&gt; children);
+
+    /**
+     * Get the size of the population pool, that is the number of chromosomes.
+     *
+     * @return the population size
+     */
+    protected int nPopulation();
+
+    /**
+     * Get the number of children before populating the next generation.
+     * &lt;p/&gt;
+     * In this implementation, it is the same as the population size (same as the number of
+     * parents).
+     *
+     * @return the number of children
+     */
+    protected int nChildren();
+
+    /**
+     * Get the &lt;i&gt;i&lt;/i&gt;-th best chromosome.
+     *
+     * @param i an index
+     * @return the &lt;i&gt;i&lt;/i&gt;-th best chromosome
+
+
+
+     */
+    protected Chromosome getBest(int i);
+
+    /**
+     * Allocate space for a population pool.
+     *
+     * @param size the population size
+     * @return a population pool
+     */
+    protected static ArrayList&lt;Chromosome&gt; getNewPool(int size);
+}
+
+</pre>
+<p>对于任何特定的优化问题，用户将需要通过实现接口<code>Chromosome</code>来定义编码、相关的交叉操作符和变异操作符。由于遗传算法实现通常在多核环境中运行以提高性能，因此确保染色体操作的实现是线程安全的并且可以并行运行是很重要的。签名如下:</p>
+<pre>public interface Chromosome extends Comparable&lt;Chromosome&gt; {
+
+    /**
+     * This is the fitness to determine how good this chromosome is.
+     *
+     * @return the fitness
+     */
+    public double fitness();
+
+    /**
+     * Construct a {@code Chromosome} by mutation.
+     *
+     * @return a mutated chromosome
+     */
+    public Chromosome mutate();
+
+    /**
+     * Construct a {@code Chromosome} by crossing over a pair of chromosomes.
+     *
+     * @param that another chromosome
+     * @return a crossed over chromosome
+     */
+    public Chromosome crossover(Chromosome that);
+}
+
+</pre>
+<p class="Para" id="Par70">例如，NM Dev 使用这种遗传算法框架实现求解器<code>SimpleGridMinimizer</code>来最小化多变量实值函数(从<em class="EmphasisTypeItalic "> ℝ </em> <sup> <em class="EmphasisTypeItalic "> n </em> </sup>到<em class="EmphasisTypeItalic "> ℝ </em> <sup> 1 </sup>)。这种优化器不使用被优化函数的梯度，这意味着它不要求优化问题是可微的，如梯度下降和拟牛顿法等经典优化方法所要求的。因此，它也可以用于甚至不连续、有噪声、随时间变化、随特定约束而变化等的优化问题。</p>
+<p><code>SimpleGridMinimizer</code>从分布在解空间的初始猜测群体开始。然后，它将它们配对进行交叉和变异，以搜索最优解。具体来说，候选解的编码简单来说就是<em class="EmphasisTypeItalic "> ℝ </em> <sup> <em class="EmphasisTypeItalic "> n </em> </sup>中的一个向量。</p>
+<pre>public abstract class RealScalarFunctionChromosome implements Chromosome {
+
+    private Double fx = null;
+    private final RealScalarFunction f;
+private final ImmutableVector x; // the encoding
+}
+
+</pre>
+<p>交叉算子取两个个体的中点。变异算子是给向量增加一个小的随机扰动。也就是说，我们有这个:</p>
+<pre>/**
+ * A {@code SimpleCell} implements the two genetic operations.
+ * &lt;ul&gt;
+ * &lt;li&gt;Mutation by disturbing (scaling) the fitness by a percentage;&lt;/li&gt;
+ * &lt;li&gt;Crossover by taking the midpoint (average) of two cells.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class SimpleCell extends RealScalarFunctionChromosome {
+
+    protected SimpleCell(RealScalarFunction f, Vector x) {
+        super(f, x);
+    }
+
+    /**
+     * Mutate by random disturbs in a neighborhood.
+     *
+     * @return a mutant chromosome
+     */
+    @Override
+    public Chromosome mutate() {
+        final double offset = 1 - rate;
+        final double width = 2 * rate;
+
+        Vector z = new DenseVector(x());
+        for (int i = 1; i &lt;= z.size(); ++i) {
+            double rand = uniform.nextDouble();
+            double u = offset + rand * width;
+            z.set(i, z.get(i) * u);
+        }
+
+        return getSimpleCell(f(), z);
+    }
+
+    /**
+     * Crossover by taking the midpoint.
+     *
+     * @param other another chromosome
+     * @return a hybrid chromosome
+     */
+    @Override
+    public Chromosome crossover(Chromosome other) {
+        SimpleCell that = (SimpleCell) other;
+        Vector z = this.x().add(that.x()).scaled(0.5);
+        return getSimpleCell(f(), z);
+    }
+}
+
+</pre>
+<p>下面的代码使用遗传算法的这个特定实现来最小化下面的函数:<p> <img alt="$$ \underset{x,y}{\min}\left({x}^2+{y}^2\right) $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Equg.png" style="width:5.85em"/> </p></p>
+<p>
+ 
+</p>
+<pre>// the objective function to minimize
+RealScalarFunction f
+        = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        return x * x + y * y; // x^2 + y^2
+    }
+};
+
+// a uniform random number generator
+RandomLongGenerator rng = new UniformRNG();
+rng.seed(123456798L);
+
+// construct an instance of a genetic algorithm solver
+SimpleGridMinimizer solver
+        = new SimpleGridMinimizer(
+                // define the encodinng, crossover and mutation operator
+                () -&gt; new SimpleCellFactory(
+                        0.1, // the convergence rate
+                        rng),
+                rng, // source of randomness for the GA
+                1e-15, // a precision parameter
+                500, // the maximum number of iterations
+                500 // the maximum number of iterations of no improvement
+        );
+
+// run the solver to solve the optimization problem
+IterativeSolution&lt;Vector&gt; soln
+        = solver.solve(new C2OptimProblemImpl(f));
+Vector xmin = soln.search(new Vector[]{ // the minimizer
+    // the boundaries: [-10, 10], [-10, 10]
+    new DenseVector(-10.0, 10.0),
+    new DenseVector(10.0, -10.0),
+    new DenseVector(10.0, 10.0),
+    new DenseVector(-10.0, -10.0)
+});
+double fxmin = f.evaluate(xmin); // the mimimum
+System.out.println(String.format("f(%s) = %f", xmin, fxmin));
+
+</pre>
+<p>输出是:</p>
+<pre>f([0.000000, 0.000000] ) = 0.000000
+
+</pre>
+<h3 class="Heading">差异进化</h3>
+<p>差分进化算法是遗传算法优化多元实值函数的一种特殊实现。主要创新点是其差分变异算子。设<em class="EmphasisTypeItalic "> CR </em> ∈ [0，1]为交叉概率，<em class="EmphasisTypeItalic "> F </em> ∈ [0，2]为差分权重。差分变异算子为每个个体<em> <strong class="EmphasisTypeBoldItalic "> x </strong> </em>挑选三个随机且不同的候选解，<em> <strong class="EmphasisTypeBoldItalic "> a </strong> </em>，<em> <strong class="EmphasisTypeBoldItalic "> b </strong> </em>，<em> <strong class="EmphasisTypeBoldItalic "> c </strong> </em>，并执行以下操作:</p>
+<ol><li class="ListItem"><p class="Para" id="Par77">选取一个随机指标<em class="EmphasisTypeItalic "> R </em> ∈ {1，…，<em class="EmphasisTypeItalic "> n </em> }，其中<em class="EmphasisTypeItalic "> n </em>为目标函数的维数。</p>
+ </li>
+<li class="ListItem">计算一个新的个体<em><strong class="EmphasisTypeBoldItalic ">y</strong></em>=(<em class="EmphasisTypeItalic ">y</em><sub>1</sub>，…，<em class="EmphasisTypeItalic "> y </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>)如下:<ol><li class="ListItem"><p class="Para" id="Par79">对于每个指数<em class="EmphasisTypeItalic "> i </em> ∈ {1，…，<em class="EmphasisTypeItalic "> n </em> }，取一个均匀分布的随机数<em class="EmphasisTypeItalic ">r</em><sub><em class="EmphasisTypeItalic ">I</em></sub>~<em class="EmphasisTypeItalic ">U</em>(0，1)。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par80">如果<em class="EmphasisTypeItalic ">R</em><sub><em class="EmphasisTypeItalic ">I</em></sub>&lt;<em class="EmphasisTypeItalic ">CR</em>或<em class="EmphasisTypeItalic "> i </em> = <em class="EmphasisTypeItalic "> R </em>，那么<em class="EmphasisTypeItalic ">y</em><sub><em class="EmphasisTypeItalic ">I</em></sub>=<em class="EmphasisTypeItalic ">a</em><sub><em class="EmphasisTypeItalic ">I</em></sub>+<em class="EmphasisTypeItalic ">F</em>×(<em class="EmphasisTypeItalic ">b</em><sub><em class="EmphasisTypeItalic ">I</em>否则，<em class="EmphasisTypeItalic ">y</em><sub><em class="EmphasisTypeItalic ">I</em></sub>=<em class="EmphasisTypeItalic ">x</em><sub>T47】I</sub>。</sub></p>
+ </li>
+</ol>
+
+ </li>
+</ol>
+
+<p>新的候选者，在每一个变异的指数上，是一个随机向量和两个随机向量的差的加权和，这就是为什么它被称为差分进化。注意，<em class="EmphasisTypeItalic "> R </em>处的索引位置总是被线性组合替换。见图<a href="#Fig5"> 11-5 </a>。</p>
+<p><img alt="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig5_HTML.jpg" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig5_HTML.jpg" style="width:25.12em"/></p>
+<p>图 11-5</p><p class="SimplePara">差异突变</p>
+
+
+<p class="Para" id="Par82">DE 参数<em class="EmphasisTypeItalic "> CR </em>和<em class="EmphasisTypeItalic "> F </em>的选择以及种群大小对优化性能有很大影响。因此，选择产生良好性能的 DE 参数已经成为许多研究的主题。经验表明<em class="EmphasisTypeItalic "> CR </em> = 0.9 而<em class="EmphasisTypeItalic "> F </em> = 0.8。</p>
+<p>下面的 NM Dev 代码解决了一个整数约束优化问题。整数规划问题通常难以通过经典算法来解决，并且是许多活跃研究的主题。这个例子展示了 GA 强大的通用性以及它如何处理困难的约束。<p><img alt="$$ \underset{x,y}{\min }{\left(x-1\right)}^2+{\left(y-3\right)}^2 $$" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Chapter_TeX_Equh.png" style="width:9.74em"/>T2】</p></p>
+<p>
+ 
+</p>
+<pre>// the objective function to minimize
+RealScalarFunction f
+        = new AbstractBivariateRealFunction() {
+    @Override
+    public double evaluate(double x, double y) {
+        return (x - 1) * (x - 1) + (y - 3) * (y - 3); // (x - 1)^2 + (y - 3)^2
+    }
+};
+
+// construct an integer programming problem
+final IPProblem problem
+        // both x and y need to be integers
+        = new IPProblemImpl1(f, null, null, new int[]{1, 2}, 0);
+
+// a uniform random number generator
+final RandomLongGenerator rng = new UniformRNG();
+rng.seed(123456798L);
+
+// construct an instance of the genetic algorithm solver
+DEOptim solver = new DEOptim(
+        () -&gt; new IntegralConstrainedCellFactory(
+                new Rand1Bin(0.5, 0.5, rng), // the DE operator
+                new IntegralConstrainedCellFactory.SomeIntegers(problem)), // specify the integral constraints
+        rng, // a uniform random number generator
+        1e-15, // a precision parameter
+        100, // the maximum number of iterations
+        20 // the maximum number of iterations of no improvement
+);
+
+IterativeSolution&lt;Vector&gt; soln = solver.solve(problem);
+Vector xmin = soln.search(new Vector[]{
+    // the boundaries: [-10, 10], [-10, 10]
+    new DenseVector(-10.0, 10.0),
+    new DenseVector(10.0, -10.0),
+    new DenseVector(10.0, 10.0),
+    new DenseVector(-10.0, -10.0)
+});
+double fxmin = f.evaluate(xmin); // the mimimum
+System.out.println(String.format("f(%s) = %f", xmin, fxmin));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>f([1.000000, 3.000000] ) = 0.000000
+
+</pre>
+<p>类<code>Rand1Bin</code>是 Price，Storn，&amp; Lampinen (2005)提出的 DE 运算符的实现。它们如下:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par87">通过将缩放的、随机采样的向量差添加到第三个向量来进行差异突变</p></li>
+<li><p class="Para" id="Par88">通过执行均匀交叉(离散重组)进行交叉</p></li>
+</ul>
+
+
+
+<h2 class="Heading">11.3 模拟退火</h2>
+<p class="Para" id="Par89">模拟退火(SA)是一种寻找全局最优解的元启发式算法，受冶金退火的启发。退火包括将材料加热到高温，然后让它们慢慢冷却。这允许颗粒在高温下自由移动排列，在低温下沉降。模拟退火可以用于经典算法失败的困难的计算优化问题。即使它通常达到全局最小值的近似解，但对于许多实际问题来说，它通常是足够的。</p>
+<p class="Para" id="Par90">SA 的核心思想是冷却时间表或温度退火时间表。当搜索开始时温度较高时，SA 更有可能接受一个更差的解作为下一个候选解。当温度缓慢下降时，接受更差解决方案的可能性也会降低。接受更差的解决方案允许对全局最优解决方案进行更广泛的搜索，例如避开局部最小值。</p>
+<p>图<a href="#Fig6"> 11-6 </a>显示了模拟退火如何寻找最大值。这里的目标是到达最高点。然而，使用简单的爬山算法是不够的，因为存在许多局部极大值。通过缓慢冷却温度，找到全局最大值。请注意，在搜索开始时，搜索可能会移动很大，当温度接近 0 时，搜索会或多或少地停留在最大值附近。</p>
+<p><img alt="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig6_HTML.jpg" src="../images/500382_1_En_11_Chapter/500382_1_En_11_Fig6_HTML.jpg" style="width:42.88em"/></p>
+<p>图 11-6</p><p class="SimplePara">模拟退火</p>
+
+
+<p>一般来说，SA 算法的基本版本工作如下。温度从最初的正值逐渐下降到零。在每个时间步，该算法随机选择一个接近当前解的解，测量其质量，并根据选择更好或更差解的温度相关概率移动到/接受它，该概率分别保持为正和向零减少。当温度接近 0 时，算法渐进地趋向于爬山搜索。在算法上，为了最小化函数<em class="EmphasisTypeItalic "> f </em>，如下所示:</p>
+<ol><li class="ListItem"><p class="Para" id="Par93">设<em class="EmphasisTypeItalic "> s </em> = <em class="EmphasisTypeItalic "> s </em> <sub> 0 </sub>为初始状态。</p>
+ </li>
+<li class="ListItem">对于<em class="EmphasisTypeItalic "> k </em> = 0 到<em class="EmphasisTypeItalic "> k </em> <sub> <em class="EmphasisTypeItalic "> max </em> </sub>，最大迭代次数<ol><li class="ListItem"><p class="Para" id="Par95">根据冷却或退火计划，温度<em class="EmphasisTypeItalic "> T </em> = <em class="EmphasisTypeItalic "> T </em> ( <em class="EmphasisTypeItalic "> k </em>)是<em class="EmphasisTypeItalic "> k </em>的函数。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par96">随便挑一个邻居<em class="EmphasisTypeItalic ">的</em> <sub>的<em class="EmphasisTypeItalic ">新</em>的</sub>的<em class="EmphasisTypeItalic ">的</em>。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par97">根据接受概率<em class="EmphasisTypeItalic "> P </em> ( <em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> s </em>)，<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">s</em><sub><em class="EmphasisTypeItalic ">new</em></sub>)，<em class="EmphasisTypeItalic "> T </em>)决定是否接受<em class="EmphasisTypeItalic "> s </em> <sub> <em class="EmphasisTypeItalic "> new </em> </sub>，接受概率是<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> s </em>)，<em class="EmphasisTypeItalic ">如果<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">s</em><sub><em class="EmphasisTypeItalic ">新</em></sub>)&lt;<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">s</em>)，我们总是接受新的、更好的解决方案。</em></p>
+ </li>
+</ol>
+
+ </li>
+<li class="ListItem"><p class="Para" id="Par98">输出最后一步状态<em class="EmphasisTypeItalic "> s </em>。</p>
+ </li>
+</ol>
+
+<p>在 NM Dev 中，类<code>SimulatedAnnealingMinimizer</code>提供了实现定制模拟退火算法的框架。签名如下:</p>
+<pre>/**
+ * Construc a new instance.
+ *
+ * @param temperatureFunction a function that for a given iteration i gives
+ *                            T_i, the temperature_levels. The function must be monotonically
+ *                            increasing with
+ * @param probabilityFunction gives the acceptance probability for a state
+ *                            transition at a given temperature
+ * @param annealingFunction   proposes next states
+ * @param markovLength        the number of times we attempt a state change
+ *                            per iteration (per temperature)
+ * @param stopCondition       the {@linkplain StopCondition}
+ * @param uniform             the rlg to be used to control the stochastic
+ *                            element of the algorithm
+ */
+public SimulatedAnnealingMinimizer(
+        TemperatureFunction temperatureFunction,
+        AnnealingFunction annealingFunction,
+        TemperedAcceptanceProbabilityFunction probabilityFunction,
+        int markovLength,
+        StopCondition stopCondition,
+        RandomLongGenerator uniform
+)
+
+</pre>
+<p>温度函数<code>TemperatureFunction</code>定义了模拟退火中使用的温度程序。一般来说，访问分布(建议生成)的温度可能不等于确定接受概率的温度。签名如下:</p>
+<pre>public interface TemperatureFunction {
+
+    /**
+     * Gets the acceptance temperature \(T^A_t\) at time t.
+     *
+     * @param t the time at which to get a temperature, or the annealing
+     *          parameter, same as the iteration number until re-annealing
+     * @return the acceptance temperature at time t
+     */
+    public double acceptanceTemperature(int t);
+
+    /**
+     * Gets the visiting temperature \(T^V_t\) at time t.
+     *
+     * @param t the time at which to get a temperature, or the annealing
+     *          parameter, same as the iteration number until re-annealing
+     * @return the visiting temperature at time t
+     */
+    public double visitingTemperature(int t);
+}
+
+</pre>
+<p>用于证明模拟退火合理性的物理类比假设冷却速率足够低，使得当前状态的概率分布始终接近热力学平衡。不幸的是，弛豫时间，即温度变化后必须等待平衡恢复的时间，强烈依赖于能量/目标函数的“形貌”和当前温度。在模拟退火算法中，松弛时间也取决于下一个候选是如何产生的，以一种非常复杂的方式。因此，理想的冷却速度无法预先确定，应该根据每个问题的经验进行调整。NM Dev 实现了许多温度功能。它们如下:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par102"><code>BoltzTemperatureFunction</code>、<em class="EmphasisTypeItalic ">t</em><sub><em class="EmphasisTypeItalic ">【k】</em></sub>=<sub>【0】</sub>/ln<em class="EmphasisTypeItalic "/></p></li>
+<li><p class="Para" id="Par103"><code>ExpTemperatureFunction</code>，<em class="EmphasisTypeItalic ">T</em><sub><em class="EmphasisTypeItalic ">k</em></sub>= 0.95<sup><em class="EmphasisTypeItalic ">k</em></sup><em class="EmphasisTypeItalic ">T</em><sub>0</sub></p></li>
+<li><p class="Para" id="Par104"><code>FastTemperatureFunction</code>、<em class="EmphasisTypeItalic ">T</em><sub><em class="EmphasisTypeItalic ">k</em></sub>=<em class="EmphasisTypeItalic ">T</em><sub>0</sub>/<em class="EmphasisTypeItalic ">k</em></p></li>
+<li><p class="Para ParaOneEmphasisChild" id="Par105"><code>GSATemperatureFunction</code></p></li>
+</ul>
+
+<p>退火函数<code>AnnealingFunction</code>或调和建议函数根据当前状态和温度给出下一个建议或下一个状态。签名如下:</p>
+<pre>public interface AnnealingFunction {
+
+    /**
+     * Gets the next proposal, given the current state and the temperature.
+     *
+     * @param currentState the current state of the system
+     * @param temperature  the current temperature of the system
+     * @return the next proposal
+     */
+    public Vector nextProposal(Vector currentState, double temperature);
+}
+
+</pre>
+<p>我们必须考虑到，在模拟退火算法的几次迭代之后，预期当前状态具有比随机状态低得多的能量。因此，作为一般规则，应该使生成器偏向目标状态的能量可能与当前状态的能量相似的候选移动。这种试探倾向于排除“非常好”的候选移动以及“非常差”的移动。然而，前者通常比后者少得多，所以启发式通常是相当有效的。NM Dev 已经实现了许多退火功能。它们如下:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par108"><code>BoltzAnnealingFunction</code>:台阶长度为温度的平方根，方向随机均匀。</p></li>
+<li><p class="Para" id="Par109"><code>FastAnnealingFunction</code>:阶梯有长度温度，方向随机均匀。正方形的大小等于温度。</p></li>
+<li><p class="Para ParaOneEmphasisChild" id="Par110"><code>GSAAnnealingFunction</code></p></li>
+<li><p class="Para ParaOneEmphasisChild" id="Par111"><code>BoxGSAAnnealingFunction</code></p></li>
+</ul>
+
+<p>一个缓和的接受概率函数<code>TemperedAcceptanceProbabilityFunction</code>计算下一个状态转换将被接受的概率。签名如下:</p>
+<pre>public interface TemperedAcceptanceProbabilityFunction {
+
+    /**
+     * Compute the probability that the next state transition will be accepted.
+     *
+     * @param currentState   the current state of the system
+     * @param energyCurrent  the energy in the current state
+     * @param proposedState  the proposed next state of the system
+     * @param energyProposed the energy in the proposed state
+     * @param temperature    the current temperature
+     * @return the acceptance probability
+     */
+    public double acceptanceProbability(
+            Vector currentState,
+            double energyCurrent,
+            Vector proposedState,
+            double energyProposed,
+            double temperature);
+}
+
+</pre>
+<p>以下代码演示了如何使用模拟退火求解器来最小化复杂函数:</p>
+<pre>// the objective function to minimize
+final RealScalarFunction f
+        = new AbstractRealScalarFunction(2) {
+
+    @Override
+    public Double evaluate(Vector x) {
+        double x1 = x.get(1);
+        double x2 = x.get(2);
+        // (4 - 2.1*x(1)^2 + x(1)^4/3)*x(1)^2
+        double term1
+                = (4.0 - 2.1 * Math.pow(x1, 2.0) + Math.pow(x1, 4.0) / 3.0)
+                * Math.pow(x1, 2.0);
+        // x(1)*x(2)
+        double term2 = x1 * x2;
+        // (-4 + 4*x(2)^2)*x(2)^2
+        double term3 = (-4.0 + 4.0 * Math.pow(x2, 2.0)) * Math.pow(x2, 2.0);
+        return term1 + term2 + term3;
+    }
+};
+
+// construct an optimization problem
+final OptimProblem problem = new OptimProblem() {
+
+    @Override
+    public RealScalarFunction f() {
+        return f;
+    }
+
+    @Override
+    public int dimension() {
+        return 2;
+    }
+};
+
+// stop after 5000 iterations
+StopCondition stopCondition = new AfterIterations(5000);
+// an instance of a simulated annealing solver
+IterativeMinimizer&lt;OptimProblem&gt; solver
+        = new GeneralizedSimulatedAnnealingMinimizer(
+                2, // dimension of the objective function
+                stopCondition
+        );
+IterativeSolution&lt;Vector&gt; soln = solver.solve(problem);
+Vector x0 = new DenseVector(0.5, 0.5); // the initial guess
+Vector xmin = soln.search(x0);
+double fxmin = f.evaluate(xmin); // the mimimum
+System.out.println(String.format("f(%s) = %f", xmin, fxmin));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>f([-0.089836, 0.712655] ) = -1.031628
+
+</pre>
+<p class="Para" id="Par115">有时回到一个明显更好的解决方案比总是从当前状态转移更好。这个过程被称为模拟退火的重新开始。重启的决定可以基于几个标准。其中值得注意的包括基于固定步数的重启、基于当前能量与迄今获得的最佳能量相比是否过高、随机重启等。</p>
+
+
+
+</body>
+</html>

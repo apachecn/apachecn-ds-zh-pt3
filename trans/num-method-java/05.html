@@ -1,0 +1,766 @@
+<html lang="en">
+<head><title>Curve Fitting and Interpolation</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">5.曲线拟合和插值</h1>
+
+ 
+<!--End Abstract--><p>我们通常观察到的数据由来自总体(通常不可观察)的样本组成，我们通常没有输入的所有值。通常情况下，我们希望获得无法直接观察到或无法从样本中获得的值。曲线拟合和插值等技术有助于对缺失值进行有根据的猜测，以绘制一条穿过数据点的线，即一个函数。给定数据点之间的值可以通过评估任何输入处的函数来估计。见图<a href="#Fig1"> 5-1 </a>。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig1_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig1_HTML.png" style="width:26.68em"/></p>
+<p>图 5-1</p><p class="SimplePara">曲线拟合和插值</p>
+
+
+<p class="Para" id="Par3">曲线拟合和插值的主要区别在于拟合曲线是否通过所有观察到的数据点。在曲线拟合的情况下，策略是导出代表数据一般趋势的曲线。拟合曲线穿过数据集，但并不精确拟合每个数据点。该曲线旨在以最佳方式描述整体数据。由于它不会通过所有的点，因此通常在数据存在大量固有误差时使用，例如从实验测量中收集的数据，精确地通过每个点会不可避免地捕获所有不需要的噪声。线性回归就是一个例子，它广泛应用于统计分析，其中收集的数据可能包含重大误差，包括系统误差和样本误差。曲线拟合可用于帮助数据可视化，以根据样本数据进行预测，并对两个或多个变量之间的关系进行推断。</p>
+<p class="Para" id="Par4">相反，插值用于拟合精确通过所有点的一条曲线或一系列曲线。当已知数据是准确的，即没有噪声时，使用这种方法。一个例子是用零息票曲线拟合不同到期日的贴现率数据。我们经常对市场上无法直接观察到的到期日的未知贴现率进行插值。我们通过评估拟合函数在两个已知输入之间对未知输入进行插值或评估。另一个重要的用例是当我们想要用相对简单的函数(通常是多项式)来表示复杂的函数时，例如，为了避免巨大的计算成本。我们可以使用插值来拟合一个简单函数的曲线，通过原始的、更复杂的函数产生的数据点。</p>
+<h2 class="Heading">5.1 最小二乘曲线拟合</h2>
+<p>做曲线拟合有很多种方法。最基本最常用的就是最小二乘法。假设我们有这样一组数据点:<p> <img alt="$$ \left({x}_1,{y}_1\right),\left({x}_2,{y}_2\right),\dots, \left({x}_n,{y}_n\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equa.png" style="width:12.24em"/> </p></p>
+<p>曲线拟合的第一步是以<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>)的形式选择一个有希望的或预期的函数，本质上是一个参数化的函数，来拟合数据点。NM Dev 实现了最广泛使用的形式，即多项式函数形式，如下:<p> <img alt="$$ f(x)={a}_0+{a}_1x+{a}_2{x}^2+\dots +{a}_n{x}^n $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equb.png" style="width:15.39em"/> </p></p>
+<p>公式中的系数<em class="EmphasisTypeItalic "> a </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> a </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> a </em> <sub> 2 </sub>，…，<em class="EmphasisTypeItalic "> a </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>待定。从本质上说，我们在曲线拟合中所做的是找到一组系数，使函数最适合给定的数据。还有许多可能的标准来确定“最佳”的含义。最小二乘法使均方根误差最小。<p> <img alt="$$ E(f)=\sqrt{\frac{1}{n}\sum \limits_{i=1}^n{\varepsilon_i}^2} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equc.png" style="width:8.42em"/> </p></p>
+<p><em class="EmphasisTypeItalic "> ε </em> <sub> <em class="EmphasisTypeItalic "> i </em> </sub>为第<em class="EmphasisTypeItalic "> i </em>点的误差，即数据值<em class="EmphasisTypeItalic "> y </em> <sub> <em class="EmphasisTypeItalic "> i </em> </sub>与曲线上拟合值<img alt="$$ \hat{y_i}=f\left({x}_i\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_IEq1.png" style="width:4.53em"/>的距离。见图<a href="#Fig2"> 5-2 </a>。<p> <img alt="$$ {\varepsilon}_i={y}_i-f\left({x}_i\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equd.png" style="width:6.44em"/> </p></p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig2_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig2_HTML.png" style="width:26.68em"/></p>
+<p>图 5-2</p><p class="SimplePara">曲线拟合误差</p>
+
+
+<p>最小二乘法找到最小化均方根误差的系数集合<img alt="$$ \hat{a_0},\hat{a_1},\dots, \hat{a_n} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_IEq2.png" style="width:5.76em"/>。因此，拟合的曲线将如下:<p> <img alt="$$ f(x)=\hat{a_0}+\hat{a_1}x+\hat{a_2}{x}^2+\dots +\hat{a_n}{x}^n $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Eque.png" style="width:15.39em"/> </p></p>
+<p>例如，我们希望在给定以下数据集的情况下拟合一条曲线:</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><em> <strong class="EmphasisTypeBoldItalic "> x </strong> </em></p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><em> <strong class="EmphasisTypeBoldItalic "> y </strong> </em></p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point four one four</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">three</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point seven three two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">four</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">five</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Two point two three six</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>首先，我们需要决定用于拟合数据的函数形式。数据分析的第一步(可能也是解决任何问题的第一步)是画图。将数据点绘制在一张图中，可以让我们直观地看到<em class="EmphasisTypeItalic "> x </em>和<em class="EmphasisTypeItalic "> y </em>之间的关系。见图<a href="#Fig3"> 5-3 </a>。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig3_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig3_HTML.png" style="width:26.68em"/></p>
+<p>图 5-3</p><p class="SimplePara">数据点的可视化</p>
+
+
+<p class="Para" id="Par12">从图中我们可以看出，数据明显呈现出非线性关系。因此，我们可以使用次数大于 1 的多项式，比如 2。值得指出的是，顺序的选择很重要。一般来说，我们希望拟合一个尽可能简单的函数，以避免从数据中拾取噪声。换句话说，我们希望避免过度拟合。</p>
+<p class="Para" id="Par13">过度拟合是一种建模错误，发生在函数与一组数据点过于接近的时候。由于误差(记录、测量等),数据集通常具有噪声。)或者随机性。试图使曲线过于接近数据会因为“拟合噪声”而给曲线模型带来很大的误差因此，它降低了预测能力。</p>
+<p>考虑图<a href="#Fig4"> 5-4 </a>中的比较。一个五次多项式<em class="EmphasisTypeItalic "> f </em> <sub> 1 </sub> ( <em class="EmphasisTypeItalic "> x </em>)和一个线性多项式<em class="EmphasisTypeItalic "> f </em> <sub> 2 </sub> ( <em class="EmphasisTypeItalic "> x </em>)拟合到同一组数据。由于有六个数据点，所以五次多项式<em class="EmphasisTypeItalic ">f</em>T16】1(<em class="EmphasisTypeItalic ">x</em>)可以恰好通过所有点。(一般来说，对于<em class="EmphasisTypeItalic "> n 个</em>数据点，一个(<em class="EmphasisTypeItalic ">n</em>—1)次多项式可以完美拟合所有的数据点。)所以，<em class="EmphasisTypeItalic ">f</em>T26】1(<em class="EmphasisTypeItalic ">x</em>)完美的拟合了数据。但是，这种完美的曲线是否比更简单的曲线<em class="EmphasisTypeItalic ">f</em>T32】2(<em class="EmphasisTypeItalic ">x</em>)更好呢？答案是否定的，显然，<em class="EmphasisTypeItalic ">f</em><sub>2</sub>(<em class="EmphasisTypeItalic ">x</em>)更好地代表了<em class="EmphasisTypeItalic "> x </em>和<em class="EmphasisTypeItalic "> y </em>之间的正相关关系。也就是说，当<em class="EmphasisTypeItalic "> x </em>增加时，<em class="EmphasisTypeItalic "> y </em>也增加。而且当<em class="EmphasisTypeItalic "> x </em>低于 0 或高于 5 时，五次多项式<em class="EmphasisTypeItalic ">f</em>T54】1(<em class="EmphasisTypeItalic ">x</em>)完全失去预测能力。两条尾巴是人为的，仅仅是因为所选择的函数形式的人为因素，而不是与数据相关的任何东西。见图<a href="#Fig4"> 5-4 </a>。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig4_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig4_HTML.png" style="width:26.68em"/></p>
+<p>图 5-4</p><p class="SimplePara">曲线拟合中的线性多项式与高阶多项式</p>
+
+
+<p>现在让我们回到我们的例子。数据点显示凸关系。我们可以用一条抛物线来拟合，如图<a href="#Fig5"> 5-5 </a>所示。拟合曲线为<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">x</em>)= 0.1+0.81<em class="EmphasisTypeItalic ">x</em>0.08<em class="EmphasisTypeItalic ">x</em>T10】2。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig5_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig5_HTML.png" style="width:26.68em"/></p>
+<p>图 5-5</p><p class="SimplePara">抛物线拟合</p>
+
+
+<p>拟合值<img alt="$$ \hat{y}=f(x) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_IEq3.png" style="width:3.87em"/>和误差<em class="EmphasisTypeItalic "> ε </em>如下所示:</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><em> <strong class="EmphasisTypeBoldItalic "> x </strong> </em></p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><em> <strong class="EmphasisTypeBoldItalic "> y </strong> </em></p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><em><strong class="EmphasisTypeBoldItalic ">f</strong></em>(<em><strong class="EmphasisTypeBoldItalic ">x</strong></em></p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><em><strong class="EmphasisTypeBoldItalic "/></em></p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.1</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point eight three</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one seven</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point four one four</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point four</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero one four</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">three</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point seven three two</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point eight one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.078</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">four</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two point zero seven</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.07</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">five</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two point two three six</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two point one seven</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Zero point zero six six</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>NM Dev 代码如下。我们首先构造一个<code>LeastSquares</code>对象，将多项式函数的预期阶数<em class="EmphasisTypeItalic "> m </em>作为参数传递。这种情况下，<em class="EmphasisTypeItalic "> m </em> = 2。然后我们在一组数据点上调用对象的<code>fit</code>方法，得到一个代表拟合函数曲线的<code>UnivariateRealFunction</code>对象。该函数可用于评估任何输入。</p>
+<pre>// the data set
+OrderedPairs data = new SortedOrderedPairs(
+        new double[]{0., 1., 2., 3., 4., 5.},
+        new double[]{0., 1., 1.414, 1.732, 2., 2.236}
+);
+
+LeastSquares ls = new LeastSquares(2);
+UnivariateRealFunction f = ls.fit(data);
+System.out.println(String.format("f(%.0f)=%f", 0., f.evaluate(0.))); // f(0) = 0.09
+System.out.println(String.format("f(%.0f)=%f", 1., f.evaluate(1.))); // f(1) = 0.82
+System.out.println(String.format("f(%.0f)=%f", 2., f.evaluate(2.))); // f(2) = 1.39
+System.out.println(String.format("f(%.0f)=%f", 3., f.evaluate(3.))); // f(3) = 1.81
+System.out.println(String.format("f(%.0f)=%f", 4., f.evaluate(4.))); // f(4) = 2.07
+System.out.println(String.format("f(%.0f)=%f", 5., f.evaluate(5.))); // f(5) = 2.17
+
+</pre>
+<p>输出如下所示:</p>
+<pre>f(0)=0.099286
+f(1)=0.828086
+f(2)=1.399600
+f(3)=1.813829
+f(4)=2.070771
+f(5)=2.170429
+
+</pre>
+<p>构造函数和<code>fit</code>方法的签名如下。请注意，库允许您为每个数据点赋予权重。如果未指定权重，所有数据点将被赋予相同的权重。</p>
+<pre>/**
+ * Construct a new instance of the algorithm 4.5.1 from Schilling &amp; Harris,
+ * which will use a weighted sum of orthogonal polynomials up to order
+ * &lt;i&gt;n&lt;/i&gt; (the number of points).
+ *
+ * @param m         the maximum degree of the orthogonal polynomials (&lt;i&gt;m
+ *                  &amp;le; n&lt;/i&gt;)
+ * @param weighting the function used to determine the weight for each
+ *                  observation
+ */
+public LeastSquares(int m, Weighting weighting)
+
+// algorithm 4.5.1 from Schilling &amp; Harris
+@Override
+public UnivariateRealFunction fit(OrderedPairs f)
+
+</pre>
+
+<h2 class="Heading">5.2 插值</h2>
+<p class="Para" id="Par20">插值是一种基于一组离散的已知数据点的范围构建(查找)新数据点的方法。在工程和科学中，我们经常会有许多通过采样或实验获得的数据点，这些数据点代表自变量的有限个值的函数值。通常需要进行插值，即估计自变量的未知中间值的函数值。</p>
+<p class="Para" id="Par01">另一个重要的应用是用简单函数逼近复杂函数。假设某个给定函数的公式是已知的，但是太复杂而无法有效地计算。来自原始函数的一些数据点可以被内插以产生一个更简单的函数，它仍然相当接近原始函数。由此带来的简单性收益可能超过插值误差的损失，并在计算过程中提供更好的性能。</p>
+<h3 class="Heading">线性插值</h3>
+<p>最简单的方法之一是线性插值。插值函数是分段函数，在每两个相邻的数据点之间是线性的。给定一组数据点(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>)，<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>)，…，<em class="EmphasisTypeItalic "> x </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>)，进行插值</p>
+<p>图<a href="#Fig6"> 5-6 </a>中的曲线显示了使用<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">x</em>)= sin(<em class="EmphasisTypeItalic ">x</em>)对范围<em class="EmphasisTypeItalic ">x</em>∈【0，6.3】生成的一组数据点的线性插值曲线。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig6_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig6_HTML.png" style="width:26.68em"/></p>
+<p>图 5-6</p><p class="SimplePara">线性内插法</p>
+
+
+<p class="Para" id="Par23">如图所示，线性插值很容易计算。它只是用直线段连接每两个相邻的点。一个主要缺点是，在原始数据远非线性的情况下，它在预测中可能表现不佳。例如，在<em class="EmphasisTypeItalic "> x </em> = 2 时，sin(2) = 0.909297，而插值得到的值是 0.880672，误差超过 3%。相比之下，在<em class="EmphasisTypeItalic "> x </em> = 3 处，原始数据接近线性(<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">x</em>)= sin(<em class="EmphasisTypeItalic ">x</em>)的曲率或二阶导数为<em class="EmphasisTypeItalic ">f</em><sup>′</sup>(<em class="EmphasisTypeItalic ">x</em>)= sin(<em class="EmphasisTypeItalic ">x</em>)，其在<em class="EmphasisTypeItalic "> x </em> = 3 附近评估为 0 左右，sin(3) = 0</p>
+<p>下面给出了重现前一个例子的代码。我们首先构造一个<code>LinearInterpolation</code>对象；然后调用成员方法<code>fit</code>来拟合数据。一个代表插值曲线的对象<code>UnivariateRealFunction</code>被返回。</p>
+<pre>// the data set
+OrderedPairs data = new SortedOrderedPairs(
+        new double[]{0., 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, 4.9, 5.6, 6.3},
+        new double[]{0., 0.644218, 0.98545, 0.863209, 0.334988, -0.350783, -0.871576, -0.982453, -0.631267, 0.0168139}
+);
+LinearInterpolation li = new LinearInterpolation();
+UnivariateRealFunction f = li.fit(data);
+System.out.println(f.evaluate(2)); // f(2) = 0.880672
+System.out.println(f.evaluate(3)); // f(3) = 0.139053
+
+</pre>
+<p>输出如下所示:</p>
+<pre>0.880672
+0.13905342857142847
+
+</pre>
+<p>该类只有一个不带参数的默认构造函数。<code>fit</code>函数签名如下:</p>
+<pre>@Override
+public UnivariateRealFunction fit(OrderedPairs f)
+
+</pre>
+<p class="Para" id="Par27">线性插值的另一个主要缺点是插值函数在点处不光滑，因此会有扭结。斜率会突然变化，因为相邻线性函数的一阶导数在交点处不一致。相比之下，使用更高次的多项式样条将避免这个问题。二次样条可以保证在节点处连续的一阶导数，但不能保证二阶导数。三次样条可以保证一阶和二阶导数在节点处的连续性，因此在实践中使用最多。</p>
+
+<h3 class="Heading">5.2.2 三次埃尔米特样条插值</h3>
+<p class="Para" id="Par28">三次埃尔米特插值是一种分段样条插值，其中每个分段都是埃尔米特形式的三次多项式，即由分段区间两端点的值和一阶导数确定。</p>
+<p>在单个音程上[ <em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>， 给定值<em class="EmphasisTypeItalic ">y</em>T10】1<em class="EmphasisTypeItalic ">处 x</em>=<em class="EmphasisTypeItalic ">x</em>1 和<em class="EmphasisTypeItalic ">y</em>T20】2 处 x=<em class="EmphasisTypeItalic ">x<sub>2</sub>处切线<em class="EmphasisTypeItalic ">y</em>T30】1 处<em class="EmphasisTypeItalic ">x</em>=</em></p>
+<p>代入端点处的值和一阶导数，我们得到如下:<p> <img alt="$$ \left\{\begin{array}{c}a{x}_1^3+b{x}_1^2+c{x}_1+d={y}_1,\\ {}a{x}_2^3+b{x}_2^2+c{x}_2+d={y}_2,\\ {}3a{x}_1^2+2b{x}_1+c={y}_1^{\prime },\\ {}3a{x}_2^2+2b{x}_2+c={y}_2^{\prime}\end{array}\right. $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equh.png" style="width:12.39em"/> </p></p>
+<p class="Para" id="Par31">求解<em class="EmphasisTypeItalic "> a </em>、<em class="EmphasisTypeItalic "> b </em>、<em class="EmphasisTypeItalic "> c </em>、<em class="EmphasisTypeItalic "> d </em>，我们就可以得到在<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>、<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>上的插值曲线。</p>
+<p>举个简单的例子。假设<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub> = 0，<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub> = 1。我们有以下:<p> <img alt="$$ f(x)=\left(2{x}^3-3{x}^2+1\right){y}_1+\left({x}^3-2{x}^2+x\right){y_1}^{\prime }+\left(-2{x}^3+3{x}^2\right){y}_2+\left({x}^3-{x}^2\right){y_2}^{\prime } $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equi.png" style="width:33.7em"/> </p></p>
+<p>其中<em class="EmphasisTypeItalic "> x </em> ∈ [0，1]。为了验证这一点，我们可以查一下:<p> <img alt="$$ f(0)={y}_1,\kern0.5em f(1)={y}_2,\kern0.5em {f}^{\prime }(0)={y}_1^{\prime },\kern0.5em {f}^{\prime }(1)={y}_2^{\prime }. $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equj.png" style="width:20.19em"/> </p></p>
+<p class="Para" id="Par34">在数据集中的每两个相邻点上重复前面的过程将给出在每个区间上为三次的分段插值。请注意，三次 Hermite 样条仅将值和切线作为输入，仅此而已。因此，它保证了一阶导数的连续性，但没有保证二阶导数的连续性。</p>
+<p>当只有数据值(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>、<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>)、(<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>、<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>)、…、(<em class="EmphasisTypeItalic "> x </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>、<em class="EmphasisTypeItalic "> y </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>)时有许多方法可以计算切线。在 NM Dev 中，有两种方法:Catmull-Rom 样条和有限差分法。</p>
+<ol><li class="ListItem">The Catmull-Rom spline estimates tangents as<p><img alt="$$ {y}_k^{\prime }=\frac{y_{k+1}-{y}_{k-1}}{x_{k+1}-{x}_{k-1}} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equk.png" style="width:7.2em"/></p>
+
+
+
+
+ </li>
+</ol>
+
+<p>对于内点<em class="EmphasisTypeItalic "> k </em> = 2、…、<em class="EmphasisTypeItalic ">n</em>-1、<p> <img alt="$$ {y}_0^{\prime }=\frac{y_1-{y}_0}{x_1-{x}_0},\kern0.5em {y}_n^{\prime }=\frac{y_n-{y}_{n-1}}{x_n-{x}_{n-1}} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equl.png" style="width:12.78em"/> </p></p>
+<p class="Para" id="Par38">在终点。</p>
+<p>这种方法广泛应用于计算机图形中，以获得离散关键帧之间平滑、连续的运动。它之所以受欢迎，是因为它相对容易计算。它还确保每个关键帧位置都将被准确命中，并且生成的曲线的切线在多个分段上是连续的。</p>
+<ol><li class="ListItem">Finite difference estimates tangents as<p><img alt="$$ {y}_k^{\prime }=\frac{1}{2}\left(\frac{y_{k+1}-{y}_k}{x_{k+1}-{x}_k}+\frac{y_k-{y}_{k-1}}{x_k-{x}_{k-1}}\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equm.png" style="width:13.17em"/></p>
+
+
+
+
+ </li>
+</ol>
+
+<p>对于内点<em class="EmphasisTypeItalic "> k </em> = 2、…、<em class="EmphasisTypeItalic ">n</em>—1 以及作为这种片面差异的<p> <img alt="$$ {y}_0^{\prime }=\frac{y_1-{y}_0}{x_1-{x}_0},\kern0.5em {y}_n^{\prime }=\frac{y_n-{y}_{n-1}}{x_n-{x}_{n-1}} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equn.png" style="width:12.78em"/> </p></p>
+<p class="Para" id="Par42">在终点。</p>
+<p>让我们考虑与 5.2.1 节中相同的例子，它是对从<em class="EmphasisTypeItalic ">f</em>(<em class="EmphasisTypeItalic ">x</em>)= sin(<em class="EmphasisTypeItalic ">x</em>)生成的数据的插值。图<a href="#Fig7"> 5-7 </a>显示了应用带有 Catmull-Rom 切线的三次 Hermite 样条的结果。显然，与线性插值相比，曲线看起来更平滑。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig7_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig7_HTML.png" style="width:29.6em"/></p>
+<p>图 5-7</p><p class="SimplePara">sin(x)数据上的三次 Hermite 样条</p>
+
+
+<p>以下代码演示了如何使用前面示例中的 Catmull-Rom 切线进行三次 Hermite 样条插值。要使用有限差分正切，请切换到注释掉的行。在这个特殊的例子中，切线法的选择没有什么区别。</p>
+<pre>// the data set
+OrderedPairs data = new SortedOrderedPairs(
+        new double[]{0., 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, 4.9, 5.6, 6.3},
+        new double[]{0., 0.644218, 0.98545, 0.863209, 0.334988, -0.350783, -0.871576, -0.982453, -0.631267, 0.0168139}
+);
+CubicHermite spline = new CubicHermite(CubicHermite.Tangents.CATMULL_ROM);
+// CubicHermite spline = new CubicHermite(CubicHermite.Tangents.FINITE_DIFFERENCE);
+UnivariateRealFunction f = spline.fit(data);
+System.out.println(f.evaluate(2)); // f(2) = 0.906030
+System.out.println(f.evaluate(3)); // f(3) = 0.145727
+
+</pre>
+<p>输出如下所示:</p>
+<pre>0.9060307725947522
+0.14572681049562664
+
+</pre>
+<p>类和<code>fit</code>方法签名如下:</p>
+<pre>/**
+ * Construct an instance with the given method to compute tangents.
+ *
+ * @param tangent computes the control tangents used for the interpolation
+ */
+public CubicHermite(Tangent tangent)
+
+/**
+ * The interpolated function must pass through all the given points.
+ *
+ * @param f {@inheritDoc }
+ * @return the interpolated function
+ */
+@Override
+UnivariateRealFunction fit(OrderedPairs f);
+
+</pre>
+
+<h3 class="Heading">5.2.3 三次样条插值</h3>
+<p class="Para" id="Par47">三次样条是由分段三阶多项式组成的样条，使得曲线在一阶和二阶导数中都是连续的。5.2.2 节讨论了三次样条和三次埃尔米特样条之间的区别:三次埃尔米特样条确保一阶导数的连续性，而三次样条确保一阶和二阶导数的连续性。</p>
+<p>考虑样条为一组<em class="EmphasisTypeItalic "> n </em> + 1 点(<em class="EmphasisTypeItalic "> x </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub>)，<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>)，…，<em class="EmphasisTypeItalic "> x </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>，<em class="EmphasisTypeItalic "> y </em> <sub>设第<em class="EmphasisTypeItalic "> i </em>条样条曲线表示如下:<p> <img alt="$$ {Y}_i(x)={a}_i+{b}_ix+{c}_i{x}^2+{d}_i{x}^3, $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equo.png" style="width:12.83em"/> </p></sub></p>
+<p>其中<em class="EmphasisTypeItalic ">x</em>∈[<em class="EmphasisTypeItalic ">x</em><sub>T5】I</sub>，<em class="EmphasisTypeItalic "> x </em> <sub> <em class="EmphasisTypeItalic "> i </em> + 1 </sub>，<em class="EmphasisTypeItalic "> i </em> = 0，…，<em class="EmphasisTypeItalic ">n</em>—1，如图<a href="#Fig8"> 5-8 </a>。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig8_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig8_HTML.png" style="width:28.12em"/></p>
+<p>图 5-8</p><p class="SimplePara">三次样条插值</p>
+
+
+<p class="Para" id="Par50">共有 4 个<em class="EmphasisTypeItalic "> n </em>变量(<em class="EmphasisTypeItalic "> a </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> b </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> c </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> d </em> <sub> 0 </sub>，…，<em class="EmphasisTypeItalic ">a</em><sub><em class="EmphasisTypeItalic ">n</em>—1</sub>，<em class="EmphasisTypeItalic "> b </em> <sub> <em class="EmphasisTypeItalic "> n </em>因此，需要 4 个<em class="EmphasisTypeItalic "> n 个</em>方程。</sub></p>
+<p>首先，很明显，样条必须满足这些数据点值:<p> <img alt="$$ {Y}_i\left({x}_i\right)={y}_i,\kern0.75em {Y}_i\left({x}_{i+1}\right)={y}_{i+1}\ \mathrm{for}\ i=0,\dots, n-1 $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equp.png" style="width:20.6em"/> </p></p>
+<p class="Para" id="Par52">这给出了 2 个<em class="EmphasisTypeItalic "> n 个</em>方程。</p>
+<p>其次，为了确保曲线在一阶和二阶导数中是连续的，必须满足另外两个(<em class="EmphasisTypeItalic ">n</em>-1)方程。【T2<img alt="$$ {Y}_i^{\prime}\left({x}_{i+1}\right)={Y}_{i+1}^{\prime}\left({x}_{i+1}\right),\kern0.75em {Y}_i^{\prime \prime}\left({x}_{i+1}\right)={Y}_{i+1}^{\prime \prime}\left({x}_{i+1}\right)\kern0.5em \mathrm{for}\kern0.5em i=0,\dots, n-2 $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equq.png" style="width:28.98em"/></p>
+<p>现在有 4 个<em class="EmphasisTypeItalic "> n 个</em>2 个方程。边界条件又给出了两个方程。常见的选项有自然样条曲线、夹紧样条曲线和非打结样条曲线。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par55"><em class="EmphasisTypeItalic ">自然样条</em>:曲线在端点的二阶导数设置为 0；那就是，<img alt="$$ {Y}_0^{\prime \prime}\left({x}_0\right)=0={Y}_{n-1}^{\prime \prime}\left({x}_n\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_IEq4.png" style="width:10.09em"/>。</p></li>
+<li><p class="Para" id="Par56"><em class="EmphasisTypeItalic ">夹紧样条</em>:指定曲线在端点的一阶导数；亦即<img alt="$$ {Y}_0^{\prime}\left({x}_0\right)=A,\kern0.75em {Y}_{n-1}^{\prime}\left({x}_n\right)=B $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_IEq5.png" style="width:11.94em"/>。</p></li>
+<li><p class="Para" id="Par57"><em class="EmphasisTypeItalic ">非纽结样条</em>:样条的三阶导数在<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>和<em class="EmphasisTypeItalic ">x</em><sub><em class="EmphasisTypeItalic ">n</em>—1</sub>处连续；即<img alt="$$ {Y}_0^{\prime \prime \prime}\left({x}_1\right)={Y}_1^{\prime \prime \prime}\left({x}_1\right),\kern0.75em {Y}_{n-2}^{\prime \prime \prime}\left({x}_{n-1}\right)={Y}_{n-1}^{\prime \prime \prime}\left({x}_{n-1}\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_IEq6.png" style="width:19.95em"/>。</p></li>
+</ul>
+
+<p>加上边界条件，总共有 4 个<em class="EmphasisTypeItalic "> n 个</em>方程。然后我们可以求解 4 个<em class="EmphasisTypeItalic "> n </em>变量(<em class="EmphasisTypeItalic "> a </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> b </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> c </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> d </em> <sub> 0 </sub>，…，<em class="EmphasisTypeItalic ">a</em><sub><em class="EmphasisTypeItalic ">n</em>—1</sub>，<em class="EmphasisTypeItalic "> b </em> <sub> 【T29) <em class="EmphasisTypeItalic "> d </em> 参见图<a href="#Fig9"> 5-9 </a>。</sub></p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig9_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig9_HTML.png" style="width:28.12em"/></p>
+<p>图 5-9</p><p class="SimplePara">三次样条中不同边界条件的比较</p>
+
+
+<p>下面的代码演示了一个三次样条。对象<code>f1</code>、<code>f2</code>和<code>f3</code>分别是使用自然、固定和非纽结边界条件的三次样条插值函数。</p>
+<pre>// the data set
+OrderedPairs data = new SortedOrderedPairs(
+        new double[]{0., 1., 2., 3., 4., 5.},
+        new double[]{0., 3.5, 5., 3., 1., 4.}
+);
+CubicSpline cs1 = CubicSpline.natural();
+UnivariateRealFunction f1 = cs1.fit(data);
+
+CubicSpline cs2 = CubicSpline.clamped();
+UnivariateRealFunction f2 = cs2.fit(data);
+
+CubicSpline cs3 = CubicSpline.notAKnot();
+UnivariateRealFunction f3 = cs3.fit(data);
+
+</pre>
+<p>签名如下:</p>
+<pre>/**
+ * Constructs an instance with end conditions which fits &lt;em&gt;natural&lt;/em&gt;
+ * splines, meaning that the second derivative at both ends are zero.
+ *
+ * @return the instance
+ */
+public static CubicSpline natural()
+
+/**
+ * Constructs an instance with end conditions which fits &lt;em&gt;clamped&lt;/em&gt;
+ * splines, and the first derivative at both ends are zero.
+ *
+ * @return the instance
+ */
+public static CubicSpline clamped()
+
+/**
+ * Constructs an instance with end conditions which fits &lt;em&gt;clamped&lt;/em&gt;
+ * splines, meaning that the first derivative at both ends equal to the
+ * given values.
+ *
+ * @param df1 the first derivative at the first point
+ * @param dfn the first derivative at the last point
+ * @return the instance
+ */
+public static CubicSpline clamped(double df1, double dfn)
+
+/**
+ * The interpolated function must pass through all the given points.
+ *
+ * @param f {@inheritDoc }
+ * @return the interpolated function
+ */
+@Override
+UnivariateRealFunction fit(OrderedPairs f);
+
+</pre>
+
+<h3 class="Heading">牛顿多项式插值</h3>
+<p>牛顿多项式是用于插值数据集的多项式。它有时被称为<em class="EmphasisTypeItalic ">牛顿除差插值多项式</em>，因为多项式的系数是使用牛顿除差法计算的。与样条插值不同，牛顿多项式不是分段插值。而是构造一个<em class="EmphasisTypeItalic "> n </em>次多项式来插值一个<em class="EmphasisTypeItalic "> n </em> + 1 点的数据集。给定一组<em class="EmphasisTypeItalic "> n </em> + 1 分(<em class="EmphasisTypeItalic "> x </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub>)，<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>)，…，<em class="EmphasisTypeItalic "> x </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>，<em class="EmphasisTypeItalic "> y </em><p><img alt="$$ N(x):=\sum \limits_{i=0}^n{a}_i{n}_i(x) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equr.png" style="width:8.3em"/>T38】</p></p>
+<p>牛顿基多项式定义如下:<p> <img alt="$$ {n}_i(x):=\prod \limits_{j=0}^{i-1}\left(x-{x}_j\right)\ \mathrm{for}\ i&amp;gt;0,\mathrm{and}\ {n}_0(x)\equiv 1 $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equs.png" style="width:19.21em"/> </p></p>
+<p>系数<em class="EmphasisTypeItalic "> a </em> <sub> <em class="EmphasisTypeItalic "> i </em> </sub>定义如下:<p> <img alt="$$ {a}_i:=\left[{y}_0,\dots, {y}_i\right] $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equt.png" style="width:7.16em"/> </p></p>
+<p>[ <em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub>，…，<em class="EmphasisTypeItalic "> y </em> <sub> <em class="EmphasisTypeItalic "> i </em> </sub> ]是被除差的表示法，定义如下:<p><img alt="$$ \left[{y}_0\right]={y}_0 $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equu.png" style="width:4em"/></p><p><img alt="$$ \left[{y}_0,{y}_1\right]=\frac{\left[{y}_1\right]-\left[{y}_0\right]}{x_1-{x}_0}=\frac{y_1-{y}_0}{x_1-{x}_0} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equv.png" style="width:13.42em"/></p><p><img alt="$$ \dots $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equw.png" style="width:1.59em"/></p><p><img alt="$$ \left[{y}_0,\dots {y}_i\right]=\frac{\left[{y}_1,\dots, {y}_i\right]-\left[{y}_0,\dots, {y}_{i-1}\right]}{x_i-{x}_0} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equx.png" style="width:16.9em"/></p></p>
+<h4 class="Heading">5.2.4.1 线性形式</h4>
+<p>图<a href="#Fig10"> 5-10 </a>显示了一个牛顿线性多项式。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig10_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig10_HTML.png" style="width:16.25em"/></p>
+<p>图 5-10</p><p class="SimplePara">牛顿线性多项式</p>
+
+
+<p>让我们从最简单的情况开始，线性情况。给定两点(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>、<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>)和(<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>、<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>)，牛顿多项式呈线性形式，如下图:<p> <img alt="$$ {f}_1(x)={y}_1+\frac{y_2-{y}_1}{x_2-{x}_1}\left(x-{x}_1\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equy.png" style="width:12.41em"/> </p></p>
+<p class="Para" id="Par67">因为只有两个点，所以没有可用的曲率信息。数据简单地用直线进行插值。注意系数<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>和<img alt="$$ \frac{y_2-{y}_1}{x_2-{x}_1} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_IEq7.png" style="width:2.3em"/>是牛顿的除差[<em class="EmphasisTypeItalic ">y</em>T7】1 和[<em class="EmphasisTypeItalic ">y</em>T11】1，<em class="EmphasisTypeItalic ">y</em>T15】2]，而常数 1(在第一项中)和(<em class="EmphasisTypeItalic ">x</em>-<em class="EmphasisTypeItalic ">x</em><sub>1</sub>)是牛顿的</p>
+
+<h4 class="Heading">5.2.4.2 二次型</h4>
+<p>二次插值需要三个数据点，并在函数中引入曲率，从而提高估计。利用前面提供的一个牛顿多项式的定义，可以定义为如下形式的二阶多项式:<p> <img alt="$$ {f}_2(x)={a}_1+{a}_2\left(x-{x}_1\right)+{a}_3\left(x-{x}_1\right)\left(x-{x}_2\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equz.png" style="width:19.38em"/> </p></p>
+<p class="Para" id="Par69">其中系数<em class="EmphasisTypeItalic ">a</em><sub>1</sub><em class="EmphasisTypeItalic ">a</em><sub>2</sub><em class="EmphasisTypeItalic ">a</em><sub>3</sub>可以很容易地确定。</p>
+<p>代入<em class="EmphasisTypeItalic "> x </em> = <em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，我们得到这个:<p> <img alt="$$ {a}_1={f}_2\left({x}_1\right)={y}_1 $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equaa.png" style="width:7.32em"/> </p></p>
+<p>代入<em class="EmphasisTypeItalic "> x </em> = <em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>，我们得到这个:<p> <img alt="$$ {a}_2=\frac{f_2\left({x}_2\right)-{a}_1}{x_2-{x}_1}=\frac{y_2-{y}_1}{x_2-{x}_1} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equab.png" style="width:11.88em"/> </p></p>
+<p>见图<a href="#Fig11"> 5-11 </a></p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig11_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig11_HTML.png" style="width:16.25em"/></p>
+<p>图 5-11</p><p class="SimplePara">牛顿二次多项式</p>
+
+
+<p>代入<em class="EmphasisTypeItalic "> x </em> = <em class="EmphasisTypeItalic "> x </em> <sub> 3 </sub>，我们得到这个:<p><img alt="$$ {a}_3=\frac{f_2\left({x}_3\right)-{a}_1-{a}_2\left({x}_3-{x}_1\right)}{\left({x}_3-{x}_1\right)\left({x}_3-{x}_2\right)} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equac.png" style="width:13.46em"/></p><p><img alt="$$ =\frac{y_3-\left[{y}_2-{a}_2\left({x}_2-{x}_1\right)\right]-{a}_2\left({x}_3-{x}_1\right)}{\left({x}_3-{x}_1\right)\left({x}_3-{x}_2\right)} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equad.png" style="width:17.08em"/></p><p><img alt="$$ =\frac{y_3-{y}_2-{a}_2\left({x}_3-{x}_2\right)}{\left({x}_3-{x}_1\right)\left({x}_3-{x}_2\right)} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equae.png" style="width:10.34em"/></p><p><img alt="$$ =\frac{\frac{y_3-{y}_2}{x_3-{x}_2}-\frac{y_2-{y}_1}{x_2-{x}_1}}{\left({x}_3-{x}_1\right)} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equaf.png" style="width:6.63em"/></p></p>
+<p><em class="EmphasisTypeItalic "> f </em> <sub> 2 </sub> ( <em class="EmphasisTypeItalic "> x </em>)有一个<em class="EmphasisTypeItalic "> f </em> <sub> 1 </sub> ( <em class="EmphasisTypeItalic "> x </em>)没有的二次项，这就给了它曲率。二次项中系数<em class="EmphasisTypeItalic "> a </em> <sub> 3 </sub>的提法其实是牛顿的除差[ <em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic ">y</em>T22】2，<em class="EmphasisTypeItalic "> y </em> <sub> 3 </sub> ]，可以用[ <em class="EmphasisTypeItalic "> y </em> <sub> 3 </sub>，<em class="EmphasisTypeItalic ">y</em><sub>2<sub>2】计算<p>T45</p></sub></sub></p>
+
+<h4 class="Heading">5.2.4.3 通用形式</h4>
+<p>前面所示的线性和二次情况下的插值可以推广到拟合一个由<em class="EmphasisTypeItalic "> n </em> + 1 个点组成的数据集，在这种情况下，多项式的阶数将为<em class="EmphasisTypeItalic "> n </em>。因此牛顿的除法差分插值公式如下:<p> <img alt="$$ {f}_n(x)={y}_0+\left[{y}_0,{y}_1\right]\left(x-{x}_0\right)+\dots +\left[{y}_0,\dots, {y}_n\right]\left(x-{x}_0\right)\left(x-{x}_1\right)\dots \left(x-{x}_{n-1}\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equah.png" style="width:33.14em"/> </p></p>
+<p>使用以下公式以递归方式计算除以的差:<p> <img alt="$$ \left[{y}_0,\dots {y}_i\right]=\frac{\left[{y}_1,\dots, {y}_i\right]-\left[{y}_0,\dots, {y}_{i-1}\right]}{x_i-{x}_0} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equai.png" style="width:16.9em"/> </p></p>
+<p>为了让递归过程更容易形象化，我们把计算[ <em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 3 </sub>的例子以表格形式呈现，如下:<p> <img alt="$$ {\displaystyle \begin{array}{ccccc}\left({x}_0,{y}_0\right)&amp;amp; \left[{y}_0\right]&amp;amp; &amp;amp; &amp;amp; \\ {}&amp;amp; &amp;amp; \left[{y}_0,{y}_1\right]&amp;amp; &amp;amp; \\ {}\left({x}_1,{y}_1\right)&amp;amp; \left[{y}_1\right]&amp;amp; &amp;amp; \left[{y}_0,{y}_1,{y}_2\right]&amp;amp; \\ {}&amp;amp; &amp;amp; \left[{y}_1,{y}_2\right]&amp;amp; &amp;amp; \left[{y}_0,{y}_1,{y}_2,{y}_3\right]\\ {}\left({x}_2,{y}_2\right)&amp;amp; \left[{y}_2\right]&amp;amp; &amp;amp; \left[{y}_1,{y}_2,{y}_3\right]&amp;amp; \\ {}&amp;amp; &amp;amp; \left[{y}_2,{y}_3\right]&amp;amp; &amp;amp; \\ {}\left({x}_3,{y}_3\right)&amp;amp; \left[{y}_3\right]&amp;amp; &amp;amp; &amp;amp; \end{array}} $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equaj.png" style="width:20.9em"/> </p></p>
+<p class="Para" id="Par78">下表显示了差异之间的关系。例如，[ <em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>是用[ <em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub> ]和[ <em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub> ]计算出来的；[ <em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 3 </sub>用[ <em class="EmphasisTypeItalic "> y </em> <sub> 0 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic ">y</em><sub>2<em class="EmphasisTypeItalic ">计算</em></sub></p>
+<p>图<a href="#Fig12"> 5-12 </a>比较了牛顿多项式插值和自然三次样条，给出了一个大小为 7 的随机数据集。由于有 7 个点，牛顿插值是一个 6 次多项式，导致其曲线中的波峰和波谷伴随着高次多项式。这可能会导致较大的误差。随着数据点数量的增加，插值多项式的次数也随之增加，波峰和波谷的范围和数量都会快速增加。另一方面，在这种情况下，由多个低次多项式串联而成的三次样条具有更加稳定和令人满意的性能。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig12_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig12_HTML.png" style="width:28.12em"/></p>
+<p>图 5-12</p><p class="SimplePara">牛顿多项式与三次样条的比较</p>
+
+
+<p>以下代码片段演示了如何使用牛顿多项式插值:</p>
+<pre>// 2 data points, linear form
+OrderedPairs data1 = new SortedOrderedPairs(
+        new double[]{1., 3.},
+        new double[]{log(1.), log(3.)}
+);
+Interpolation np1 = new NewtonPolynomial();
+UnivariateRealFunction f1 = np1.fit(data1);
+
+// 3 data points, quadratic form
+OrderedPairs data2 = new SortedOrderedPairs(
+        new double[]{1., 2., 3.},
+        new double[]{log(1.), log(2.), log(3.)}
+);
+Interpolation np2 = new NewtonPolynomial();
+UnivariateRealFunction f2 = np2.fit(data2);
+
+// comparison between Newton polynomial and cubic spline
+OrderedPairs data3 = new SortedOrderedPairs(
+        new double[]{1., 2., 3., 4., 5., 6., 7.},
+        new double[]{3., 4., 2., 5., 4., 3., 6.}
+);
+Interpolation np3 = new NewtonPolynomial();
+UnivariateRealFunction f3_1 = np3.fit(data3);
+Interpolation cs = CubicSpline.natural();
+UnivariateRealFunction f3_2 = cs.fit(data3);
+
+
+
+
+</pre>
+
+
+
+<h2 class="Heading">5.3 多元插值</h2>
+<p class="Para" id="Par81">多元插值是对具有多个变量的函数进行插值。它是单变量情况的扩展。</p>
+<h3 class="Heading">二元插值</h3>
+<p>让我们从二元情况开始。假设我们有一组<em class="EmphasisTypeItalic "> n </em> × <em class="EmphasisTypeItalic "> n </em>数据点:(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> z </em> <sub> 11 </sub>)，(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>，<em class="EmphasisTypeItalic "> z </em> <sub> 12 注意(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> z </em> <sub> 11 </sub>)表示数据值在位置(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic ">y</em><sub>1<sub>处也就是<p> <img alt="$$ z=f\left(x,y\right) $$" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Chapter_TeX_Equak.png" style="width:4.92em"/> </p></sub></sub></sub></p>
+<p>二元函数插值的一般过程如下:</p>
+<ol><li class="ListItem"><p class="Para" id="Par84">固定一个维度，说<em class="EmphasisTypeItalic "> y </em> = <em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，为常数。对于特定的数据切片(现在是一维的)，插入另一个维度，<em class="EmphasisTypeItalic "> x </em>。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par85">对于另一维度<em class="EmphasisTypeItalic "> x </em>中的值，对步骤 1 的结果进行插值。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par86">例如，我们首先固定尺寸<em class="EmphasisTypeItalic "> y </em>并相对于<em class="EmphasisTypeItalic "> x </em>进行插值。在<em class="EmphasisTypeItalic "> y </em> = <em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，我们有(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>、<em class="EmphasisTypeItalic "> z </em> <sub> 11 </sub>)、(<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>、<em class="EmphasisTypeItalic "> z </em> <sub> 12 </sub>)、…、(<em class="EmphasisTypeItalic "> x </em> <sub> <em class="EmphasisTypeItalic "> n </em>应用任何单变量插值算法，例如 5.2 节中讨论的那些算法，我们得到<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">y</em>1</sub>(<em class="EmphasisTypeItalic ">x</em>)，它是<em class="EmphasisTypeItalic "> x </em>在位置<em class="EmphasisTypeItalic ">y</em>=<em class="EmphasisTypeItalic ">y</em><sub>1</sub>的插值器。对尺寸<em class="EmphasisTypeItalic "> y </em>中的每个位置重复这个过程，我们有<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">y</em>1</sub>(<em class="EmphasisTypeItalic ">x</em>)，<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">y</em>2</sub>(<em class="EmphasisTypeItalic ">x</em>)，<em class="EmphasisTypeItalic "> f </em> <sub> <em class="EmphasisTypeItalic "/></sub></sub></p>
+<p class="Para" id="Par87">第二步是在这个数据集上进行插值(<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>、<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">y</em>1</sub>(<em class="EmphasisTypeItalic ">x</em>)、(<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>、<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">y</em>2</sub>(<em class="EmphasisTypeItalic ">x</em>)、…、(<em class="EmphasisTypeItalic "> y </em>)这也可以通过应用任何单变量插值算法来实现。然后我们有<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em>)。</p>
+<p class="Para" id="Par88">因此，二元插值器的属性和结果由内部应用的(两个)一元插值器来表征。例如，双线性插值使用线性插值对一个维度进行两次插值。双三次样条和双三次插值分别使用三次样条和三次埃尔米特插值。</p>
+<p>插值器<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em>)是一个曲面，如图<a href="#Fig13"> 5-13 </a>所示，其中双三次插值应用于大小为 3 × 3 的数据集。黑点是数据；蓝线网是插值曲面。</p>
+<p><img alt="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig13_HTML.png" src="../images/500382_1_En_5_Chapter/500382_1_En_5_Fig13_HTML.png" style="width:23.02em"/></p>
+<p>图 5-13</p><p class="SimplePara">双三次插值</p>
+
+
+<p>NM Dev 实现双线性插值、双三次样条和双三次插值。以下代码片段显示了所有三种方法:</p>
+<pre>BivariateGrid grids = new BivariateArrayGrid(
+        new double[][]{
+            {1, 1, 1}, // z(1, 1) = 1, z(1, 2) = 1, z(1, 3) = 1
+            {2, 4, 8}, // z(2, 1) = 2, z(2, 2) = 4, z(2, 3) = 8
+            {3, 9, 27} // z(3, 1) = 3, z(3, 2) = 9, z(3, 3) = 27
+        },
+        new double[]{1, 2, 3}, // x
+        new double[]{1, 2, 3} // y
+);
+
+BivariateGridInterpolation bl = new BilinearInterpolation();
+RealScalarFunction f1 = bl.interpolate(grids); // f3(1.5, 1.5) = 2.0
+System.out.println(f1.evaluate(new DenseVector(new double[]{1.5, 1.5})));
+
+BivariateGridInterpolation bs = new BicubicSpline();
+RealScalarFunction f2 = bs.interpolate(grids); // f2(1.5, 1.5) = 1.8828125
+System.out.println(f2.evaluate(new DenseVector(new double[]{1.5, 1.5})));
+
+BivariateGridInterpolation bi = new BicubicInterpolation();
+RealScalarFunction f3 = bi.interpolate(grids); // f1(1.5, 1.5) = 1.90625
+System.out.println(f3.evaluate(new DenseVector(new double[]{1.5, 1.5})));
+
+</pre>
+<p>输出如下所示:</p>
+<pre>2.0
+1.8828125
+1.90625
+
+</pre>
+<p class="Para" id="Par92">类<code>BivariateGrid</code>定义了一个三维空间中的网格，<em class="EmphasisTypeItalic "> z </em> = <em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em>)。第一个输入是一个二维数组。它是第二个数组和第三个数组输入中的值<em class="EmphasisTypeItalic "> x </em>和<em class="EmphasisTypeItalic "> y </em>的笛卡尔乘积或叉积。<em class="EmphasisTypeItalic "> z </em>的第【1，1】项是位置<em class="EmphasisTypeItalic ">x</em>【1】和<em class="EmphasisTypeItalic ">y</em>【1】处的<em class="EmphasisTypeItalic "> z </em>值。在这种情况下，<em class="EmphasisTypeItalic "> x </em> [1] = 1，<em class="EmphasisTypeItalic "> y </em> [1] = 1，所以<em class="EmphasisTypeItalic "> z </em> (1，1) = 1。</p>
+<p>类<code>BivariateArrayGrid</code>可以定义一个直线网格，这意味着网格线不一定是等距的。类别<code>BivariateRegularGrid</code>只定义了一个规则的网格，它有等间距的网格线。他们的签名如下:</p>
+<pre>/**
+ * Constructs a new grid with a given two-dimensional array of grid values,
+ * and values for grid line positions along the x-axis and the y-axis.
+ *
+ * @param z the grid values
+ * @param x the grid line positions along the x-axis
+ * @param y the grid line positions along the y-axis
+ */
+public BivariateArrayGrid(double[][] z, double[] x, double[] y)
+
+    /**
+     * Constructs a new grid where the dependent variable values are taken from
+     * the given two-dimensional array and the values of the dependent variables
+     * are specified by their first values and the difference between successive
+     * values.
+     * &lt;p/&gt;
+     * The first index for the input array will be corresponding to &lt;i&gt;x&lt;/i&gt; and
+     * the second index to &lt;i&gt;y&lt;/i&gt; and the size will be inferred from the size
+     * of the array.
+     *
+     * @param z      the two-dimensional array containing the values of the
+     *               dependent variable
+     * @param x0     the first value of the independent variable &lt;i&gt;x&lt;/i&gt;
+     * @param y0     the first value of the independent variable &lt;i&gt;y&lt;/i&gt;
+     * @param deltaX the distance between adjacent points along the x-axis
+     * @param deltaY the distance between adjacent points along the y-axis
+     */
+    public BivariateRegularGrid(
+            double[][] z,
+            double x0,
+            double y0,
+            double deltaX,
+            double deltaY
+    )
+
+</pre>
+<p>类<code>BicubicInterpolation</code>的构造函数如下:</p>
+<pre>/**
+ * Constructs a new instance which uses the given derivatives to
+ * interpolate. Note that the derivatives need not necessarily be exactly
+ * correct, but will be the derivatives present in the interpolated surface.
+ *
+ * @param derivatives the derivatives used for the interpolation
+ */
+public BicubicInterpolation(PartialDerivatives derivatives)
+
+</pre>
+<p>注意，它可以将函数在网格点的偏导数作为输入。界面<code>BicubicInterpolation.PartialDerivatives</code>如下:</p>
+<pre>/**
+ * Specify the partial derivatives defined at points on a
+ * {@link BivariateGrid}.
+ */
+public interface PartialDerivatives {
+
+    /**
+     * Get the partial derivative \(\frac{\partial z}{\partial x}\), at the
+     * given position in
+     * the grid.
+     *
+     * @param grid the grid for which to get the partial derivative
+     * @param i    the index along the x-axis
+     * @param j    the index along the y-axis
+     * @return \(\frac{\partial z}{\partial x}\) at the given point
+     */
+    double dx(BivariateGrid grid, int i, int j);
+
+    /**
+     * Get the partial derivative \(\frac{\partial z}{\partial y}\), at the
+     * given position in
+     * the grid.
+     *
+     * @param grid the grid for which to get the partial derivative
+     * @param i    the index along the x-axis
+     * @param j    the index along the y-axis
+     * @return \(\frac{\partial z}{\partial y}\) at the given point
+     */
+    double dy(BivariateGrid grid, int i, int j);
+
+    /**
+     * Get the cross derivative \(\frac{\partial^2 z}{\partial x \partial
+     * y}\), at the given
+     * position in the grid.
+     *
+     * @param grid the grid for which to get the partial derivative
+     * @param i    the index along the x-axis
+     * @param j    the index along the y-axis
+     * @return \(\frac{\partial^2 z}{\partial x \partial y}\) at the given
+     *         point
+     */
+    double dxdy(BivariateGrid grid, int i, int j);
+}
+
+</pre>
+<p>下面是一个用补充雅可比矩阵拟合二元数据集的示例:</p>
+<pre>// derivatives and answers from Michael Flanagan's library
+double[][] z = new double[][]{
+    {1.0, 3.0, 5.0},
+    {2.0, 4.0, 8.0},
+    {9.0, 10.0, 11.0}
+};
+
+final double[][] dx = new double[][]{
+    {6.0, 2.0, 2.0},
+    {6.0, 7.0, 8.0},
+    {6.0, 12.0, 14.0}
+};
+final double[][] dy = new double[][]{
+    {8.0, 8.0, 8.0},
+    {16.0, 12.0, 8.0},
+    {4.0, 4.0, 4.0}
+};
+final double[][] dxdy = new double[][]{
+    {16.0, 8.0, 0.0},
+    {-4.0, -4.0, -4.0},
+    {-24.0, -16.0, -8.0}
+};
+
+BicubicInterpolation.PartialDerivatives deriv
+        = new BicubicInterpolation.PartialDerivatives() {
+    @Override
+    public double dx(BivariateGrid grid, int i, int j) {
+        return getDeriv(dx, i, j); // for some reason the y-axis is written in reverse...
+    }
+
+    @Override
+    public double dy(BivariateGrid grid, int i, int j) {
+        return getDeriv(dy, i, j);
+    }
+
+    @Override
+    public double dxdy(BivariateGrid grid, int i, int j) {
+        return getDeriv(dxdy, i, j);
+    }
+
+    private double getDeriv(double[][] dx, int i, int j) {
+        return dx[i][2 - j];
+    }
+};
+
+BivariateGridInterpolation interpolation = new BicubicInterpolation(deriv);
+BivariateGrid grid = new BivariateRegularGrid(z, 0.0, 0.0, 0.5, 0.25);
+RealScalarFunction f = interpolation.interpolate(grid);
+
+System.out.println(f.evaluate(new DenseVector(0.0, 0.0))); // 1.0
+
+System.out.println(f.evaluate(new DenseVector(0.0, 0.125))); // 2.0
+System.out.println(f.evaluate(new DenseVector(0.0, 0.25))); // 3.0
+System.out.println(f.evaluate(new DenseVector(0.0, 0.375))); // 4.0
+System.out.println(f.evaluate(new DenseVector(0.0, 0.5))); // 5.0
+
+System.out.println(f.evaluate(new DenseVector(0.25, 0.0))); // 1.125
+System.out.println(f.evaluate(new DenseVector(0.25, 0.125))); // 2.078125
+System.out.println(f.evaluate(new DenseVector(0.25, 0.25))); // 3.1875
+System.out.println(f.evaluate(new DenseVector(0.25, 0.375))); // 4.765625
+System.out.println(f.evaluate(new DenseVector(0.25, 0.5))); // 6.5
+
+System.out.println(f.evaluate(new DenseVector(0.5, 0.0))); // 2.0
+System.out.println(f.evaluate(new DenseVector(0.5, 0.125))); // 2.875
+System.out.println(f.evaluate(new DenseVector(0.5, 0.25))); // 4.0
+System.out.println(f.evaluate(new DenseVector(0.5, 0.375))); // 5.875
+System.out.println(f.evaluate(new DenseVector(0.5, 0.5))); // 8.0
+
+System.out.println(f.evaluate(new DenseVector(0.75, 0.0))); // 5.125
+System.out.println(f.evaluate(new DenseVector(0.75, 0.125))); // 5.828125
+System.out.println(f.evaluate(new DenseVector(0.75, 0.25))); // 6.6875
+System.out.println(f.evaluate(new DenseVector(0.75, 0.375))); // 8.015625
+System.out.println(f.evaluate(new DenseVector(0.75, 0.5))); // 9.5
+
+System.out.println(f.evaluate(new DenseVector(1.0, 0.0))); // 9.0
+System.out.println(f.evaluate(new DenseVector(1.0, 0.125))); // 9.5
+System.out.println(f.evaluate(new DenseVector(1.0, 0.25))); // 10.0
+System.out.println(f.evaluate(new DenseVector(1.0, 0.375))); // 10.5
+System.out.println(f.evaluate(new DenseVector(1.0, 0.5))); // 11.0
+
+</pre>
+<p>输出如下所示:</p>
+<pre>1.0
+2.0
+3.0
+4.0
+5.0
+1.125
+2.078125
+3.1875
+4.765625
+6.5
+2.0
+2.875
+4.0
+5.875
+8.0
+5.125
+5.828125
+6.6875
+8.015625
+9.5
+9.0
+9.5
+10.0
+10.5
+11.0
+
+</pre>
+
+<h3 class="Heading">多元插值</h3>
+<p class="Para" id="Par98">上一节中针对二元情况描述的过程也可以应用于更高维的情况，只需做一些修改。我们以递归方式应用该过程。我们以一个三维案例为例。</p>
+<p class="Para" id="Par99">假设我们有这个<em class="EmphasisTypeItalic "> n </em> × <em class="EmphasisTypeItalic "> n </em> × <em class="EmphasisTypeItalic "> n </em>数据集:(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> z </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> w </em> <sub> 111 </sub>，(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic ">y<em class="EmphasisTypeItalic "> (<em class="EmphasisTypeItalic "> x </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>，<em class="EmphasisTypeItalic "> y </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>，<em class="EmphasisTypeItalic "> z </em> <sub> <em class="EmphasisTypeItalic "> n </em> </sub>，<em class="EmphasisTypeItalic ">w</em><em class="EmphasisTypeItalic ">nnn</em>)。 首先，我们将<em class="EmphasisTypeItalic "> x </em>尺寸固定为常数。在位置<em class="EmphasisTypeItalic ">x</em>=<em class="EmphasisTypeItalic ">x</em><sub>1</sub>，我们有(<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> z </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> w </em> <sub> 111 </sub>)，(<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，现在，这个切片数据集是二元的。我们再次确定另一个维度，比如说<em class="EmphasisTypeItalic "> y </em>。然后在位置<em class="EmphasisTypeItalic ">y</em>=<em class="EmphasisTypeItalic ">y</em><sub>1</sub>，我们有(<em class="EmphasisTypeItalic "> z </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic "> w </em> <sub> 111 </sub>)，(<em class="EmphasisTypeItalic "> z </em> <sub> 2 </sub>，<em class="EmphasisTypeItalic "> w </em> <sub> 112 现在，这个切片数据集是单变量的。我们可以应用任何一元插值算法得到插值器<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1<em class="EmphasisTypeItalic ">y</em>1</sub>(<em class="EmphasisTypeItalic ">z</em>)。对所有的<em class="EmphasisTypeItalic "> y </em>值重复此操作，我们将得到<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1<em class="EmphasisTypeItalic ">y</em>1</sub>(<em class="EmphasisTypeItalic ">z</em>)、<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1<em class="EmphasisTypeItalic ">y</em></sub>(【T178 接下来，正如我们在二元情况下所做的那样，我们根据(<em class="EmphasisTypeItalic "> y </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1<em class="EmphasisTypeItalic ">y</em>1</sub>(<em class="EmphasisTypeItalic ">z</em>)，(<em class="EmphasisTypeItalic "> y </em> <sub> 2 </sub>，<em class="EmphasisTypeItalic "> f </em>进行插值 <em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1<em class="EmphasisTypeItalic ">yn</em></sub>(<em class="EmphasisTypeItalic ">z</em>)得到插补器<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1</sub>(<em class="EmphasisTypeItalic ">y</em>，<em class="EmphasisTypeItalic "> z </em>)。 对所有的<em class="EmphasisTypeItalic "> x </em>值重复这个过程，我们将得到<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1</sub>(<em class="EmphasisTypeItalic ">y</em>，<em class="EmphasisTypeItalic "> z </em>)，<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>2</sub>(<em class="EmphasisTypeItalic ">y</em>，<em class="EmphasisTypeItalic ">最后，插值于(<em class="EmphasisTypeItalic "> x </em> <sub> 1 </sub>，<em class="EmphasisTypeItalic ">f</em><sub><em class="EmphasisTypeItalic ">x</em>1</sub>(<em class="EmphasisTypeItalic ">y</em>，<em class="EmphasisTypeItalic "> z </em>)，(<em class="EmphasisTypeItalic "> x </em> <sub> 2 </sub>，<em class="EmphasisTypeItalic "> f </em> <sub> 【T297) <em class="EmphasisTypeItalic "> z </em>))，我们会得到插补器<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>，<em class="EmphasisTypeItalic "> y </em>，<em class="EmphasisTypeItalic "> z </em>)。</sub></em></sub></em></em></p>
+<p class="Para" id="Par100">NM Dev 实现这种算法来递归地进行低阶插值，直到可以在一维切片数据集上应用单变量算法。然而，随着维数的增加，计算成本呈指数增长。对于高维数据并不完全实用。</p>
+<p>以下代码示例显示了如何应用算法进行多元线性插值:</p>
+<pre>// the data set
+MultiDimensionalArray&lt;Double&gt; mda
+        = new MultiDimensionalArray&lt;&gt;(2, 2, 2);
+mda.set(1., 0, 0, 0); // mda[0][0][0] = 1.
+mda.set(2., 1, 0, 0);
+mda.set(3., 0, 1, 0);
+mda.set(4., 0, 0, 1);
+mda.set(5., 1, 1, 0);
+mda.set(6., 1, 0, 1);
+mda.set(7., 0, 1, 1);
+mda.set(8., 1, 1, 1);
+
+MultivariateArrayGrid mvGrid = new MultivariateArrayGrid(
+        mda,
+        new double[]{1, 2},
+        new double[]{1, 2},
+        new double[]{1, 2}
+);
+RecursiveGridInterpolation rgi
+        = new RecursiveGridInterpolation(new LinearInterpolation());
+RealScalarFunction f = rgi.interpolate(mvGrid);
+System.out.println(f.evaluate(new DenseVector(new double[]{1.5, 1.5, 1.5}))); // f(1.5, 1.5, 1.5) = 4.5
+
+</pre>
+<p>输出如下所示:</p>
+<pre>4.5
+
+</pre>
+<p>类别<code>RecursiveGridInterpolation</code>的签名如下:</p>
+<pre>/**
+ * Constructs an n-dimensional interpolation using a given univariate
+ * interpolation algorithm.
+ *
+ * @param univariate a univariate interpolation algorithm
+ */
+public RecursiveGridInterpolation(Interpolation univariate)
+
+</pre>
+<p class="Para" id="Par104">它接受一个<code>Interpolation</code>对象作为输入。在前面的代码示例中，我们提供了一个<code>LinearInterpolation</code>对象。因此，在将数据集缩减为一维切片数据时，代码将应用线性插值。</p>
+
+
+
+
+</body>
+</html>

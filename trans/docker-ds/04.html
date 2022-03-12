@@ -1,0 +1,319 @@
+<html xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lang="en" xml:lang="en" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2/ http://www.w3.org/MarkUp/SCHEMA/xhtml2.xsd">
+<head>
+    <title>Unknown</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+© Joshua Cook 2017
+Joshua CookDocker for Data Science<a href="04.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">https://doi.org/10.1007/978-1-4842-3012-1_4</a>
+
+<!--Begin Abstract--><h1 class="chaptertitle" xml:lang="en">4.Docker 引擎</h1>
+
+Joshua Cook<sup class="calibre5">1 </sup>
+(1)Santa Monica, California, USA
+
+ 
+
+
+<!--End Abstract-->The Docker engine
+       is the core technology upon which you will do your work. For your purposes, you can think of the Docker engine as the Docker daemon and the Docker client you use to give the daemon instructions. Docker as a whole consists of both the engine and the Hub, the latter of which is used to store images. If I have not emphasized this enough, the magic happens because we can count on the Docker engine to work the same way no matter our underlying hardware (or virtual hardware) and operating system. We build it using the Docker engine, we test it using the Docker engine, and we deploy it using the Docker engine.
+<h2 class="heading2">检查 Docker 工作站</h2>
+Docker is a rapidly changing technology. As such, it is best to refer to Docker’s latest instructions on installation. The base installation includes each of the core technologies we will be using: docker, docker-machine, and docker-compose.
+Running the command docker alone returns usage. If you are ever in doubt as to which commands can be run and which arguments they require, try running the command with no arguments (see Listing <a href="#Par4" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-1</a>).
+
+            $ docker
+
+Usage:  docker COMMAND
+
+A self-sufficient runtime for containers
+...
+
+Listing 4-1.Display Docker Usage
+
+
+
+          
+You can display system-wide information using the docker info command (Listing <a href="#Par6" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-2</a>). Either docker or docker info can also function as a minimal verification of a working Docker installation.
+
+            $ docker info
+Containers: 12
+ Running: 2
+ Paused: 0
+ Stopped: 10
+Images: 23
+Server Version: 17.06.0-ce
+...
+Listing 4-2.Display Docker System Info
+
+
+
+          
+In Listing <a href="#Par10" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-3</a>, you pull the minimal Docker image, <a href="https://hub.docker.com/_/alpine/" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                alpine
+              </a>, to your local collection of images. alpine is
+<blockquote class="blockquote">一个基于 Alpine Linux 的最小 Docker 镜像，有完整的包索引，大小只有 5MB！</blockquote>
+      
+and provides an excellent starting point for building minimal images.
+
+            $ docker pull alpine
+Using default tag: latest
+latest: Pulling from library/alpine
+0a8490d0dfd3: Pull complete
+Digest: sha256:dfbd4a3a8ebca874ebd2474f044a0b33600d4523d03b0df76e5c5986cb02d7e8
+Status: Downloaded newer image for alpine:latest
+Listing 4-3.Pull the 
+                  alpine Docker Image
+                  
+                
+              
+
+
+
+          
+When you pulled the hello-world or ubuntu image, you did so implicitly as part of the docker run command (see Figure <a href="#Fig1" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-1</a>). In Listing <a href="#Par10" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-3</a>, you explicitly pull the image. Since you did not specify a tag for pulling, the Docker engine defaults to using the tag named latest. The Docker engine then finds the latest alpine image by name on Docker Hub and downloads the image to a local image cache (see Figure <a href="#Fig1" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-1</a>). The alpine image consists of a single layer. Had it consisted of more than one layer, they would have been pulled in parallel.<img src="Images/A439726_1_En_4_Fig1_HTML.gif" alt="A439726_1_En_4_Fig1_HTML.gif" class="calibre53"/>
+Figure 4-1.
+                Implicit vs. explicit pulls
+                  
+                 of images from the Docker Registry
+
+
+
+      
+If you wish to run an interactive shell to the alpine image you downloaded, you can do so via the run command (see Listing <a href="#Par13" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-4</a>). You will receive a shell prompt for a shell attached to the alpine image. Press Ctrl+D to terminate the shell process and return to the host system.
+
+            $ docker run -it alpine /bin/sh
+/ # ls
+bin    etc    lib    mnt    root   sbin   sys    usr
+dev    home   media  proc   run    srv    tmp    var
+/ # whoami
+root
+/ # ps
+PID   USER     TIME   COMMAND
+1     root     0:00   /bin/sh
+7     root     0:00   ps
+/ # ps aux
+PID   USER     TIME   COMMAND
+1     root     0:00   /bin/sh
+8     root     0:00   ps aux
+Listing 4-4.Run an Interactive Shell to an alpine Container
+
+
+
+          
+In Listing <a href="#Par13" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-4</a>, the -i flag starts an interactive container. The -t flag allocates a pseudo-TTY command line interpreter or shell that attaches stdin and stdout. You ran the ls command and displayed the directories in the root directory (‘/’) of the running Docker container. You then ran ps and ps aux to display processes attached to the current shell and all process, respectively.
+What exactly have you done? Well, it’s somewhat abstract. You have launched an instance of the alpine image. The Docker engine then created a temporary layer on top of this image that you can interact with. The underlying image and this read/write layer on top of that image comprise a Docker container. The Docker engine then connected you to the container via a generic shell. Here you have root access to that running container. The results of any actions you conduct while connected via the shell are written to the top read/write layer.
+As discussed in Chapter <a href="02.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">2</a>, a Docker container can be thought of as a virtualized process. We will continue to use this way of thinking, and I will use the terms process and container somewhat interchangeably. So far, you have used docker ps to display processes currently being managed by the Docker daemon (that is, the currently running containers). In Listing <a href="#Par17" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-5</a>, you display all processes/containers, including those that have terminated via docker ps -a. Here, the -a flag signifies that all containers should be shown, including those that have exited.
+
+            $ docker ps -a
+CONTAINER ID  IMAGE   COMMAND   CREATED         STATUS     PORTS    NAMES
+b04dfee8fc1c  alpine  "/bin/sh" 49 minutes ago  Exited ... clever_khorana
+Listing 4-5.Display All Docker Processes
+
+
+
+          
+Here you see the process you recently terminated. The container created to run the process has the container id b04dfee8fc1c.
+When you terminate the shell, the Docker engine stops the container. The container defined by the alpine image and the read/write layer created at runtime continue to exist in your cache. The read/write layer, however, is associated with this container, not the underlying image. If you launch a new container by running the same command again, the Docker engine will create a new read/write layer on top of the base image as a new container.
+In Listing <a href="#Par21" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-6</a>, you create a new container, shut down, and list all processes once more. You can see that you now have two containers that have exited associated with the alpine image.
+
+            $ docker run -it alpine /bin/sh
+/ #^d
+$ docker ps -a
+CONTAINER ID  IMAGE   COMMAND   CREATED         STATUS     PORTS    NAMES
+b04dfee8fc1c  alpine  "/bin/sh" 49 minutes ago  Exited ... clever_khorana
+4d3cc1c5471d  alpine  "/bin/sh" 59 minutes ago  Exited ... suspicious_ritchie
+Listing 4-6.Create a Second alpine Container, Terminate, and Display All Processes
+
+
+
+          
+
+<h2 class="heading2">你好，集装箱里的世界</h2>
+
+        docker run is used to run an application as a container. Let’s walk through this. Let’s begin by displaying the currently running docker processes (see Listing <a href="#Par23" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-7</a>).
+
+            $ docker ps
+CONTAINER ID     IMAGE    COMMAND     CREATED     STATUS     PORTS     NAMES
+Listing 4-7.Display the Docker Processes
+
+
+
+          
+You should see the headers of an empty table signifying that there are no containers/processes currently running. You may see other processes there and that is okay for your purposes.
+You can view the images that you currently have in your image cache. You can do this via the docker images command, as shown in Listing <a href="#Par26" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-8</a>.
+
+            $ docker images
+REPOSITORY          TAG            IMAGE ID            CREATED          SIZE
+alpine             latest         88e169ea8f46       7 weeks ago     3.98 MB
+ubuntu             latest         b549a9959a66       31 hours ago    188 MB
+hello-world        latest         690ed74de00f       4 weeks ago     960 B
+Listing 4-8.Display Docker Images
+
+
+
+          
+If you have been following along, you should have three images. The significance of these three images is that they are stored locally. You can run a container defined by any one of them instantly; that is to say, the image does not need to be implicitly pulled before the container is run. In Listing <a href="#Par28" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-9</a>, you run the hello-world image.
+
+            $ docker run hello-world
+Hello from Docker.
+This message shows that your installation appears to be working correctly.
+Listing 4-9.Run the hello-world Image
+
+
+
+          
+To generate this message, Docker took the following steps:
+<ol class="calibre7"><li class="listitem">1.Docker 客户端联系了 Docker 守护程序。</li>
+<li class="listitem">2.Docker 守护进程从 Docker Hub 中提取“hello-world”映像。</li>
+<li class="listitem">3.Docker 守护进程从该映像创建了一个新的容器，它运行可执行文件，生成您当前正在阅读的输出。</li>
+<li class="listitem">4.Docker 守护进程将输出流式传输到 Docker 客户机，客户机将输出发送到您的终端。</li>
+</ol>
+
+      
+Previously, you ran this command and had to wait while the images were pulled from the registry. Now it runs immediately and shows the same response.
+In Listing <a href="#Par36" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-10</a>, you display processes currently being managed by Docker; again you should see none of the processes you have been working with in this chapter. The significance of this is that the hello-world image launched, displayed its message, and then shut down again.
+
+            $ docker ps
+CONTAINER ID     IMAGE     COMMAND     CREATED     STATUS     PORTS     NAMES
+Listing 4-10.Display Currently Running Containers/Processes
+                  
+                
+              
+
+
+
+          
+
+<h2 class="heading2">将 Echo 作为服务运行</h2>
+Next, let’s echo the phrase “Hello, World!” as a service. In the Docker ecosystem
+          
+          
+        , a service is a process that has been “containerized.” As you may have noticed, I have been referring to the results of a docker run command as a container/process. This idea is critical to what we are attempting to do. We are wrapping a process in a container, like “Hello World!” as you pass a command to be executed by your container (Listing <a href="#Par38" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-11</a>).
+
+            $ docker run alpine /bin/echo 'Hello, World!'
+Hello World!
+Listing 4-11.Echo “Hello, World!” as a Service
+
+
+
+          
+Again, you display currently running containers/processes to confirm that the alpine container shut down again (Listing <a href="#Par40" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-12</a>). Again, none of the processes with which you have been working are running. The alpine image launched, used the echo command to echo “Hello World!,” and then shut down.
+
+            $ docker ps
+CONTAINER ID     IMAGE     COMMAND     CREATED     STATUS     PORTS     NAMES
+Listing 4-12.Display Currently Running Containers/Processes
+
+
+
+          
+The gravity of this may not be apparent. To fully comprehend what is happening, let’s time the whole thing. Let’s use the built-in time command to see how long it takes to echo a string as a service. In Listing <a href="#Par42" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-13</a>, you do this by running time and then the command you ran previously.
+
+            $ time docker run alpine /bin/echo 'Hello World!'
+Hello World!
+
+real    0m1.300s
+user    0m0.019s
+sys     0m0.030s
+
+Listing 4-13.Time the Execution of the Echo Service
+
+
+
+          
+Now you use the built-in time command to see how long it takes to do the same natively (that is, directly on your machine); see Listing <a href="#Par44" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-14</a>.
+
+            $ time echo 'Hello World!'
+Hello World!
+
+real  0m0.006s
+user  0m0.000s
+sys   0m0.001s
+
+Listing 4-14.Time the Execution of echo Natively
+
+
+
+          
+That is a pretty significant jump. Running the command in the Docker instance made the task take 200 times longer. But consider this from another perspective. Instead, consider the fact that booting up an entire alpine instance only added about a second to your processing time.
+<h3 class="heading3">隔离引导时间</h3>
+In Listing <a href="#Par47" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-15</a>, you attempt to isolate the bootstrap time. First, you run and time a hard sleep, again with the time command. The sleep command simply puts the shell to sleep for a specified amount of time. This will allow you to explicitly control timing.
+
+              $ time sleep 2
+
+real    0m2.012s
+user    0m0.001s
+sys     0m0.003s
+
+Listing 4-15.Time a Hard Sleep Natively
+
+
+
+            
+In Listing <a href="#Par49" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-16</a>, you run this hard sleep as a service and time the execution. It is useful to spend a moment to look at how this is done. In Listing <a href="#Par49" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-16</a>, you run time docker run alpine /bin/sleep 2. You are timing the use of docker to manage a sleep of 2 seconds run in a container defined by the alpine image.
+
+              $ time docker run alpine /bin/sleep 2
+
+real    0m3.061s
+user    0m0.014s
+sys     0m0.013s
+
+Listing 4-16.Time a Hard Sleep as a Service
+
+
+
+            
+Note that you see approximately the same increase. In your rudimentary testing, you can take this to signify that “containerizing” your service adds about a second to your runtime. This is significant when echoing “Hello World!” or performing a hard sleep of 2 seconds. This is completely negligible when running a jupyter server or performing a long calculation with numpy.
+
+
+<h2 class="heading2">一个被诅咒的 Hello 世界</h2>
+You will ultimately want to daemonize your Docker containers (that is, set them up to run indefinitely as background processes). You do this by running your containers in detached mode via the -d flag.
+Let’s run alpine in detached mode (that is, run the image as a container, and leave it running in the background). In order to keep it running, you will give it a job to do, namely echo “hello world” every second ad infinitum. Alternatively, you could give it a more complex job to do, such as a long arithmetic operation or to listen for web requests, but for demonstration purposes, this will suffice (Listing <a href="#Par53" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-17</a>).
+
+            $ docker run -d alpine /bin/sh -c "while true; do echo hello world; sleep 1; done"
+Listing 4-17.Run the Alpine Image in Detached Mode
+
+
+
+          
+In Listing <a href="#Par55" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-18</a>, you again display the running containers/processes. Because you passed the run command the -d flag for detached mode, it is still running.
+
+            $ docker ps
+CONTAINER ID  IMAGE   COMMAND        CREATED         STATUS  PORTS   NAMES
+9201755545d1  alpine  "/bin/sh ..."  51 seconds ago  Up ...  upbeat_easley
+Listing 4-18.Display Currently Running Containers/Processes
+
+
+
+          
+But how do you confirm that it is doing the job it has been tasked with? You can do this via the command docker logs. In Listing <a href="#Par57" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-19</a>, you request the logs associate with the alpine container named upbeat_easley.
+
+            $ docker logs upbeat_easley
+hello world
+hello world
+...
+Listing 4-19.Show Logs for a Detached Container
+
+
+
+          
+Here, you view logs for your container currently running in detached mode. Not the most exciting log, but sufficient to confirm that your container is doing its job.
+Let’s give it a rest, using the stop command to shut it down. In Listing <a href="#Par60" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4-20</a>, you stop the alpine container upbeat_easley.
+
+            $ docker stop upbeat_easley
+Listing 4-20.Stop a Detached Container
+
+
+
+          
+
+<h2 class="heading2">摘要</h2>
+This was chapter was the shortest thus far in the text. In it, you explored a few aspects of asking Docker to manage processes as Docker containers. The substance of this chapter is somewhat abstract. A thorough understanding of the material is not, strictly speaking, necessary for the mastery of the big-picture concepts in this book. Readers who are interested in digging deeper into the nuances of the Docker engine are encouraged to peruse the excellent and in-depth documentations available at <a href="http://docs.docker.com" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                http://docs.docker.com
+              </a>.
+
+
+
+</body>
+</html>

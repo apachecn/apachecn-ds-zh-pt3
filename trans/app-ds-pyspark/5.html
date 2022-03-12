@@ -1,0 +1,1644 @@
+<html lang="en">
+<head><title>Supervised Learning Algorithms</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">5.监督学习算法</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">是时候根据数据做一些学习了。大多数人认为机器学习是对给定数据应用算法，然后预测结果。不仅仅是这样。80%的工作涉及数据收集、预处理、清理、特征工程、转换和选择最佳特征。剩下的 20%用于构建机器学习模型、验证和部署。整个操作被称为 MLOps(机器学习操作)。它类似于 DevOps，但用于机器学习。为了理解和部署生产模型，您应该熟悉 MLOps 中的每个组件。在这本书里，我们到目前为止已经讨论了 80%的工作。如果您跳过了那些章节，我们建议您在阅读本章之前先阅读它们。此外，业务和领域知识有助于您改进整个流程。</p>
+<h2 class="Heading">基础</h2>
+<p>好了，现在我们来讨论机器学习算法。概括地说，这些算法分为三种类型:有监督的、无监督的和强化学习(表<a href="#Tab1"> 5-1 </a>)。</p>
+<p>表 5-1</p><p class="SimplePara">机器学习算法的类型</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">监督</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">无人监督的</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加强</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">这是什么？</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">算法是在标记数据上训练的。</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">算法在未标记的数据上训练。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">根据每个行动获得的奖励对代理进行培训。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">用在哪里？</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回归、分类</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">聚类、分割、关联</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">基于奖励</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">什么类型的数据？</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">标记数据。例如:预测猫对狗或预测房价</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">未标记的数据；只是输入特征。示例:客户特征分析</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">没有预定义的数据。例如:自动驾驶汽车、游戏代理</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">需要监管吗？</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">是</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">不</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">不</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">目标是什么？</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">使用已知的输入/输出映射减少目标预测中的误差</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">理解数据中的模式和行为来讲述一个故事</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">试错法。让代理人从错误中学习，以提高长期回报。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p class="Para" id="Par4">除了上面提到的类别，目前还有两种其他类型的算法是常见的:推荐系统和半监督算法。推荐系统可以是受监督的，也可以是不受监督的。我们将在下一章了解更多。半监督算法结合了监督和非监督学习方法——少量的已标记数据来分类大量的未标记数据。半监督算法和强化学习超出了本书的范围。在这一章中，我们将讨论监督学习算法。在下一章，我们将讨论无监督和推荐算法。</p>
+<p class="Para" id="Par5">在监督算法中，我们有这些类型:回归和分类(二元，多项式，多标签)。</p>
+<h3 class="Heading">回归</h3>
+<p class="Para" id="Par6">在回归模型中，我们预测连续值，如房价。回归是一种用于金融、投资和其他学科的统计方法，试图确定一个因变量(通常用 Y 表示)和一系列其他变量(称为自变量)之间关系的强度和特征。</p>
+
+<h3 class="Heading">分类</h3>
+<p class="Para" id="Par7">在分类模型中，我们预测离散值；比如猫对狗，垃圾邮件对非垃圾邮件，等等。当类别数为 2 时，称为二元分类。当类别数多于两个时，称为多项式分类。二元分类模型是多项式分类模型的子集。多项式分类模型的另一个子集是有序分类。在有序模型中，目标是有序的；例如，当预测购买经济舱机票、商务舱机票和头等舱机票的可能性时。需要记住的重要一点是，在这些分类模型中，目标是互斥的。在某些情况下，一次观测可能有多个目标；比如文章的策展。这本书可以分为这些标题:“机器学习，数据科学，PySpark 应用。”这三个中的任何一个都是有效的目标。这种类型的任务是多标签分类。</p>
+<p class="Para" id="Par8">在任何一种情况下(回归或分类)，目标都是减少预测值和原始值之间的误差。我们将从目标(减少误差)开始，涵盖一些相关概念，然后深入研究算法。</p>
+
+
+<h2 class="Heading">损失函数</h2>
+<p>损失函数是与每个监督学习算法相关的误差函数(表<a href="#Tab2"> 5-2 </a>)。我们试图在任何模型训练过程中最小化损失函数。为什么要最小化？我们举个预测一个人体重的例子。我们最初的重量值是 30、40 和 50。让我们假设我们的一个模型预测权重分别为 32、46 和 57。</p>
+<p>表 5-2</p><p class="SimplePara">损失函数的类型</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">名字</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">等式</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">什么时候用？</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td rowspan="3" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回归</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">平方误差损失</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">(y–y-hat)<sup>2</sup></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回归中常用的损失函数。易微分损失。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">绝对误差损失</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">|y - y-hat|</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">数据中存在异常值。绝对损失对异常值更稳健。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">伪 Huber 损失</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">x = | y–y-hat |</p>
+<p class="SimplePara"><img alt="$$ \left\{\begin{array}{c}{\left(y-y- hat\right)}^2; when\ x\le \alpha \\ {}\mid y-y- hat\mid; otherwise\kern1.5em \end{array}\right. $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq1.png" style="width:13.92em"/></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">结合了平方误差和绝对误差损失。调整超参数<em class="EmphasisTypeItalic "> α </em>以获得最佳结果。</p>
+</td>
+</tr>
+<tr><td rowspan="4" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">分类</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">二元交叉熵损失</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-(y log(p) + (1-y) log(1-p))</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">二元目标。默认损失函数。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">分类交叉熵损失</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">C -类别数</p>
+<p class="SimplePara"><img alt="$$ \hbox{--} \sum \limits_{x\in C}p(x)\ \mathit{\log}\ q(x) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq2.png" style="width:8em"/></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">多项目标。默认损失函数。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">KL 发散损失</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">C -类别数</p>
+<p class="SimplePara"><img alt="$$ \hbox{--} \sum \limits_{x\in C}p(x)\ \mathit{\log}\ \left(\frac{q(x)}{p(x)}\right) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq3.png" style="width:8.59em"/></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">多项目标</p>
+<p class="SimplePara"><em class="EmphasisTypeItalic ">注:交叉熵=熵+ KL 散度</em></p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">铰链损耗</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">x = y-hat * y</p>
+<p class="SimplePara">最大值(0，1–x)</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">二元目标。通常用于支持向量机。用于最大化利润。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>使用平方误差损失函数，该模型的总误差如下:</p>
+<pre>Model 1 error = (30 -32)2 + (40 – 46)2 + (50 – 57)2 = 4 + 36 + 49 = 89
+
+</pre>
+<p>第二个模型预测权重为 31、42 和 52。对于该模型，平方误差如下:</p>
+<pre>Model 2 error = (30 -31)2 + (40 – 42)2 + (50 – 52)2 = 1 + 4 + 4 = 9
+
+</pre>
+<p>如您所见，当您开始最小化平方误差函数时，预测开始接近原始值。因此，理解损失函数并选择合适的损失函数是模型训练过程中的一项重要任务。你可以在这里形象化的展现损失函数:<a href="https://academo.org/demos/3d-surface-plotter/"> <code>https://academo.org/demos/3d-surface-plotter/</code> </a>。我们在图<a href="#Fig1"> 5-1 </a>中展示了一个使用平方误差损失的例子。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig1_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig1_HTML.jpg" style="width:43.12em"/></p>
+<p>图 5-1</p><p class="SimplePara">平方误差损失</p>
+
+
+<p>当你到达损失函数的底部时，平方误差值最小。在模型训练过程中，模型从错误开始，并采取后续步骤达到曲线的底部值。这个过程叫做梯度下降。我们在图<a href="#Fig2"> 5-2 </a>中展示了另一个损失函数——绝对误差损失。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig2_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig2_HTML.jpg" style="width:43.12em"/></p>
+<p>图 5-2</p><p class="SimplePara">绝对误差损失</p>
+
+
+<p class="Para" id="Par14">当我们在后面的章节中探索算法时，我们将根据模型切换损失函数。</p>
+
+<h2 class="Heading">优化者</h2>
+<p><em class="EmphasisTypeItalic ">优化器用于寻找函数</em>的最小值。在上一节中，我们讨论了当损失函数达到最小值时，模型误差最小。由于我们试图找到损失函数的最小值，我们可以使用优化器来解决这些任务。产生最小误差的模型参数称为最优参数。整个路径如图<a href="#Fig3"> 5-3 </a>所示。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig3_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig3_HTML.jpg" style="width:33.7em"/></p>
+<p>图 5-3</p><p class="SimplePara">优化程序流程图</p>
+
+
+<p class="Para" id="Par16">在这一节中，我们将深入研究不同的优化器来完成这项任务。让我们从梯度下降开始。</p>
+<h3 class="Heading">梯度下降</h3>
+<p>想象你在山顶，你的目标是用最短的路到达山脚。你不会直接从山顶跳下去，因为你不知道山的高度。这太疯狂了。你很可能会死。未知的知识— <em class="EmphasisTypeItalic ">“山脚在哪里？”</em>—是我们在这里试图解决的函数。为了找到这个解决方案，我们开始沿着<em class="EmphasisTypeItalic ">右方向</em>迈<em class="EmphasisTypeItalic ">小步</em>下山。小步确保你能适应地形，正确的方向确保你会下山。你重复这个过程(小步和向正确的方向下降)几次，到达山的底部。这整个想法被称为梯度下降。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig4_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig4_HTML.jpg" style="width:26.58em"/></p>
+<p>图 5-4</p><p class="SimplePara">梯度下降</p>
+
+
+<p>数学上，梯度是优化器试图求解的函数的斜率值。因此，它被称为梯度下降。在图<a href="#Fig4"> 5-4 </a>中用橙色线表示。使用以下等式更新模型参数:<p> <img alt="$$ {\beta}_i={\beta}_i-\alpha \ast {\mathrm{Slope}}_i $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equa.png" style="width:8.56em"/> </p></p>
+<p><p> <img alt="$$ {\beta}_{\mathrm{i}}=\mathrm{Model}\ \mathrm{parameter}\ \mathrm{of}\ \mathrm{a}\ \mathrm{variable}\ i $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equb.png" style="width:15.93em"/> </p> <p> <img alt="$$ \alpha =\mathrm{Learning}\ \mathrm{rate} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equc.png" style="width:7.92em"/></p></p>
+<pre>Where
+
+</pre>
+<p class="Para" id="Par20"><img alt="$$ {\mathrm{Slope}}_i=\mathrm{Gradient}\ \mathrm{or}\ \mathrm{slope}\ \mathrm{with}\ \mathrm{respect}\ \mathrm{to}\ \mathrm{the}\ \mathrm{variable}\ i=\frac{\partial }{\partial {\beta}_i} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq4.png" style="width:26.55em"/>错误</p>
+<p>在模型训练的初始阶段，斜率很大，并且随着我们达到最优解而开始减小。当满足下列条件之一时，可以停止模型训练过程:</p>
+<ol><li class="ListItem"><p class="Para" id="Par22">斜率(梯度)接近于零。此时，模型参数更新会产生相同的结果。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par23">满足迭代或时期的数量。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par24">模型改进低于指定的阈值。为了实现这一点，您将前一次迭代与当前迭代的性能进行比较，以确定模型(delta)的改进，并检查 delta 值是否低于指定的阈值。</p>
+ </li>
+</ol>
+
+<h4 class="Heading">选择学习率</h4>
+<p>我们看到学习率被用来更新模型参数。问题是，“最好的学习率是多少？”</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig5_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig5_HTML.jpg" style="width:41.32em"/></p>
+<p>图 5-5</p><p class="SimplePara">学习率</p>
+
+
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par27">通过选择高学习率，你下降得更快，你可能会错过曲线的底部。这在图<a href="#Fig5"> 5-5 </a>中用虚线表示。在这种情况下，模型开始产生混乱的结果。</p></li>
+<li><p class="Para" id="Par28">但是，通过选择低学习率，您的模型将需要更多时间来收敛到最优解。</p></li>
+</ul>
+
+<p class="Para" id="Par29">当您的模型没有产生预期的结果时，降低学习率并重新运行它。这是一个超参数，可以根据您的数据和模型需求进行调整。另一种方法是使用自适应学习速率。在这种情况下，学习率根据曲线的斜率而变化。在初始模型训练期间，它以高学习率开始(当斜率较高时)，并且随着斜率下降，学习率可以降低。这样，你可以更快地找到最优解，并且可以两全其美(高学习率和低学习率)。适应函数可以是线性的或数量级的。我们将在后面的章节中讨论更多关于自适应学习率的内容。</p>
+
+<h4 class="Heading">局部最小值对全局最小值</h4>
+<p>在图<a href="#Fig6"> 5-6 </a>中，我们可以看到曲线的实际底部是全局最小位置。使用梯度下降，你不会总是能够到达曲线的底部。根据初始参数，模型可以从左侧或右侧开始下降。如果它从右边开始，它将有很大的机会达到全局最小值。但是，如果从左侧开始，它可能会卡在局部最小值，梯度下降操作将会停止。这是梯度下降的问题。它不能区分局部最小值和全局最小值。您可以通过使用不同的超参数重新启动模型训练过程来避免这个问题。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig6_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig6_HTML.jpg" style="width:26.58em"/></p>
+<p>图 5-6</p><p class="SimplePara">局部最小值对全局最小值</p>
+
+
+In Figure 
+<h4 class="Heading">模型训练时间</h4>
+<p class="Para" id="Par31">正如您现在所知道的，参数更新发生在您的训练数据中的所有样本都经过梯度下降优化过程之后。对于较小的数据集，这种方法是可以的。然而，当您处理数百万条数据时，梯度下降优化非常慢。随着数据量的增加，模型的训练时间急剧增加。</p>
+
+
+<h3 class="Heading">随机/小批量梯度下降</h3>
+<p>为了解决模型训练时间和局部最小值问题，我们将看看梯度下降的一个变体。在随机梯度下降(SGD)中，对数据集中的每个观测值进行参数更新。如果数据集有 100 行，则参数更新在一次传递中会发生 100 次。当数据集规模很大时，这可以改善训练时间和模型收敛。此外，SGD 过程引入的随机性有助于模型摆脱局部最小值，达到全局(或更好)最小值。尽管 SGD 有这些优点，但也有一些缺点:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par33">由于每次都会引入随机性，优化器会采取一些嘈杂的步骤来收敛到最小值。有时，这些嘈杂的步骤可能会让你偏离路线，你可能会在当地的最小值之一结束。</p></li>
+<li><p class="Para" id="Par34">频繁的 SGD 更新计算开销很大。</p></li>
+<li><p class="Para" id="Par35">SGD 不能执行矢量化更新，因为它一次使用一个观察值。</p></li>
+</ul>
+
+<p class="Para" id="Par36">梯度下降的另一个变体是小批量梯度下降。假设您在训练数据中有 100 行。在一次通过中，梯度下降使用所有 100 行来执行一次权重更新，而 SGD 为每次观察执行一次权重更新(如此 100 次)。有中间立场吗？小批量梯度下降法解决了这个问题。在小批量 GD 中，基于批量大小(假设为 5)，重量更新发生在每批加工之后。在我们的示例中，这种情况发生了 20 次(100 行/5 个批量= 20)。最佳的批量大小可以帮助模型训练并更快地收敛于全局最小值。根据数据的大小，一个好的默认批量大小是 32。显然，小批量 GD 克服了 SGD 中列出的缺点。尽管如此，小批量 GD 有时会收敛于局部最小值而不是全局最小值。</p>
+
+<h3 class="Heading">动力</h3>
+<p>我们先来看看动量优化器的方程式，然后再谈细节(图<a href="#Fig7"> 5-7 </a>)。【T2<img alt="$$ {\beta}_i={\beta}_i-\alpha \ast {\mathrm{Slope}}_i(t)+m= GD+m $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equd.png" style="width:16.35em"/></p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig7_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig7_HTML.jpg" style="width:26.58em"/></p>
+<p>图 5-7</p><p class="SimplePara">动力</p>
+
+
+Let’s look at the equation for <p class="Para" id="Par38"><em class="EmphasisTypeItalic ">m</em>=<em class="EmphasisTypeItalic ">w</em>∫(<em class="EmphasisTypeItalic ">α</em>∫斜率<sub>T7】I</sub>(<em class="EmphasisTypeItalic ">t</em>—1))</p>
+<p class="Para" id="Par39">在哪里</p>
+<p class="Para" id="Par4000"><em class="EmphasisTypeItalic "> i </em> =一个变量的模型参数<em class="EmphasisTypeItalic "> i </em></p>
+<p class="Para" id="Par40">(<em class="EmphasisTypeItalic "> t </em> ) =当前更新</p>
+<p class="Para" id="Par41"><em class="EmphasisTypeItalic "> GD </em> =梯度下降</p>
+<p class="Para" id="Par42"><em class="EmphasisTypeItalic "> m </em> =动量值</p>
+<p class="Para" id="Par43"><em class="EmphasisTypeItalic "> w </em> =提供先前更新的权重(通常为 0.9)</p>
+<p class="Para" id="Par44">(<em class="EmphasisTypeItalic ">t</em>–1)=上次更新</p>
+<p class="Para" id="Par45">为了克服局部最小值问题，我们通过添加动量分量来扩展梯度下降方程。你可以把动量想象成滚一个球下山。球滚下山时动量越来越大。即使当球在途中遇到小倾角(局部最小值)时，它仍然会继续滚动，直到它到达一个平坦的表面(全局最小值)。如果没有动量，球将以恒定的速度滚动，并以小倾角(局部最小值)结束。有了动量，我们就知道了球是向下运动的。这是通过增加上一步中球滚动的速度来完成的。权重组件(<em class="EmphasisTypeItalic "> w </em>)决定为前一步赋予的权重量。<em class="EmphasisTypeItalic "> w </em>是一个超参数，可以调整到最佳结果。</p>
+
+<h3 class="Heading">自适应梯度优化器</h3>
+<p>我们也可以通过使用自适应学习率来避免局部最小值。我们在前面讨论了这个概念，我们将在这一节看到本质的细节。自适应梯度是通过将学习率除以指数增长的参数(G <sub> i </sub>)来实现的。这在下面的等式中显示:<p> <img alt="$$ {\beta}_{\mathrm{i}}={\beta}_{\mathrm{i}}-\frac{\propto }{\sqrt{{\mathrm{G}}_{\mathrm{i}}(t)}+\varepsilon}\ast {\mathrm{Slope}}_{\mathrm{i}}(t) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Eque.png" style="width:13.78em"/> </p></p>
+<p>而 G <sub> i </sub>则由<p> <img alt="$$ {\mathrm{G}}_{\mathrm{i}}(t)={\mathrm{G}}_{\mathrm{i}}\left(t-1\right)+{\left({\mathrm{Slope}}_{\mathrm{i}}(t)\right)}^2 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equf.png" style="width:13.53em"/> </p>给出</p>
+<p class="Para" id="Par48">在初始模型训练时，G <sub> i </sub> (0) = 0。斜率项总是正的，因此 G <sub> i </sub> (t)在每次迭代中不断增加。因为我们将学习率除以一个递增的数，所以学习率持续下降。这是阿达格拉德背后的整个概念。ε(<em class="EmphasisTypeItalic ">ε</em>)参数被设置为一个非常小的值，以避免被零除的错误。</p>
+
+<h3 class="Heading">均方根传播(RMSprop)优化器</h3>
+<p>RMSprop 是 AdaGrad 优化器的变体。我们来看下面这个等式:<p> <img alt="$$ {\beta}_{\mathrm{i}}={\beta}_{\mathrm{i}}-\frac{\propto }{\sqrt{{\mathrm{G}}_{\mathrm{i}}(t)}+\varepsilon}\ast {\mathrm{Slope}}_{\mathrm{i}}(t) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equg.png" style="width:13.78em"/> </p></p>
+<p>更新规则还是一样的。但是，在 G <sub> i </sub>参数中引入了变化，如下:<p> <img alt="$$ {\mathrm{G}}_{\mathrm{i}}(t)=\upgamma {\mathrm{G}}_{\mathrm{i}}\left(t-1\right)+\left(1-\upgamma \right){\left({\mathrm{Slope}}_{\mathrm{i}}(t)\right)}^2 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equh.png" style="width:17.44em"/> </p></p>
+<p class="Para" id="Par51">在初始模型训练时，G <sub> i </sub> (0) = 0。RMSprop 和 AdaGrad 的区别来自于伽马参数(<em class="EmphasisTypeItalic "> γ </em>)。这是另一个可以优化的超参数。通常，<em class="EmphasisTypeItalic "> γ </em>的值被设置为 0.9。<em class="EmphasisTypeItalic "> γ </em>参数将移动平均值引入梯度分量。因为我们取移动平均值的平方根，所以这个优化器被称为均方根优化器。</p>
+
+<h3 class="Heading">自适应矩(Adam)优化器</h3>
+<p>自适应力矩结合了 RMSprop 和动量，因此得名自适应力矩。这有助于通过使用一个优化器来实现动力和学习率计划(自适应学习率)。此处提供更新的方程式:<p> <img alt="$$ {\beta}_{\mathrm{i}}={\beta}_{\mathrm{i}}-\frac{\propto }{\sqrt{{\mathrm{G}}_{\mathrm{i}}(t)}+\varepsilon}\ast {\mathrm{m}}_{\mathrm{i}}(t) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equi.png" style="width:12.16em"/> </p></p>
+<p class="Para" id="Par53">其中，<em class="EmphasisTypeItalic ">m</em><sub><em class="EmphasisTypeItalic ">I</em></sub>(<em class="EmphasisTypeItalic ">t</em>)是动量分量，使用以下等式计算</p>
+<p class="Para" id="Par54">m<sub>I</sub>(<em class="EmphasisTypeItalic ">t</em>)= w∫m<sub>I</sub>(<em class="EmphasisTypeItalic ">t</em>1)+(1w)∫斜率<sub> i </sub> (t)</p>
+<p class="Para" id="Par55">在初始模型训练时，<em class="EmphasisTypeItalic "> m </em> <sub> <em class="EmphasisTypeItalic "> i </em> </sub> (0) = 0。w 是我们在动量方程中使用的权重参数。因此，m <sub> i </sub> ( <em class="EmphasisTypeItalic "> t </em>)是一阶矩估计，G <sub> i </sub> ( <em class="EmphasisTypeItalic "> t </em>)是二阶矩估计。</p>
+<h4 class="Heading">快速回顾</h4>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par57">误差函数也称为损失函数。</p></li>
+<li><p class="Para" id="Par58">当你到达损失函数的底部时，模型误差最小。此时，模型更符合数据。</p></li>
+<li><p class="Para" id="Par59">您可以使用优化器(如梯度下降)来最小化误差函数。</p></li>
+<li><p class="Para" id="Par60">局部最小值和全局最小值问题可以通过增加动量、调整学习速率或两者兼而有之来解决。</p></li>
+</ul>
+
+
+
+
+<h2 class="Heading">激活功能</h2>
+<p>算法中的另一个组件是激活函数。思考激活函数的一个简单方法是观察生物神经元。当身体需要一些能量时，大脑会激活食物神经元。这个人接着想，“我想吃东西。”大脑激发这些激活来与人交流，并让他们据此采取行动。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig8_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig8_HTML.jpg" style="width:24.65em"/></p>
+<p>图 5-8</p><p class="SimplePara">激活功能说明</p>
+
+
+<p class="Para" id="Par63">以类似的方式，当涉及到训练算法时，激活函数可以用于开启/关闭算法所做的某些动作。让我们详细地看看每一个。</p>
+<h3 class="Heading">线性激活函数</h3>
+<p>在线性激活中，输入数据不做任何更改就被传递。它由方程式<p> <img alt="$$ f(x)=x $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equj.png" style="width:3.93em"/> </p>表示</p>
+<p>其中<em class="EmphasisTypeItalic "> x </em>是给予激活功能的输入。这个函数的导数，<em class="EmphasisTypeItalic ">f</em><sup>’</sup>(<em class="EmphasisTypeItalic ">x</em>)等于 1。在反向传播中执行梯度下降更新时，导数值是有用的。我们将在后面的部分讨论反向传播。线性函数无法学习非线性数据类型(图<a href="#Fig9"> 5-9 </a>)。我们将讨论非线性函数，从 Sigmoid 开始。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig9_HTML.png" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig9_HTML.png" style="width:26.68em"/></p>
+<p>图 5-9</p><p class="SimplePara">线性激活函数</p>
+
+
+
+<h3 class="Heading">Sigmoid 激活函数</h3>
+<p>在 Sigmoid 函数中，使用以下等式将输出压缩在 0 和 1 之间(图<a href="#Fig10"> 5-10 </a> ): <p> <img alt="$$ f(x)=\frac{1}{1+\mathit{\exp}\left(-x\right)} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equk.png" style="width:8.9em"/> </p></p>
+<p>我们可以使用自定义的截止值将<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>)值转换为开/关信号，如下:<p> <img alt="$$ \left\{\begin{array}{c}1\ for\ f(x)\ge cut- off\ \\ {}0\ for\ f(x)&amp;lt; cut- off\end{array}\right. $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equl.png" style="width:11.64em"/> </p></p>
+<p>当涉及到二进制分类时，大多数算法使用 0.5 作为截止值。你可以根据你的锻炼来调整它。这个函数的导数是<p> <img alt="$$ {f}^{\prime }(x)=f(x)\left(1-f(x)\right) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equm.png" style="width:10.02em"/> </p></p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig10_HTML.png" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig10_HTML.png" style="width:26.68em"/></p>
+<p>图 5-10</p><p class="SimplePara">Sigmoid 函数</p>
+
+
+
+<h3 class="Heading">双曲正切函数</h3>
+<p>在一个双曲正切函数中，使用以下等式将输出压缩在-1 和 1 之间(图<a href="#Fig11"> 5-11 </a> ): <p> <img alt="$$ f(x)=\mathit{\tanh}(x)=\left(\frac{2}{1+\mathit{\exp}\left(-2x\right)}\right)-1 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equn.png" style="width:16.34em"/> </p></p>
+<p>与 Sigmoid 函数类似，您可以使用自定义截止值(默认为 0)将输出转换为 0/1 二进制输出。这个函数的导数是<p> <img alt="$$ {f}^{\prime }(x)=1-f{(x)}^2 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equo.png" style="width:7.65em"/> </p></p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig11_HTML.png" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig11_HTML.png" style="width:26.68em"/></p>
+<p>图 5-11</p><p class="SimplePara">TanH 函数</p>
+
+
+
+<h3 class="Heading">校正线性单位(ReLu)函数</h3>
+<p>整流 ReLu 如果是正的就直接输出输入，否则输出零。校正的线性激活函数克服了消失梯度问题，允许模型更快地学习和更好地执行。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig12_HTML.png" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig12_HTML.png" style="width:26.68em"/></p>
+<p>图 5-12</p><p class="SimplePara">ReLu 函数</p>
+
+
+
+<h3 class="Heading">泄漏 ReLu 或参数 ReLu 函数</h3>
+<p>Sigmoid 和 TanH 函数的一个问题是，对于某些深度模型，导数往往会变成 0。由于此问题，模型参数更新将不会发生。ReLu 可以用来解决这个问题。在 ReLu 功能中，对于负值的<em class="EmphasisTypeItalic "> x </em>，输出为零，对于正值的<em class="EmphasisTypeItalic "> x </em>，输出与<em class="EmphasisTypeItalic "> x </em>相同。<p> <img alt="$$ f(x)=\left\{\begin{array}{c}x\ for\ x\ge 0\\ {}0\ for\ x&amp;lt;0\end{array}\right. $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equp.png" style="width:9.72em"/> </p></p>
+<p>这个函数的导数是<p> <img alt="$$ {f}^{\prime }(x)=\left\{\begin{array}{c}1\ for\ x\ge 0\\ {}0\ for\ x&amp;lt;0\end{array}\right. $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equq.png" style="width:10.02em"/> </p></p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig13_HTML.png" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig13_HTML.png" style="width:26.68em"/></p>
+<p>图 5-13</p><p class="SimplePara">李奇注意到了</p>
+
+
+<p>在泄漏 ReLu 函数中，对于负值的<em class="EmphasisTypeItalic "> x </em>，输出为常数因子<em class="EmphasisTypeItalic "> x </em>，对于正值的<em class="EmphasisTypeItalic "> x </em>，输出与<em class="EmphasisTypeItalic "> x </em>相同(图<a href="#Fig13"> 5-13 </a>，其中<em class="EmphasisTypeItalic "> α </em>为常数因子。<p> <img alt="$$ f(x)=\left\{\begin{array}{c}x\ for\ x\ge 0\\ {}\alpha x\ for\ x&amp;lt;0\end{array}\right. $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equr.png" style="width:10.36em"/> </p></p>
+<p>这个函数的导数是<p> <img alt="$$ {f}^{\prime }(x)=\left\{\begin{array}{c}1\ for\ x\ge 0\\ {}\alpha\ for\ x&amp;lt;0\end{array}\right. $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equs.png" style="width:10.11em"/> </p></p>
+
+<h3 class="Heading">Swish 激活功能</h3>
+<p>这是一个相对较新的激活功能。它由谷歌大脑团队于 2017 年推出。研究表明，通过将 ReLu 函数替换为 Swish 函数，分类精度在<em class="EmphasisTypeItalic "> ImageNet 模型</em>中提高了 0.9%，在<em class="EmphasisTypeItalic "> Inception_ResNet-v2 模型</em>中提高了 0.6%(图<a href="#Fig14"> 5-14 </a>)。这里提供了函数的方程式:<p> <img alt="$$ f(x)=x\ast sigmoid(x)=x\ast \left(\frac{1}{1+\mathit{\exp}\left(-x\right)}\right) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equt.png" style="width:18.78em"/> </p></p>
+<p>这个函数的导数由<p> <img alt="$$ {f}^{\prime }(x)=f(x)+ sigmoid(x)\ast \left(1-f(x)\right) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equu.png" style="width:16.72em"/> </p>给出</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig14_HTML.png" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig14_HTML.png" style="width:26.68em"/></p>
+<p>图 5-14</p><p class="SimplePara">Swish 函数</p>
+
+
+
+<h3 class="Heading">Softmax 函数</h3>
+<p>这个函数的方程式是<p> <img alt="$$ f(x)=\frac{e^{Xi}}{\sum \limits_j{e}^{Xj}} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equv.png" style="width:5.92em"/> </p></p>
+<p>当类别数为 3，且<em class="EmphasisTypeItalic "> x </em>值为[5，4，3]时，<em class="EmphasisTypeItalic "> f </em> ( <em class="EmphasisTypeItalic "> x </em>)计算为<p> <img alt="$$ f(5)=\frac{e^5}{e^5+{e}^4+{e}^3}=0.665 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equw.png" style="width:12.23em"/> </p></p>
+<p class="Para" id="Par79">对于其他类，值分别为 0.24 和 0.9。该激活函数用于多标签分类问题。具有较高概率的类被选为最终输出。在这种情况下，模型将选择“Class 1”作为输出。</p>
+
+
+<h2 class="Heading">批量标准化</h2>
+<p class="Para" id="Par80">我们已经讨论了在模型训练过程中使用小批量的优势。然而，当输入的分布在批次之间变化时，这就变得棘手了。这将使算法训练的时间稍微长一点，以达到最优解。您可以使用批处理规范化来解决这个问题。概念很简单。对每一批的输入数据进行标准化，并根据标准化的批数据训练模型。这样会让模型的学习过程更加稳定，算法收敛速度也会快很多。这个概念在训练深度神经网络的时候更强大。</p>
+
+<h2 class="Heading">拒绝传统社会的人</h2>
+<p class="Para" id="Par81">有时一个模型会过分强调一个单一的输入，而在训练过程中忽略其他的输入。这可能导致过度拟合(我们将在下一章探讨这个概念)并在学习过程中引入偏差。当您处理连续和二元输入变量来训练模型时，这种情况会经常发生。假设您输入了<em class="EmphasisTypeItalic ">年龄</em>和<em class="EmphasisTypeItalic ">性别</em>。在这种情况下，模型会给年龄更多的权重，因为它有更多的唯一值，而不会给性别类似的权重。为了克服这个问题，您可以使用一种称为 Dropout 的正则化技术。在训练期间，一些隐藏层(神经网络)输出被随机丢弃。这样，算法将不会总是依赖于<em class="EmphasisTypeItalic ">年龄</em>变量来预测输出，从而避免偏差和过拟合。</p>
+
+<h2 class="Heading">监督机器学习算法</h2>
+<p>我们已经学习了所有相关的概念。现在，让我们深入研究每一种机器学习算法。在整个部分中，我们将使用银行数据集。接下来的代码是所有机器学习算法的起始代码。</p>
+<pre># read the data
+filename = "bank-full.csv"
+
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+data = spark.read.csv(filename, header=True, inferSchema=True, sep=';')
+data.show()
+
+# assemble feature vectors
+from pyspark.ml.feature import VectorAssembler
+
+# assemble individual columns to one column - 'features'
+def assemble_vectors(df, features_list, target_variable_name):
+    stages = []
+    #assemble vectors
+    assembler = VectorAssembler(inputCols=features_list, outputCol="features")
+    stages = [assembler]
+    #select all the columns + target + newly created 'features' column
+
+
+
+    selectedCols = [target_variable_name, 'features'] + features_list
+    #use pipeline to process sequentially
+    pipeline = Pipeline(stages=stages)
+    #assembler model
+    assembleModel = pipeline.fit(df)
+    #apply assembler model on data
+    df = assembleModel.transform(df).select(selectedCols)
+    return df
+
+</pre>
+<h3 class="Heading">线性回归</h3>
+<p>线性回归用于预测连续结果；例如，预测房价或预测客户的终身价值。该算法假设输入和输出之间的关系是线性的。当你用一个输入来预测输出时，就叫做简单线性回归。当您使用多个输入来预测输出时，它被称为多元线性回归。概念如图<a href="#Fig15"> 5-15 </a>所示。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig15_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig15_HTML.jpg" style="width:29.52em"/></p>
+<p>图 5-15</p><p class="SimplePara">线性回归</p>
+
+
+<p>看图，哪条线更符合数据？我们的目标是基于<em class="EmphasisTypeItalic "> X </em>的值得到对<em class="EmphasisTypeItalic "> Y </em>的最佳可能估计。在这种情况下，蓝线比提供的所有其他线更适合数据。黑线是<em class="EmphasisTypeItalic "> Y </em>值的平均值，在本例中为 3.9。其他线条(橙色和灰色)不太适合。嗯，我是怎么得出这个结论的？我使用平方误差算法来计算每条线的误差，并选择误差最小的一条线。这些步骤是一个简单的线性回归模型。因为我寻找一条误差最小的直线，所以这也被称为普通最小二乘或最小二乘回归。默认情况下，PySpark 使用<em class="EmphasisTypeItalic ">平方误差</em>作为损失函数。线性回归可以用下面的等式表示:<p> <img alt="$$ y={\beta}_0+{\beta}_1\ast {x}_1+{\beta}_2\ast {x}_2+\kern0.5em \dots \dots \dots +{\beta}_n\ast {x}_n $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equx.png" style="width:20.61em"/> </p></p>
+<p>其中，<em class="EmphasisTypeItalic "> β </em> <sub> 0 </sub>为截距，<em class="EmphasisTypeItalic "> n </em>为线性回归模型中变量的个数。让我们使用 PySpark 拟合一个线性回归模型并分析输出。目标是<em class="EmphasisTypeItalic ">余额</em>变量，输入是其余的连续变量:<em class="EmphasisTypeItalic ">年龄、天数、持续时间、活动、天数、先前。</em></p>
+<pre>#select the variables
+linear_df = data.select(['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous'])
+target_variable_name = 'balance'
+
+#exclude target variable and select all other feature vectors
+features_list = linear_df.columns
+#features_list = char_vars #this option is used only for ChiSqselector
+features_list.remove(target_variable_name)
+
+# apply the function on our DataFrame
+df = assemble_vectors(linear_df, features_list, target_variable_name)
+
+# fit the regression model
+from pyspark.ml.regression import LinearRegression
+reg = LinearRegression(featuresCol='features', labelCol="balance")
+reg_model = reg.fit(df) # fit model
+# view the coefficients and intercepts for each variable
+import pandas as pd
+
+
+
+for k, v in df.schema["features"].metadata["ml_attr"]["attrs"].items():
+    features_df = pd.DataFrame(v)
+# print coefficient and intercept
+print(reg_model.coefficients, reg_model.intercept)
+features_df['coefficients'] = reg_model.coefficients
+
+# prediction result
+pred_result = reg_model.transform(df)
+
+</pre>
+<p>图<a href="#Fig16"> 5-16 </a> ( <code>features_df</code>数据集)中提供了回归系数。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig16_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig16_HTML.jpg" style="width:11.8em"/></p>
+<p>图 5-16</p><p class="SimplePara">回归系数</p>
+
+
+<p>要在一个等式中表示这个模型，您需要编写以下内容:</p>
+<pre>Predicted_balance = 124.92 + 28.08 * age + 3.30 * day +
+           0.25 * duration + -14.14 * campaign
+          -0.08 * pdays + 23.46 * previous
+
+</pre>
+<h4 class="Heading">解释线性回归模型</h4>
+<p>让我们看看<em class="EmphasisTypeItalic ">年龄</em>变量在模型中的意义。为此，我们将为每个输入取一些示例值，并将它们代入前面的等式。</p>
+<pre>{Age:33, day:5, duration:76, campaign:1, pdays:-1, previous:0}
+
+Predicted_balance = 124.92 + 28.08 * 33 + 3.30 * 5 +
+           0.25 * 76 + -14.14 * 1
+          -0.08 * -1 + 23.46 * 0 = 1073
+
+</pre>
+<p>太完美了。现在，让我们将年龄值增加到 34，其余保持不变。再次做同样的计算，我们得到</p>
+<pre>Predicted_balance = 1101.8
+
+Difference in prediction due to age increase = 1101.8 – 1073 = 28.08
+
+</pre>
+<p>好了，现在我们明白年龄的影响了。通俗地说，年龄增加 1，预测余额增加 28(取整值)，反之亦然。这很容易转化为业务逻辑，并且可以基于该值做出决策。我们可以用类似的方式解释其他输入变量。解释线性回归模型时要考虑的主要事项如下:</p>
+<ol><li class="ListItem"><p class="Para" id="Par91">保持所有其他变量不变，除了你试图解释的变量。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par92">选择输入变量的系数，用通俗易懂的语言来解释。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par93">完美。但是，这里有一个小问题，我们接下来会讨论。</p>
+
+<h4 class="Heading">多重共线性</h4>
+<p class="Para" id="Par94">在解释回归模型时，我们保持所有变量不变，只有一个变量除外。如果我们试图解释的变量与数据集中的另一个输入变量相关，该怎么办？让我们假设年龄和持续时间在我们的数据中是相关的。在这种情况下，当您增加<em class="EmphasisTypeItalic ">年龄</em>变量时，固有的<em class="EmphasisTypeItalic ">持续时间</em>值也会增加。在这种情况下，您无法保持<em class="EmphasisTypeItalic ">持续时间</em>变量不变。所以在这个过程中失去了可解释性。这个问题叫做多重共线性。</p>
+<p class="Para" id="Par95">当两个或多个变量相关时，模型结果是不可解释的。在线性回归模型中，我们应该避免多重共线性问题。否则，模型输出无效。</p>
+<p>我们可以使用方差膨胀因子(VIF)来检查多重共线性。VIF 值的行业标准是 10。您可以根据需要调整该值。当 VIF 值为 1 时，输入要素完全不相关。PCA 成分的 VIF 通常接近 1。在我们最终的模型中，我们应该包括 VIF 值小于 10 的输入变量。这里提供了计算 VIF 的公式:<p> <img alt="$$ VIF=\frac{1}{1-{R}^2} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equy.png" style="width:6.36em"/> </p></p>
+<p>PySpark 中的 VIF 代码如下:</p>
+<pre>def vif_calculator(df, features_list):
+    vif_list = []
+    for i in features_list:
+        temp_features_list = features_list.copy()
+        temp_features_list.remove(i)
+        temp_target = i
+        assembler = VectorAssembler(inputCols=temp_features_list, outputCol="features")
+        temp_df = assembler.transform(df)
+        reg = LinearRegression(featuresCol='features', labelCol=i)
+        reg_model = reg.fit(temp_df) # fit model
+        temp_vif = 1/(1 - reg_model.summary.r2)
+        vif_list.append(temp_vif)
+
+
+
+    return vif_list
+features_df['vif'] = vif_calculator(linear_df, features_list)
+print(features_df)
+
+</pre>
+Note
+<p class="Para FirstParaInFormalPara" id="Par98"><code>linear_df</code> <em class="EmphasisTypeItalic ">代替了</em> <code>df</code> <em class="EmphasisTypeItalic ">。确保数据集不存在名为</em> <code>features</code> <em class="EmphasisTypeItalic ">的列。否则，这个函数将抛出一个错误。</em></p>
+
+<p>所有输入的 VIF 小于 10(图<a href="#Fig17"> 5-17 </a>)。因此，我们的模型特征中不存在多重共线性问题。当您想要寻找产生最佳线性回归模型的最佳子集特征时，您需要查看 Mallows 的 C <sub> p </sub>因子。这个概念超出了本书的范围。在下一章，我们将看看不同的方法来验证一个回归模型，并选择最好的一个。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig17_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig17_HTML.jpg" style="width:14.78em"/></p>
+<p>图 5-17</p><p class="SimplePara">超低频辐射</p>
+
+
+The VIF for all the 
+
+<h3 class="Heading">逻辑回归</h3>
+<p>逻辑回归是一种分类算法。我们使用这种算法来预测二元结果——一个人是否会购买，流失与不流失，垃圾邮件与非垃圾邮件，等等。类似于线性回归，它在数据上拟合一条线来分离二元结果。然而，最佳拟合线是基于最大似然估计来决定的。首先，让我们来看一个逻辑回归模型的方程:<p> <img alt="$$ \mathit{\log}\left(\frac{p}{1-p}\right)={\beta}_0+{\beta}_1\ast {x}_1+{\beta}_2\ast {x}_2+\kern0.5em \dots \dots \dots +{\beta}_n\ast {x}_n $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equz.png" style="width:24.97em"/> </p></p>
+<p>逻辑回归的方程不同于左边部分的线性回归方程。这个分量<img alt="$$ \mathit{\log}\left(\frac{p}{1-p}\right) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq5.png" style="width:3.99em"/>，被称为<em class="EmphasisTypeItalic "> log(odds) </em>。为什么<em class="EmphasisTypeItalic "> log(赔率)</em>？请看图<a href="#Fig18"> 5-18 </a>。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig18_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig18_HTML.jpg" style="width:41.32em"/></p>
+<p>图 5-18</p><p class="SimplePara">逻辑回归量表与对数优势量表</p>
+
+
+<p>左边的图<a href="#Fig18"> 5-18 </a>显示了我们想要拟合回归线的数据。通过将 0/1 标度转换为<em class="EmphasisTypeItalic ">对数(几率)</em>标度，我们可以在(-无穷大，+无穷大)范围内映射我们的数据。在此范围内，逻辑回归拟合最佳直线。</p>
+<pre>Log(odds) positive range = log(1/0) = log(1) – log(0) = +Infinity
+Log(odds) negative range = log(0/1) = log(0) = -Infinity
+Log(odds = 0.5) = Log(0.5/0.5) = log(1) = 0
+
+</pre>
+<p class="Para" id="Par103">所以 0.5 概率是中点。如上所述，最佳拟合是基于最大似然估计来确定的。那是什么？</p>
+<h4 class="Heading">最大似然估计或最大对数似然</h4>
+<p>我们选择一条如图<a href="#Fig19"> 5-19 </a>左侧所示的候选线，并将我们的数据点投射到这条线上。在这个过程中，我们最终获得了基于该线的每个数据点的<em class="EmphasisTypeItalic "> log(odds) </em>值。我们将<em class="EmphasisTypeItalic ">对数(赔率)</em>转换为概率标度，这样我们就可以将拟合线转换为类似于左图所示的 Sigmoid 函数。这是使用下面的等式完成的:<p> <img alt="$$ \mathit{\log}\left(\frac{p}{1-p}\right)=\mathit{\log}(odds) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equaa.png" style="width:10.6em"/> </p></p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig19_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig19_HTML.jpg" style="width:41.32em"/></p>
+<p>图 5-19</p><p class="SimplePara">最大似然估计</p>
+
+
+We pick a <p><p> <img alt="$$ \frac{p}{1-p}={e}^{\mathit{\log}(odds)} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equab.png" style="width:7.44em"/>这个意思是</p></p>
+<p>解这个方程，我们得到<p> <img alt="$$ p=\frac{e^{\mathit{\log}(odds)}}{1+{e}^{\mathit{\log}(odds)}}=\frac{1}{1+{e}^{-\mathit{\log}(odds)}}=\frac{1}{1+{e}^{-x}}\kern0.5em = sigmoid\ function $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equac.png" style="width:28.42em"/> </p></p>
+<p class="Para" id="Par107">其中，<em class="EmphasisTypeItalic "> x </em> = <em class="EmphasisTypeItalic "> log(赔率)</em>。我们有每次观察的概率值。让我们开始计算这条线的 MLE。</p>
+Note
+<p class="Para FirstParaInFormalPara" id="Par108">在 MLE 计算过程中，当目标为 1 时使用<em class="EmphasisTypeItalic "> p </em>，当目标为 0 时使用 1- <em class="EmphasisTypeItalic "> p </em>。</p>
+
+<p>
+ 
+</p>
+<pre>Likelihood = prob (1st observation) * prob (2st observation) * ..... prob (nth observation)
+
+</pre>
+<p>其中<em class="EmphasisTypeItalic "> n </em>是数据中的观察总数，prob 是概率。取两边的对数，我们得到如下结果:</p>
+<pre>Log(likelihood) = log (prob 1st) + log (prob 2nd) + ...... + log (prob nth)
+
+</pre>
+<p class="Para" id="Par111">这是我们试图在逻辑回归中最大化的方程。因此，我们称这个过程为最大对数似然估计。我们通过旋转<em class="EmphasisTypeItalic ">对数(赔率)</em>线并每次计算<em class="EmphasisTypeItalic ">对数(可能性)</em>来重复这个过程。最后，最大化<em class="EmphasisTypeItalic ">对数(可能性)</em>结果的线是最佳拟合线。</p>
+
+<h4 class="Heading">你如何旋转线条来找到最合适的？解决者（solver 的复数形式）</h4>
+<p class="Para" id="Par112">解算器可用于沿最大似然值的方向旋转直线，并减少获得适当拟合所需的迭代次数。在 PySpark 中，默认的求解器是 lbfgs，也称为有限内存 Broyden Fletcher Goldfarb Shanno。</p>
+
+<h4 class="Heading">二元分类与多项式分类</h4>
+<p>Sigmoid 函数由公式给出，<p> <img alt="$$ p(x)=\frac{e^{\mathit{\log}(odds)}}{1+{e}^{\mathit{\log}(odds)}}=\frac{e^x}{e^0+{e}^x} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equad.png" style="width:13.05em"/> </p></p>
+<p>这里，<em class="EmphasisTypeItalic "> e </em> <sup> 0 </sup>对应于基线模型，是二进制结果中的 0 类。<em class="EmphasisTypeItalic "> e </em> <sup> <em class="EmphasisTypeItalic "> x </em> </sup>对应于 1 类。以类似的方式，我们可以将相同的公式应用于多类问题。假设您有类<em class="EmphasisTypeItalic "> a </em>、<em class="EmphasisTypeItalic "> b </em>和<em class="EmphasisTypeItalic "> c </em>。每一类的概率由<p> <img alt="$$ p(a)=\frac{e^{\mathit{\log}(odds)}}{1+{e}^{\mathit{\log}(odds)}}=\frac{e^a}{e^a+{e}^b+{e}^c} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equae.png" style="width:15.06em"/> </p>给出</p>
+<p class="Para" id="Par115">对于其他类，相应的<em class="EmphasisTypeItalic "> e </em>元素将被放入分子中。如前所述，这就是 SoftMax 函数。现在，你知道了 Sigmoid 和 SoftMax 之间的联系。二进制和多类的另一个需要考虑的是链接函数。一般来说，我们对二元目标使用 logit ( <img alt="$$ \mathit{\log}\left(\frac{p}{1-p}\right)\Big) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq6.png" style="width:4.54em"/>链接函数。对于多项式，您可以对名义目标使用 probit，对顺序目标使用 clog-log。在 PySpark 中，您可以通过设置逻辑回归算法中的<em class="EmphasisTypeItalic ">族</em>选项来完成二元或多项式拟合。</p>
+
+<h4 class="Heading">PySpark 代码</h4>
+<p class="Para" id="Par116">在这个练习中，目标变量是银行数据集中的<em class="EmphasisTypeItalic "> y </em>，输入预测值是<em class="EmphasisTypeItalic ">年龄、余额、天数、持续时间、活动、天数、前一天。</em>目标<em class="EmphasisTypeItalic "> y </em>是二进制类<em class="EmphasisTypeItalic ">。</em></p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Figa_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Figa_HTML.jpg" style="width:7.38em"/></p>
+
+<p>
+ 
+</p>
+<pre>target_variable_name = "y"
+logistic_df = data.select(['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous', 'y'])
+#exclude target variable and select all other feature vectors
+features_list = logistic_df.columns
+#features_list = char_vars #this option is used only for ChiSqselector
+features_list.remove(target_variable_name)
+# apply the function on our dataframe
+df = assemble_vectors(logistic_df, features_list, target_variable_name)
+
+</pre>
+<p>我们将使用相同的目标展示二元和多项式拟合，尽管当目标有两个以上的类时，最好使用多项式拟合。</p>
+<pre>import numpy as np
+from pyspark.ml.classification import LogisticRegression
+binary_clf = LogisticRegression(featuresCol='features', labelCol="y", family="binomial")
+multinomial_clf = LogisticRegression(featuresCol='features', labelCol="y", family="multinomial")
+binary_clf_model = binary_clf.fit(df) # fit binary model
+multinomial_clf_model = multinomial_clf.fit(df) # fit multinomial model
+np.set_printoptions(precision=3, suppress=True)
+#model coefficients for binary model
+print(binary_clf_model.coefficients)
+#model coefficients for multinomial model
+np.set_printoptions(precision=4, suppress=True)
+print(multinomial_clf_model.coefficientMatrix)
+print(binary_clf_model.intercept) #model intercept for binary model
+#model intercept for multinomial model
+print(multinomial_clf_model.interceptVector)
+
+</pre>
+<p>这里提供了二元模型的等式:</p>
+<pre>log(odds class1) = -3.47 + 0.008*age + 0*balance -0.0017*day + 0.0036*duration - 0.128*campaign + 0.0021*pdays + 0.0859*previous
+
+</pre>
+<p>类似地，这里提供了多项式模型的等式:</p>
+<pre>log(odds class0) = 1.735 -0.004*age – 0*balance + 0.0008*day - 0.0018*duration + 0.064*campaign - 0.0011*pdays - 0.043*previous
+
+</pre>
+<p>和</p>
+<pre>log(odds class1) = -1.735 +0.004*age + 0*balance - 0.0008*day + 0.0018*duration - 0.064*campaign + 0.0011*pdays + 0.043*previous
+
+</pre>
+<p class="Para" id="Par122">在多项式模型输出中，当您从类 0 系数中减去类 1 系数时，您将获得类 1 的二进制模型系数。同样的事情也适用于拦截。好了，现在让我们来解释模型结果</p>
+
+<h4 class="Heading">解释模型结果</h4>
+<p class="Para" id="Par123">让我们经历我们用于线性回归系数解释的相同过程，保持所有变量不变，并改变我们试图解释的变量。</p>
+<h5 class="Heading">二元变量解释</h5>
+<p>对于二元变量，我们使用前面的等式计算两个类的<em class="EmphasisTypeItalic "> log(odds) </em>。假设我们的模型中有性别(男性= 0，女性= 1)。然后，性别的影响通过以下方式衡量:</p>
+<pre>log(odds class 1|Male) = Intercept + 0.16 * 0 + coef2 * var2 + ......
+log(odds class 1|Female) = Intercept + 0.16 * 1 + coef2 * var2 + ......
+log(odds class 1|Female) - log(odds class 1|Male) = 0.16
+
+</pre>
+<p class="Para" id="Par125">通过保持所有其他因素不变，我们得到二元变量的系数作为<em class="EmphasisTypeItalic "> log(odds) </em>中的差值。解释该系数的最佳方式是使用赔率。就这么办吧。</p>
+<p>Log( <img alt="$$ \frac{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Female}}{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Male}}\Big) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq7.png" style="width:6.9em"/> = 0.16 <p> <img alt="$$ \frac{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Female}}{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Male}}={e}^{0.16}=1.173 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equaf.png" style="width:16.37em"/> </p></p>
+<p class="Para" id="Par127">我们用前面的值和 1 之间的差来解释概率。女性在 1 班的几率比男性在 1 班的几率高 17%。</p>
+
+<h5 class="Heading">连续变量解释</h5>
+<p>让我们对年龄进行同样的计算。</p>
+<pre>log(odds class 1|Age = 29) = Intercept - 0.32 * 29 + coef2 * var2 + ......
+log(odds class 1|Age = 30) = Intercept – 0.32 * 30 + coef2 * var2 + ......
+log(odds class 1| Age = 30) - log(odds class 1| Age = 29) = -0.32
+
+</pre>
+<p>Log( <img alt="$$ \frac{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Age}=30}{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Age}=29}\Big) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq8.png" style="width:7.17em"/> = -0.32 <p> <img alt="$$ \frac{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Age}=30}{\mathrm{odds}\ \mathrm{class}\ 1\mid \mathrm{Age}=29}={\mathrm{e}}^{-0.32}=0.73 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equag.png" style="width:17.29em"/> </p></p>
+<p class="Para" id="Par130">现在，1–0.73 = . 27。当年龄增加一个单位时，一个人在 1 班的几率会降低 27%。</p>
+<p>以下是解释优势比的经验法则:</p>
+<ol><li class="ListItem"><p class="Para" id="Par132">优势比为 1 表示影响没有差异。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par133">比值比大于 1 意味着比值随着变量的变化而增加。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par134">比值比小于 1 意味着比值随着变量的变化而降低。</p>
+ </li>
+</ol>
+
+
+
+
+<h3 class="Heading">决策树</h3>
+<p class="Para" id="Par135">到目前为止，我们已经讨论了回归和分类的线性方法。从这一节开始，我们将讨论可以用来解决问题的非线性方法。总的来说，决策树背后的思想是生成一组“如果-那么规则”，并以树的形式表示出来。让我们设想一个简单的信用卡审批决策树。</p>
+<h4 class="Heading">决策树的解释</h4>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par137">树的根/父节点是年龄可变的。因此，它是这个决策树最重要的特征。</p></li>
+<li><p class="Para" id="Par138">叶节点是可以基于输入变量做出的决策。</p></li>
+</ul>
+
+<p>让我们针对这些条件遍历树(图<a href="#Fig20"> 5-20 </a>)。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig20_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig20_HTML.jpg" style="width:39.85em"/></p>
+<p>图 5-20</p><p class="SimplePara">信用卡审批决策树</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">年龄= 20，职业=学生，信用分= 800</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">年龄= 35，职业=就业，信用评分= 750</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">年龄&lt; 25；真实的</p>
+<p class="SimplePara">学生？真实的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">年龄&lt; 25；错误的</p>
+<p class="SimplePara">年龄&lt; 60；真实的</p>
+<p class="SimplePara">信用评分&gt; 720</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">最终裁决=未批准</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">最终裁决=批准</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>现在，我们知道年龄是最重要的属性。决策树是怎么挑选这个变量的？为了理解为什么，我们需要涵盖基尼系数、熵和信息增益。让我们逐一查看(表<a href="#Tab3"> 5-3 </a>)。</p>
+<p>表 5-3</p><p class="SimplePara">算法规范</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">算法/分割标准</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">树的类型</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">基尼杂质</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">分类和回归树</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">熵&amp;信息增益</strong></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">ID3/C4.5</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>在整个练习中，我们将使用表<a href="#Tab4"> 5-4 </a>中所示的数据集。我们数据的目标是具有两个级别的信用卡批准——批准/未批准。</p>
+<p>表 5-4</p><p class="SimplePara">练习数据集</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">年龄</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">性别</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">批准/未批准</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 30 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">男性的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">未批准</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 25 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">女性的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">被认可的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 45 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">男性的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">被认可的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 57 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">女性的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">未批准</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 27 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">男性的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">被认可的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 54 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">女性的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">被认可的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 35 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">女性的</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">未批准</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h4 class="Heading">熵</h4>
+<p>熵是数据随机性的度量。计算熵的公式是<p> <img alt="$$ Entropy=-\sum p(x)\ {\mathit{\log}}_2p(x) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equah.png" style="width:13.46em"/> </p></p>
+<p class="Para" id="Par143">它的范围在 0 和 1 之间。当没有随机性时，熵为 0，当数据集完全随机时，熵为 1。让我们用下面的例子来理解熵。</p>
+<p class="Para" id="Par144">我们有两个包。在第一个袋子里，有四个蓝色的球，没有红色的球。在第二个包里，我们有两个蓝色的球和两个红色的球。计算两个袋子的熵。</p>
+<p><strong class="EmphasisTypeBold ">袋 1 熵</strong></p>
+<pre>Probability of picking blue ball in bag 1 = 4/4 = 1
+Probability of picking red ball in bag 1 = 0/4 = 0
+Entropy = - (1 * log(1) + 0* log(0)) = 0
+
+</pre>
+<p><strong class="EmphasisTypeBold ">袋 2 熵</strong></p>
+<pre>Probability of picking blue ball in bag 2 = 2/4 = 0.5
+Probability of picking red ball in bag 2 = 2/4 = 0.5
+Entropy = - (0.5 * log(0.5) + 0.5* log(0.5)) = 1
+
+</pre>
+<p class="Para" id="Par147">让我们扩展一下这个例子，给你一个选择来挑选一个包。当你选择一个蓝色的球时，你就赢得了游戏。你会选择哪个包？</p>
+<p class="Para" id="Par148">答案是显而易见的。你选择第一个袋子，因为它全是蓝色的球。当熵为 0 时，结果是确定的，而当熵为 1 时，结果是随机的。我们将在机器学习中使用这种方法来构建决策树。</p>
+<p class="Para" id="Par149">让我们切换回我们的示例数据，计算年龄和性别的熵。这一次我们将计算被批准的概率。出于演示的目的，让我们根据 30 岁以上和 30 岁以下来拆分<em class="EmphasisTypeItalic ">年龄</em>变量。</p>
+<p><strong class="EmphasisTypeBold ">目标熵(批准/未批准)-父熵:</strong></p>
+<pre>Probability of approved = 4/7 = 0.57
+Probability of not approved = 3/7 = 0.43
+Entropy of parent node = - (0.57 * log(0.57) + 0.43 * log(0.43)) = 0.99
+
+</pre>
+<p><strong class="EmphasisTypeBold ">年龄变量的熵:</strong></p>
+<pre>Probability of approved when age &gt;= 30 = 2/5 = 0.4
+Probability of not approved when age &gt;= 30 = 3/5 = 0.6
+Probability of approved when age &lt; 20 = 2/2 = 1
+Probability of not approved when age &lt; 20 = 0/2 = 0
+
+Entropy(Age &gt;= 30) = - (0.4 * log(0.4) + 0.6* log(0.6)) = 0.97
+Entropy(Age &lt; 30) = - (1 * log(1) + 0 * log(0)) = 0
+
+</pre>
+<p><strong class="EmphasisTypeBold ">性别变量的熵:</strong></p>
+<pre>Probability of approved when female = 2/4 = 0.5
+Probability of not approved when female = 2/4 = 0.5
+Probability of approved when male = 2/3 = 0.67
+Probability of not approved when male = 1/3 = 0.33
+
+Entropy(Gender = Female) = - (0.5 * log(0.5) + 0.5* log(0.5)) = 1
+Entropy(Gender = Male) = - (0.67 * log(0.67) + 0.33 * log(0.33)) = 0.92
+
+
+
+
+</pre>
+
+<h4 class="Heading">信息增益</h4>
+<p>到目前为止，我们已经计算了每个变量的熵。现在，是时候决定去根/父节点的变量了。为了做出这个决定，我们将使用信息增益。信息增益告诉我们在每次拆分中获得的知识。我们正试图最大限度地提高我们对信用卡审批的认识。因此，我们将尝试最大化每次拆分中的信息增益。它使用以下公式计算:</p>
+<pre>Information Gain, IG = Entropy (parent node) – (Entropy each child node * proportion of observations in each child node)
+
+</pre>
+<p>我们来计算一下各个变量的信息。由于年龄&gt; = 30 岁时进行了五次观察，年龄&lt; 30 岁时进行了两次观察，因此信息增益由下式给出</p>
+<pre>IG (age &gt;= 30)  = 0.99 – (0.97 * 5/7 + 0 * 2/7) = 0.29
+
+</pre>
+<p>同样，性别的 IG 由下式给出</p>
+<pre>IG gender = 0.99 – (1 * 4/7 + 0.92 * 3/7) = 0.02
+
+</pre>
+<p>变量<em class="EmphasisTypeItalic ">年龄</em>比变量<em class="EmphasisTypeItalic ">性别</em>具有更高的信息增益。因此，我们将选择<em class="EmphasisTypeItalic ">年龄</em>作为我们的根节点。我们将基于这个条件开始构建我们的树(图<a href="#Fig21"> 5-21 </a>)。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig21_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig21_HTML.jpg" style="width:17.72em"/></p>
+<p>图 5-21</p><p class="SimplePara">信息增益第一分割</p>
+
+
+<p>基于我们现在的模式，一个人的年龄在 30 岁以下，信用卡是批下来的。我们现在的工作是找出下一次分裂。我们将再次重复相同的过程。对于<em class="EmphasisTypeItalic ">年龄</em>，我们这次用 45 作为分界点。</p>
+<pre>Entropy (Age &gt;=45) = - (0.67 * log(0.67) + 0.33 * log(0.33)) = 0.92
+Entropy (Age &lt; 45) = - (0 * log(0) + 1* log(1)) = 0
+Entropy (Gender = Female) = -(0.33*log(0.33) + 0.67 * log(0.67))= 0.92
+Entropy (Gender = Male) = - (0.5 * log(0.5) + 0.5* log(0.5)) = 1
+IG (age &gt;= 45)  = 0.97 – (0.92 * 3/5 + 0 * 2/5) = 0.418
+IG (Gender) = 0.97 – (0.92 * 3/5 + 1 * 2/5) = 0.018
+
+</pre>
+<p>同样，<em class="EmphasisTypeItalic ">年龄</em>的信息增益高于<em class="EmphasisTypeItalic ">性别</em>变量的信息增益。因此，我们的下一个分割将看起来像图<a href="#Fig22"> 5-22 </a>。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig22_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig22_HTML.jpg" style="width:23.62em"/></p>
+<p>图 5-22</p><p class="SimplePara">信息增益秒分裂</p>
+
+
+<p>对于下一次拆分，我们将使用<em class="EmphasisTypeItalic ">年龄</em>作为 60，并重复相同的过程。</p>
+<pre>IG (age &gt;= 60) = 0.92 – (0 * 0 + 0.92) = 0
+IG (Gender) = 0.92 – (0 * 1/3 + 1 * 2/3) = 0.25
+
+</pre>
+<p>在这种分裂之后，只有两个观察结果，因为两个都是女性，我们不能再使用性别。因此，我们将根据年龄进行拆分，最终得到如图<a href="#Fig23"> 5-23 </a>所示的树。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig23_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig23_HTML.jpg" style="width:23.62em"/></p>
+<p>图 5-23</p><p class="SimplePara">基于信息增益的最终树</p>
+
+
+<p class="Para" id="Par162">仅此而已。当您获得新数据时，您运行决策树以获得输出。ID3、C4.5 和 C5.0 决策树是使用熵/信息增益构建的。</p>
+
+<h4 class="Heading">基尼杂质</h4>
+<p>让我们看看另一种形成决策树的方法，基尼不纯。你不应该混淆这个概念和基尼系数。基尼系数衡量的是分割后的不纯度。基尼系数的公式如下:<p> <img alt="$$ Gini=1-\sum {\left(p(x)\right)}^2 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equai.png" style="width:9.74em"/> </p></p>
+<p>基尼系数的范围在 0 到 1 之间。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par165">当值为 0 时，拆分是纯的，没有杂质。</p></li>
+<li><p class="Para" id="Par166">当值为 0.5 时，分割是随机的，并且完全不纯。这两个类在数据中出现的次数相等。</p></li>
+<li><p class="Para" id="Par167">当其中一个子节点中没有一个数据点时，任何大于 0.5 的值都可能发生。在我们的示例数据集中，当我们考虑年龄&gt; =60 时，这种分割的基尼系数将大于 0.5，因为我们没有任何年龄大于 60 的数据点。</p></li>
+</ul>
+
+<p class="Para" id="Par168">让我们以红/蓝球为例计算基尼不纯度来理解这个概念。</p>
+<p><strong class="EmphasisTypeBold ">基尼杂质-袋子 1 </strong></p>
+<pre>Probability of picking blue ball in bag 1 = 4/4 = 1
+Probability of picking red ball in bag 1 = 0/4 = 0
+Gini = 1 - (1 * 1 + 0 * 0) = 0
+
+</pre>
+<p><strong class="EmphasisTypeBold ">基尼杂质–袋子 2 </strong></p>
+<pre>Probability of picking blue ball in bag 2 = 2/4 = 0.5
+Probability of picking red ball in bag 2 = 2/4 = 0.5
+Gini = 1 - (0.5 * 0.5 + 0.5 * 0.5) = 0.5
+
+</pre>
+<p><strong class="EmphasisTypeBold ">基尼杂质–袋子是空的</strong></p>
+<pre>Probability of picking blue ball in empty bag = 0
+Probability of picking red ball in empty bag = 0
+Gini = 1 - 0 = 1
+
+</pre>
+<p>同样，当你需要选择一个袋子时，你会选择基尼系数为 0 的袋子，因为你对结果有把握。让我们将基尼概念应用到我们的数据中来构建一个决策树。我们将遵循用于熵的相同步骤，计算每次分裂时的杂质。</p>
+<pre>Gini (Age &gt;= 30) = 1 - (2/5 * 2/5 + 3/5 * 3/5) = 0.48
+Gini (Age &lt; 30) = 1 - (2/2 * 2/2 + 0/2 * 0/2) = 0
+Weighted Gini for Age &gt; = 30 = (5/7 * 0.48 + 2/7 * 0) = 0.34
+
+Gini (Gender = Female) = 1 – (2/4 * 2/4 + 2/4 * 2/4) = 0.5
+Gini (Gender = Male) = 1 = (1/3 * 1/3 + 2/3 * 2/3) = 0.44
+Weighted Gini for Gender = (4/7 * 0.5 + 3/7 * 0.44) = 0.48
+
+</pre>
+<p class="Para" id="Par173"><em class="EmphasisTypeItalic ">年龄</em>变量用于树中的第一次分裂。让我们继续这个过程，计算最终的树。你会得到与熵和信息增益完全相同的树。这是因为我们在年龄划分时对垃圾桶的选择。然而，情况并非总是如此。在现实世界的例子中，基尼不纯树将不同于熵和信息增益树。分类和回归树(CART)树是使用 Gini 杂质构建的。</p>
+<h5 class="Heading">变化</h5>
+<p>PySpark 创建决策树的另一种方法是使用方差。方差的公式为<p> <img alt="$$ Variance=\frac{\sum {\left(X- mean(X)\right)}^2}{n} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equaj.png" style="width:13.56em"/> </p></p>
+<p class="Para" id="Par175">这个概念用于构建回归树。您可以通过选择在每次分割时最小化方差的变量来继续分割树。决策树也可以使用卡方和相关性等其他标准来制作。概念还是一样的。我们选择卡方值最大化的变量。对于相关树，我们选择最小化相关性的变量。这些概念超出了本书的范围。</p>
+
+
+<h4 class="Heading">确定数值变量的临界值</h4>
+<p class="Para" id="Par176">在手工构建决策树时，我们使用了一个定制的年龄截止值。在决策树算法中，数字变量以不同的方式处理。对于小型数据集，每个唯一值都用作分界点。对于大型数据集，数值变量被分成特定数量的分位数。这是使用决策树算法中的<code>maxBins</code>选项设置的。在创建分位数之后，每个箱的平均值被用作分界点。让我们假设我们为<em class="EmphasisTypeItalic ">年龄</em>变量选择三个箱，我们在宁滨之后的分界点是 25、42 和 55。在每个分界点计算信息增益或基尼系数杂质，选择提供最佳结果的点进行分割。对于每次分割，对所有数值变量执行相同的过程。</p>
+
+<h4 class="Heading">修剪树/停止标准</h4>
+<p>修剪一棵树指的是砍掉不需要的叶节点。这样做是为了保持模型简单，避免过度拟合。我们将在下一章详细讨论过拟合。决策树容易过度拟合。除非加以控制，否则你将最终拥有一棵存储训练数据的树。可以使用以下选项在树中完成修剪:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par178"><code>maxDepth</code>–树的深度是指从根节点到叶节点所需的树遍历步数。默认情况下，树的最大深度是 5。</p></li>
+<li><p class="Para" id="Par179"><code>minInstancesPerNode</code>–使用该选项指定每个子节点中存在的最小样本数。当您将此选项设置为 5，并且分割产生的子节点少于 5 个观测值时，将不会发生分割。</p></li>
+<li><p class="Para" id="Par180"><code>minInfoGain</code>–树分割应提供至少这个指定数量的信息增益。当信息增益小于这个数时，分裂不会发生。</p></li>
+<li><p class="Para" id="Par181"><code>L1/L2 Regularization</code>–您可以使用该选项对决策树进行修剪。我们将在后面的章节中讨论这一点。</p></li>
+</ul>
+
+
+<h4 class="Heading">决策树分类的 PySpark 码</h4>
+<p>线性和逻辑回归拟合中使用的数据集分别被重命名为<code>continuous_df</code>和<code>binary_df</code>。</p>
+<pre>from pyspark.ml.classification import DecisionTreeClassifier
+
+clf = DecisionTreeClassifier(featuresCol='features', labelCol="y", impurity="gini") #gini based model
+clf_model = clf.fit(binary_df)
+clf2 = DecisionTreeClassifier(featuresCol='features', labelCol="y", impurity="entropy") #entropy based model
+clf_model2 = clf2.fit(binary_df)
+clf_model.transform(binary_df) #future predictions
+# gini feature importance
+print(clf_model.featureImportances)
+
+#output - (7,[0,3,5],[0.063,0.723,0.214])
+print(clf_model2.featureImportances)
+#output - (7,[0,2,3,4,5],[0.018,0.001,0.727,0.0004,0.254])
+
+</pre>
+<p class="Para" id="Par183">正如我们从前面的输出中看到的，基尼系数和熵值法产生了不同的树和不同的变量集。</p>
+
+<h4 class="Heading">决策树回归的 PySpark 代码</h4>
+<p>要拟合回归树，需要将杂质设置为方差。默认情况下，决策树回归使用方差方法。遗憾的是，PySpark 不支持这一点。</p>
+<pre>from pyspark.ml.regression import DecisionTreeRegressor
+
+reg = DecisionTreeRegressor(featuresCol='features', labelCol="balance", impurity="variance")
+reg_model = reg.fit(continuous_df)
+print(reg_model.featureImportances) #feature importance
+reg_model.transform(continuous_df) #future predictions
+
+</pre>
+<p>类似于分类树，我们可以解释输入变量的特征重要性。要查看决策树的 if-then 规则，可以使用以下代码:</p>
+<pre>clf_model.toDebugString
+reg_mode.toDebugString
+
+</pre>
+<p class="Para" id="Par186">您可以使用 Python 中的<code>Graphviz, pydot, or networkx</code>包来绘制这些决策树规则。</p>
+
+<h4 class="Heading">使用决策树的特征重要性</h4>
+<p>在前一章中，我们使用决策树来计算特征重要性。在本节中，我们将详细介绍如何计算这一成本。<p><img alt="$$ {f}_i=\sum \limits_{j: nodes\ splits\ on\ feature\ i}{s}_j\ast {G}_j $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equak.png" style="width:13.78em"/>T2】</p></p>
+<p>其中<p><img alt="$$ {f}_i=\mathrm{importance}\ \mathrm{of}\ \mathrm{feature} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equal.png" style="width:11.54em"/></p><p><img alt="$$ {s}_j=\mathrm{number}\ \mathrm{of}\ \mathrm{samples}\ \mathrm{in}\ \mathrm{node}\ j $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equam.png" style="width:14.79em"/></p><p><img alt="$$ {G}_j=\mathrm{impurity}\ \mathrm{value}\ \mathrm{of}\ \mathrm{node}\ j $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equan.png" style="width:13.25em"/></p></p>
+<p>在每个节点，我们计算基尼系数，并乘以通过该节点的样本数。如果一个变量在决策树中出现不止一次，则每个节点的输出会被加在一起，以获得该变量的最终特征重要性。最后，每个变量的特征重要性被归一化，使得它们都加到 1。这是使用下面的等式来完成的。假设我们有<em class="EmphasisTypeItalic "> n 个特性；</em>最后的特征重要性由<p> <img alt="$$ \mathrm{final}-{f}_i=\frac{f_i\ }{f_1+{f}_2+\dots \dots +{f}_n} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equao.png" style="width:14.04em"/> </p>给出</p>
+<p>其中<p><img alt="$$ {f}_1,{f}_2,..\dots, {f}_n\ \mathrm{are}\ \mathrm{the}\ \mathrm{individual}\ \mathrm{feature}\ \mathrm{importance}\ \mathrm{of}\ \mathrm{each}\ \mathrm{variable} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equap.png" style="width:29.55em"/></p><p><img alt="$$ {f}_i-\mathrm{feature}\ \mathrm{imporatance}\ \mathrm{of}\ \mathrm{the}\ {i}^{th}\ \mathrm{variable}\ \mathrm{calculated}\ \mathrm{using}\ \mathrm{the}\ \mathrm{previous}\ \mathrm{equation} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equaq.png" style="width:35.12em"/></p><p><img alt="$$ \mathrm{final}-{f}_i-\kern0.5em \mathrm{normalized}\ \mathrm{feature}\ \mathrm{importance}\ \mathrm{of}\ \mathrm{variable}\ i $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equar.png" style="width:24.42em"/></p></p>
+<p class="Para" id="Par191">您需要注意的是，要素重要性是根据训练数据集计算的。因此，当模型过度拟合时，特征重要性可能会有偏差。为了克服这一点，您可以使用适当的验证技术或使用排列重要性来计算特征重要性。我们将在下一章讨论验证技术。排列重要性的概念超出了本书的范围。我们现在可以转到其他基于树的技术。</p>
+
+
+<h3 class="Heading">随机森林</h3>
+<p>在决策树中，我们基于训练数据构建单个树。如果我们构建多棵树并聚合每棵树的结果来获得最终的预测，而不是单棵树，会怎么样呢？这就是随机森林背后的想法。随机森林是一个集合模型，建立在一个叫做装袋的概念上。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par193"><em class="EmphasisTypeItalic "> Ensemble </em>意为不同模特的集合。可以使用各种机器学习算法(如逻辑回归、决策树、神经网络等)来构建各个模型。最终结果是基于投票(在分类的情况下)或预测的平均值(在回归的情况下)来确定的。</p></li>
+<li><p class="Para" id="Par194">Bagging，也称为 bootstrap aggregation，是一种使用随机数据子集(行和列)来训练模型的概念。在随机森林算法中，在同一数据集的不同子集上训练多个决策树。例如，第一棵树可能使用<code>age</code>和<code>gender</code>作为输入变量进行训练，第二棵树可能使用<code>balance</code>和<code>income</code>作为输入变量进行训练，等等。此外，用于训练第一和第二树的行(样本)是从原始训练数据集中随机采样的。您可以在替换或不替换的情况下对行<em class="EmphasisTypeItalic ">进行采样。当您选择将<em class="EmphasisTypeItalic ">替换为</em>时，相同的样品可以使用多次。在<em class="EmphasisTypeItalic ">无替换</em>的情况下，同一样品不能使用一次以上。</em></p></li>
+</ul>
+
+<p>随机森林使用这两个概念来构建树。流程如下:</p>
+<ol><li class="ListItem"><p class="Para" id="Par196">选择随机特征–子集特征(<code>featureSubsetStrategy</code>)</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par197">选择随机样本(有或没有替换)-子集行(<code>subsamplingRate</code>)</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par198">基于子集特征和行形成子集数据。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par199">基于子集数据构建决策树。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par200">重复该过程，构建用户指定数量的树。PySpark 默认的树的数量是 20。(<code>numTrees</code>)</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par201">对于使用随机森林的最终预测，通过所有单个树运行数据。得到每棵树的预测。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par202">分类的话，统计每一类的票数。具有最多票数的类被选为最终输出。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par203">对于回归，平均单个树的输出以获得最终输出。</p>
+ </li>
+</ol>
+
+<h4 class="Heading">超参数调谐</h4>
+<p>通过调整<code>featureSubsetStrategy</code>和<code>subsamplingRate</code>参数，可以提高模型性能和训练过程速度。</p>
+<pre>featureSubsetStrategy – "auto", "all", "sqrt", "log2", "onethird"
+
+</pre>
+<p class="Para" id="Par205"><code>subsamplingRate –</code>0 到 1 之间的任何值。当该值设置为 1 时，将使用整个数据集。</p>
+
+<h4 class="Heading">使用随机森林的特征重要性</h4>
+<p>在随机森林中，特征重要性的计算方式与决策树相似，只是略有不同。在归一化步骤之前，计算变量的特征重要性的平均值。<p><img alt="$$ \mathrm{average}-{f}_i=\frac{f_i\ }{\mathrm{number}\ \mathrm{of}\ \mathrm{trees}\ \mathrm{with}\ \mathrm{feature}\ {f}_i\ } $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equas.png" style="width:20.32em"/>T2】</p></p>
+<p class="Para" id="Par207">所有变量的平均值<em class="EmphasisTypeItalic ">用于计算最终的特征重要性，<em class="EmphasisTypeItalic ">最终的</em>f</em><sub><em class="EmphasisTypeItalic ">I</em></sub>。</p>
+<p class="Para" id="Par208">同样的概念也用于梯度增强树，我们接下来会看到。</p>
+
+<h4 class="Heading">随机森林的 PySpark 码</h4>
+<h5 class="Heading">分类</h5>
+<p>
+ 
+</p>
+<pre>from pyspark.ml.classification import RandomForestClassifier
+
+
+
+clf = RandomForestClassifier(featuresCol='features', labelCol="y")
+clf_model = clf.fit(binary_df)
+print(clf_model.featureImportances)
+print(clf_model.toDebugString)
+
+</pre>
+
+<h5 class="Heading">回归</h5>
+<p>
+ 
+</p>
+<pre>from pyspark.ml.regression import RandomForestRegressor
+reg = RandomForestRegressor(featuresCol='features', labelCol="balance")
+reg_model = reg.fit(continuous_df)
+print(reg_model.featureImportances)
+print(reg_model.toDebugString)
+
+</pre>
+
+
+<h4 class="Heading">为什么是随机森林？</h4>
+<p>到目前为止，我们还没有谈到为什么我们需要随机森林。让我们现在过一遍。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par212">随机森林比单个决策树更健壮，并且它们限制了过度拟合。</p></li>
+<li><p class="Para" id="Par213">它们通过在每个树训练过程中随机选择特征来消除特征选择偏差。</p></li>
+<li><p class="Para" id="Par214">随机森林使用邻近矩阵，可用于填充缺失值。</p></li>
+</ul>
+
+
+
+<h3 class="Heading">梯度推进</h3>
+<p>决策树的另一种变体是梯度推进树。梯度增强是一个集合模型，它建立在称为增强的概念上。我们已经讨论过合奏的概念了。让我们更详细地了解增压。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par216">Boosting 使用弱学习器来构建树。这是一种附加的建模技术。它也被称为顺序学习器，因为当前树从先前树的错误中学习。</p></li>
+</ul>
+
+<h4 class="Heading">促进学习过程</h4>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par218">模型训练从构建初始决策树开始。使用该树进行预测。</p></li>
+<li><p class="Para" id="Par219">基于预测输出创建样本权重列。当预测有误差时，给予样本较大的权重，而当预测准确时，给予样本较小的权重。</p></li>
+<li><p class="Para" id="Par220">我们基于样本权重列创建新的训练数据集。这是为了确保在新创建的训练数据中给予错误样本更多的优先权。</p></li>
+<li><p class="Para" id="Par221">我们用这些新数据重复训练过程，并继续构建树，直到满足用户指定的<code>numTrees</code>选项。</p></li>
+<li><p class="Para" id="Par222">学习率(<code>learningRate</code>)用于衡量每个弱学习者的输出。</p></li>
+<li><p class="Para" id="Par223">最终模型预测由下式给出:</p></li>
+</ul>
+
+<p>
+ 
+</p>
+<pre>First tree prediction + learningRate*Second tree prediction + ....... + learningRate * Nth tree prediction
+
+
+
+
+</pre>
+
+<h4 class="Heading">用于梯度提升的 PySpark 代码</h4>
+<h5 class="Heading">分类</h5>
+<p>
+ 
+</p>
+<pre>from pyspark.ml.classification import GBTClassifier
+
+
+
+clf = GBTClassifier(featuresCol='features', labelCol="y")
+clf_model = clf.fit(binary_df)
+print(clf_model.featureImportances)
+print(clf_model.toDebugString)
+
+</pre>
+
+<h5 class="Heading">回归</h5>
+<p>
+ 
+</p>
+<pre>from pyspark.ml.regression import GBTRegressor
+reg = GBTRegressor(featuresCol='features', labelCol="balance")
+reg_model = reg.fit(continuous_df)
+print(reg_model.featureImportances)
+print(reg_model.toDebugString)
+
+</pre>
+
+
+<h4 class="Heading">为什么要梯度推进？</h4>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par228">对不平衡的目标类建模很有用</p></li>
+<li><p class="Para" id="Par229">与随机森林和决策树创建的深度树相比，梯度增强构建的是浅树。因此，它有利于减少预测中的偏差。</p></li>
+</ul>
+
+
+
+<h3 class="Heading">支持向量机(SVM)</h3>
+<p>想象你在一间挤满学生的教室里。你的任务是画一条区分男孩和女孩的线。除了画线，你的方法还应该具备以下特征:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par231">男孩和女孩之间的较大距离</p></li>
+<li><p class="Para" id="Par232">分离过程中的低误差率</p></li>
+</ul>
+
+<p>这是使用支持向量机(SVM)完成的。通常，支持向量机使用超平面来执行分类。让我们看看图<a href="#Fig24"> 5-24 </a>来详细理解这个概念。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig24_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig24_HTML.jpg" style="width:22.15em"/></p>
+<p>图 5-24</p><p class="SimplePara">基于支持向量机的特征空间分离</p>
+
+
+<p>在该图中，使用线性超平面来分隔类别。对于非线性数据，我们可以使用多项式或 rbf(径向基函数)超平面来获得良好的分离。这被称为内核技巧。目前，PySpark 只支持线性内核。但是，Python 版本支持其他内核。SVM 模型包括两个误差函数，如下所示(图<a href="#Fig25"> 5-25 </a>):</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig25_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig25_HTML.jpg" style="width:22.12em"/></p>
+<p>图 5-25</p><p class="SimplePara">分类和边际误差</p>
+
+
+<pre>Total error = Classification error + Margin error
+
+</pre>
+<h4 class="Heading">分类误差</h4>
+<p class="Para" id="Par235">分类误差测量 SVM 模型中的预测误差。这个误差类似于误分类率。但是，我们提到，保证金也是 SVM 的一个组成部分。因此，任何落在裕度内的观察值也被认为是错误的，因为我们试图最大化裕度。在图<a href="#Fig25"> 5-25 </a>中，有七个样本导致分类错误:两个在边缘之外，五个在边缘之内。总分类误差是这些观察值与边缘边界距离的绝对值之和。为了计算红色观测误差，我们将计算距上边距的距离，对于蓝色观测误差，我们将计算距下边距的距离。</p>
+
+<h4 class="Heading">边缘误差</h4>
+<p>边缘误差将量化与边缘边界相关的误差。当你有一个大的差距，误差很小，反之亦然。让我们用方程的形式来表示这条线，如下:<p><img alt="$$ ax+ by+c=---&amp;gt; center\ line $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equat.png" style="width:14.85em"/></p><p><img alt="$$ ax+ by+c=i---&amp;gt; upper\ margin $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equau.png" style="width:16.62em"/></p><p><img alt="$$ ax+ by+c=-i---&amp;gt; lower\ margin $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equav.png" style="width:17.08em"/></p></p>
+<p>我们可以用下面的公式计算页边距的宽度:<p> <img alt="$$ W=\frac{2i}{\sqrt{a^2+{b}^2}} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equaw.png" style="width:6.63em"/> </p></p>
+<p>并且裕度误差由下式给出:<p> <img alt="$$ Margin\ error={a}^2+{b}^2 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equax.png" style="width:10.53em"/> </p></p>
+<p class="Para" id="Par239">当您替换前面等式中的值时，您会得到一个大边界的小误差和一个小边界的大误差。</p>
+
+<h4 class="Heading">总误差</h4>
+<p class="Para" id="Par240">正如我们之前看到的，总误差是分类误差和边缘误差的总和。一般来说，大的余量会产生大的分类误差，反之亦然。您可以使用正则化参数(<code>regParam</code>)调整模型误差函数。我们将在后面的章节中关注正则化。</p>
+
+<h4 class="Heading">PySpark 代码</h4>
+<p>
+ 
+</p>
+<pre>from pyspark.ml.classification import LinearSVC
+
+
+
+clf = LinearSVC(featuresCol='features', labelCol="y")
+clf_model = clf.fit(binary_df)
+print(clf_model.intercept, clf_model.coefficients)
+
+</pre>
+Note
+<p class="Para FirstParaInFormalPara" id="Par242">SVM 需要很长时间来训练。你可以玩<code>regParam</code>选项来更快的训练模型。</p>
+
+
+
+<h3 class="Heading">神经网络</h3>
+<p>神经网络的灵感来自人脑中的生物神经元。在人类中，大脑利用这些神经元与身体的其他部分进行交流。根据任务，大脑激活与任务对应的神经元并完成任务。人工神经网络(ann)就是建立在这个概念上，使用激活函数来激活某些神经元，并获得所需的输出。一个简单的神经网络架构如图<a href="#Fig26"> 5-26 </a>所示。</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig26_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig26_HTML.jpg" style="width:23.62em"/></p>
+<p>图 5-26</p><p class="SimplePara">人工神经网络架构</p>
+
+
+<h4 class="Heading">关于人工神经网络架构的知识</h4>
+<p>
+ 
+ 
+</p>
+<p><img alt="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig27_HTML.jpg" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Fig27_HTML.jpg" style="width:23.62em"/></p>
+<p>图 5-27</p><p class="SimplePara">感知器</p>
+
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par245">最简单的神经网络包括输入和输出层，没有隐藏层。这种类型的网络被称为感知器(图<a href="#Fig27"> 5-27 </a>)。可以用感知器神经网络建立线性或逻辑回归模型。</p></li>
+</ul>
+
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par247">当激活函数是线性时，感知器产生线性回归，当激活函数是 Sigmoid 时，感知器产生逻辑回归。</p></li>
+<li><p class="Para" id="Par248">我们可以在感知器的输入层和输出层之间添加多个隐藏层。由于这种能力，神经网络也被称为多层感知器。</p></li>
+<li><p class="Para" id="Par249">隐藏层中的单个单元称为隐藏单元。在图<a href="#Fig26"> 5-26 </a>中，隐藏层有四个隐藏单元。</p></li>
+<li><p class="Para" id="Par250">您可以使用激活功能来打开/关闭隐藏单元。当您使用线性激活函数时，它模拟线性关系。通过使用 ReLu 和 TanH 这样的非线性激活函数，您可以对复杂的关系进行建模。</p></li>
+<li><p class="Para" id="Par251">当你堆叠多个隐藏层时，你就产生了一个深度神经网络。</p></li>
+<li><p class="Para" id="Par252">当您增加隐藏层中隐藏单元的大小时，会产生更宽的神经网络。</p></li>
+<li><p class="Para" id="Par253">神经网络不需要关于数据的先验知识。他们可以使用这两个步骤来模拟特征和目标之间的关系:前馈(步骤 1)、反向传播和梯度下降(步骤 2)。这就是神经网络也被称为前馈神经网络的原因。</p></li>
+<li><p class="Para" id="Par254">在 PySpark 中，可以使用超参数<code>maxIter, layers, blockSize, stepSize</code>优化神经网络</p></li>
+</ul>
+
+
+<h4 class="Heading">神经网络如何拟合数据？</h4>
+<p>让我们用逻辑门来详细理解这个概念。我们将使用一个<code>OR</code>门作为例子。对于这个练习，我们将使用一个感知器网络。表<a href="#Tab5"> 5-5 </a>包含数据。</p>
+<p>表 5-5</p><p class="SimplePara">抽样资料</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">输入 1</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">输入 2</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">输出</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>在建立了神经网络结构之后，偏差和权重被随机初始化。通常，高斯或均匀函数用于初始化偏差和权重。在我们的例子中，我们将偏差设置为 1。由于我们的示例中有两个特征，我们将使用两个权重(w1 和 w2)。假设初始随机权重值为 w1–0.1 和 w2–0.7。这个例子的激活函数是 Sigmoid。<p> <img alt="$$ \mathrm{Sigmoid}\ \mathrm{function},\upsigma =\frac{1}{1+\mathit{\exp}\left(-x\right)} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equay.png" style="width:15.63em"/> </p> <p> <img alt="$$ final\ output=\left\{\begin{array}{c}0\ if\ \upsigma &amp;lt;0.5\\ {}1\ if\ \upsigma \ge 0.5\end{array}\right. $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equaz.png" style="width:13.53em"/></p></p>
+<p class="Para" id="Par257">神经网络模型输出=<em class="EmphasisTypeItalic ">w</em>1 *<em class="EmphasisTypeItalic ">x</em>1+<em class="EmphasisTypeItalic ">w</em>2 *<em class="EmphasisTypeItalic ">x</em>2+<em class="EmphasisTypeItalic ">b</em></p>
+<h5 class="Heading">第一步:前馈</h5>
+<p>在前馈步骤中，权重乘以输入并发送至输出函数以计算最终输出(表<a href="#Tab6"> 5-6 </a>)。</p>
+<p>表 5-6</p><p class="SimplePara">误差计算</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">输入 1</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">输入 2</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">目标</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">输出=</p>
+<p class="SimplePara">0.1 *输入 1 + 0.7 *输入 2 + 1</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sigmoid(输出)</p>
+<p class="SimplePara"><img alt="$$ \frac{\mathbf{1}}{\mathbf{1}+\boldsymbol{\exp}\left(-\boldsymbol{output}\right)} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq9.png" style="width:5.55em"/></p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">错误=</p>
+<p class="SimplePara">目标-s 形(输出)</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven three</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.73</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point seven</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point eight five</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one five</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven five</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point two five</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">One point eight</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point eight six</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Zero point one four</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 class="Heading">第二步:反向传播</h5>
+<p>让我们反向传播误差来更新输入要素的权重。为了更新权重，我们使用以下公式:</p>
+<pre>          New weight = old weight – learningrate * error delta
+          Error delta = input * error * derivative(output)
+
+</pre>
+<p>我们将学习率设为 1。正如我们从前面的等式中看到的，我们采用每个误差输出的导数来更新权重(表<a href="#Tab7"> 5-7 </a>)。Sigmoid 函数的导数由下式给出:<p> <img alt="$$ \mathrm{Derivation}\ \mathrm{of}\ \mathrm{Sigmoid}\ \mathrm{function},{\upsigma}^{\prime }=\upsigma \ast \left(1-\upsigma \right) $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equba.png" style="width:21.15em"/> </p></p>
+<p>表 5-7</p><p class="SimplePara">导数计算</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">错误</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">I =导数(sigmoid)</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">J =误差* I</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">W1_Delta =输入 1 * J</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">W2_Delta =输入 2 * J</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> -0.73 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one nine</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.14</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0.15 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one three</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero two</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0.25 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one eight</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero five</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero five</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0.14 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point one two</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero two</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point zero two</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Zero point zero two</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+ 
+</p>
+<pre>W1_errorDelta = sum(W1_Delta) = 0.07
+W2_errorDelta = sum(W2_Delta) = 0.04
+New_w1 = 0.1 - 0.07 = 0.03
+New_w2 = 0.7 - 0.04 = 0.66
+
+</pre>
+<p class="Para" id="Par262">就是这样。我们完成了第一次迭代(历元),并且在一个历元之后我们有了更新的权重。我们重复这些步骤一定次数来训练我们的模型。在每一步中，权重都会更新，慢慢地，模型会根据数据进行调整。</p>
+
+
+<h4 class="Heading">神经网络中超参数调整</h4>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par264"><code>maxIter –</code>要运行的历元数。一个时期包括前馈和反向传播。当历元数越多，模型训练的时间就越长，反之亦然。此外，当历元数非常低时，模型将无法学习数据中的模式。另一方面，通过选择更大的时期，模型容易过度拟合。</p></li>
+<li><p class="Para" id="Par265"><code>layers –</code>训练模型时使用的隐藏层数。</p></li>
+<li><p class="Para" id="Par266"><code>Format – [hidden layer1, ...., Hidden layer</code> <code>n</code> <code>, output layer]</code>。当隐藏层增加时，我们可以得到更精确的预测。然而，该模型容易过度拟合数据。当层数减少时，模型将没有足够的空间来学习。诀窍是找到正确的平衡。一个好的开始数字是<em class="EmphasisTypeItalic "> n </em>或 2 <em class="EmphasisTypeItalic "> n </em>，其中<em class="EmphasisTypeItalic "> n </em>是输入特征的数量。</p></li>
+<li><p class="Para" id="Par267"><code>blockSize –</code>批量大小。定型模型时要使用的批数。这是我们之前讨论过的小批量概念。</p></li>
+<li><p class="Para" id="Par268"><code>stepSize –</code>梯度下降的学习率。你的模型应该学习多快？我们已经在前一节中详细讨论了这一点。</p></li>
+</ul>
+
+
+<h4 class="Heading">PySpark 代码</h4>
+<p>
+ 
+</p>
+<pre>from pyspark.ml.classification import MultilayerPerceptronClassifier
+
+
+
+#output_layer is set to 2 because of binary target
+clf = MultilayerPerceptronClassifier(featuresCol='features', labelCol="y", layers=[4, 4, 2])
+clf_model = clf.fit(binary_df)
+
+</pre>
+<p class="Para" id="Par270">目前，PySpark 不支持使用神经网络的回归。但是，您可以使用线性激活函数来实现回归。</p>
+
+
+<h3 class="Heading">一对一分类器</h3>
+<p class="Para" id="Par271">这是用于多类分类练习的。这个分类器背后的思想非常简单。假设你有四个教育班<em class="EmphasisTypeItalic "/>——<em class="EmphasisTypeItalic ">小学、中学、大学和未知的</em>。你的目标是预测个人的<em class="EmphasisTypeItalic ">教育</em>成果。这是一个多类问题，因为您有两个以上的输出类。我们创建一个基本分类器，并使用该基本分类器为每个类执行二元分类。第一分类器将预测主要与非主要(次要、第三、未知)。第二分类器将预测二级与非二级(一级、三级、未知)。以类似的方式，第三分类器将预测三级对非三级，第四分类器将预测未知对非未知。通过评估这四个单独的分类器并选择最有把握的分类器的索引作为输出，获得最终的预测。</p>
+<h4 class="Heading">PySpark 代码</h4>
+<p>
+ 
+</p>
+<pre>target_variable_name = "education"
+multiclass_df = data.select(['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous', 'job', 'education'])
+features_list = multiclass_df.columns
+#features_list = char_vars #this option is used only for ChiSqselector
+features_list.remove(target_variable_name)
+# apply the function on our dataframe
+multiclass_df = assemble_vectors(multiclass_df, features_list, target_variable_name)
+
+# fitting the one-vs-rest classifier
+from pyspark.ml.classification import RandomForestClassifier, OneVsRest
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+# generate the train/test split.
+(train, test) = multiclass_df.randomSplit([0.7, 0.3])
+# instantiate the base classifier.
+clf = RandomForestClassifier(featuresCol='features', labelCol="education")
+# instantiate the One Vs Rest Classifier.
+ovr = OneVsRest(classifier=clf, featuresCol="features", labelCol="education")
+# train the multiclass model.
+ovrModel = ovr.fit(train)
+# score the model on test data.
+predictions = ovrModel.transform(test)
+# obtain evaluator.
+evaluator = MulticlassClassificationEvaluator(metricName="accuracy", labelCol="education")
+# compute the classification error on test data
+
+.
+accuracy = evaluator.evaluate(predictions)
+print("Test Error = %g" % (1.0 - accuracy))
+
+</pre>
+
+
+<h3 class="Heading">朴素贝叶斯分类器</h3>
+<p>朴素贝叶斯分类器基于贝叶斯定理。它假设输入变量的独立性。这就是为什么它被称为<em class="EmphasisTypeItalic ">nave—</em>它对于输入变量并不总是正确的。贝叶斯定理用于根据先验概率和似然性计算后验概率。它由以下内容表示:<p> <img alt="$$ P\left(A|B\right)=\frac{P\left(B|A\right)\ast P(A)}{P(B)} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equbb.png" style="width:11.07em"/> </p></p>
+<p class="Para" id="Par274">在哪里，</p>
+<p class="Para" id="Par275">A &amp; B 是事件。</p>
+<p class="Para" id="Par276">P(A|B) =后验概率。它被理解为“给定 B 为真的概率”</p>
+<p class="Para" id="Par277">P(B|A) =可能性。它读作“给定 A 为真，B 的概率”</p>
+<p class="Para" id="Par278">P(A) =事件 A 的先验概率</p>
+<p class="Para" id="Par279">P(B) =事件 B 的先验概率</p>
+<p>让我们看看表<a href="#Tab8"> 5-8 </a>中的数据来理解贝叶斯定理。我们有两个水桶。他们每个人都有十个球。第一个桶有七个红色的球和三个绿色的球。第二个桶有七个绿色的球和三个红色的球。让我们假设我们有同等的机会选择桶。假设你从一个桶里随机拿了一个球，它出来时是一个绿色的球。球来自桶 2 的概率是多少？</p>
+<p>表 5-8</p><p class="SimplePara">贝叶斯演示—样本数据</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">存储桶 1</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">存储桶 2</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">红色</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">格林（姓氏）；绿色的</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>有多种方法可以找到这个问题的答案。我将使用贝叶斯定理来解决这个问题，因为它最适合这些情况。</p>
+<ul class="UnorderedListMarkBullet"><li><pre>We have two events: A – bucket2 and B – green color ball.
+
+</pre></li>
+<li><pre>We have equal chances of selecting buckets, so prior probability of bucket 2 = P(A) = 0.5
+
+</pre></li>
+<li><pre>Prior probability of choosing green color ball (GB) which is event B is given by P(B)
+P(B) = P(bucket1) * P(GB in bucket1) + P(bucket2) * P(GB in bucket2)
+P(B) = 0.5 * 0.3 + 0.5 * 0.7 = 0.5
+
+</pre></li>
+<li>
+ 
+<p><img alt="$$ P\left( Greenball\ |\ Bucket2\right)=P\left(B|A\right)=0.7 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equbc.png" style="width:17.56em"/></p>
+
+
+
+<pre>The likelihood of a green ball given bucket2 is given by
+
+</pre>
+</li>
+<li><pre>Probability of bucket2 given green ball:
+
+</pre></li>
+</ul>
+
+<p class="Para" id="Par287">P( <em class="EmphasisTypeItalic ">水桶</em> 2| <em class="EmphasisTypeItalic ">绿球</em>)= P(A | B)=<img alt="$$ \frac{\mathrm{P}\left(\mathrm{B}|\mathrm{A}\right)\ast \mathrm{P}\left(\mathrm{A}\right)}{\mathrm{P}\left(\mathrm{B}\right)} $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_IEq10.png" style="width:4.29em"/>=(0.7 * 0.5)/0.5 = 0.7</p>
+<p class="Para" id="Par288">贝叶斯定理为这类问题提供了一个简单的解决方案。分类器是这个定理的扩展。由于简单，朴素贝叶斯分类器对于在大型数据集上训练模型非常有用。它最适合分类输入要素。对于数字输入特性，您可以使用 WOE 或其他编码技术手动创建分类变量。也可以不经过变换就馈入数值型变量，但是算法假设变量的分布是正态的(这个假设你要谨慎)。这个分类器的另一面是<em class="EmphasisTypeItalic ">零频率</em>问题。当测试/分数数据中有一个新类别在训练数据中不存在时，模型会将概率输出为 0。在这些情况下，您可以使用平滑技术。PySpark 支持加法平滑(也称为拉普拉斯平滑)来平滑分类数据。平滑的默认值为 1。当该值设置为 0 时，将不执行平滑。使用这种分类器的另一个缺点是它需要非负的特征值。当您的数据集完全是数值并且有负值时，最好在使用此分类器之前标准化您的数据，或者选择另一个分类器。朴素贝叶斯分类器更适合分类文档(垃圾邮件/非垃圾邮件)或多类问题。</p>
+<h4 class="Heading">PySpark 代码</h4>
+<p>
+ 
+</p>
+<pre>target_variable_name = "y"
+nonneg_df = data.select(['age', 'day', 'duration', 'campaign', 'previous', 'y'])
+#exclude target variable and select all other feature vectors
+features_list = nonneg_df.columns
+#features_list = char_vars #this option is used only for ChiSqselector
+features_list.remove(target_variable_name)
+# apply the function on our DataFrame
+nonneg_df = assemble_vectors(nonneg_df, features_list, target_variable_name)
+# fit Naïve Bayes model
+from pyspark.ml.classification import NaiveBayes
+clf = NaiveBayes(featuresCol='features', labelCol="y")
+clf_model = clf.fit(nonneg_df)
+
+</pre>
+
+
+<h3 class="Heading">正规化</h3>
+<p>正则化是一种用于避免过度拟合的技术。一般来说，有三种类型的正规化</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par291">L1 正则化或套索</p></li>
+<li><p class="Para" id="Par292">L2 正则化或岭</p></li>
+<li><p class="Para" id="Par293">弹性网，L1 和 L2 的结合</p></li>
+</ul>
+
+<h4 class="Heading">因素</h4>
+<p><code>elasticNetParam</code>用α(α)表示。<code>regParam</code>用λ(λ)表示。这里提供了正则化术语:<p> <img alt="$$ \alpha \left(\ \lambda\ {\left\Vert w\right\Vert}_1\right)+\left(1-\alpha \right)\ \left(\frac{\lambda }{2}\ {\left\Vert w\right\Vert}_2^2\right),\alpha \in \left[0,1\right],\lambda \ge 0 $$" src="../images/500182_1_En_5_Chapter/500182_1_En_5_Chapter_TeX_Equbd.png" style="width:21em"/> </p></p>
+<p class="Para" id="Par295">方程中的第一个分量是 L1 或拉索项，第二个分量是 L2 或山脊项。当<code>elasticNetParam</code>设为 1 时，执行套索正则化，设为 0 时，执行脊线正则化。当值介于 0 和 1 之间时，它执行弹性网正则化。</p>
+
+<h4 class="Heading">拉索或 L1 点球</h4>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par297">套索惩罚取斜率的绝对值并执行正则化。</p></li>
+<li><p class="Para" id="Par298">Lasso 排除对模型无用的变量。这可用于特征选择。</p></li>
+</ul>
+
+
+<h4 class="Heading">里奇或 L2 点球</h4>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par300">岭惩罚取斜率的平方值并执行正则化。</p></li>
+<li><p class="Para" id="Par301">岭减少了对模型无用的变量的系数。</p></li>
+</ul>
+
+<p class="Para" id="Par302">当您试图评估一组超参数以选择最佳超参数并避免过度拟合时，这些技术非常有用。</p>
+
+
+
+<h2 class="Heading">摘要</h2>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par304">我们详细研究了监控技术。</p></li>
+<li><p class="Para" id="Par305">我们讨论了各种误差函数和激活函数。</p></li>
+<li><p class="Para" id="Par306">我们要看看 ML 领域中可用的不同优化器。</p></li>
+<li><p class="Para" id="Par307">我们探索了各种监督算法，并看到了回归和分类的用例。</p></li>
+<li><p class="Para" id="Par308">最后，我们谈到了正则化以及如何使用它来避免过度拟合。</p></li>
+</ul>
+
+<p class="Para" id="Par309">干得好！在下一章，我们将学习模型验证。继续学习，敬请关注。</p>
+
+
+
+</body>
+</html>

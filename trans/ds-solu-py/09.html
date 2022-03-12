@@ -1,0 +1,250 @@
+<html lang="en">
+<head><title>Principal Component Analysis with Scikit-Learn, PySpark, and H2O</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">9.用 Scikit-Learn、PySpark 和 H2O 进行主成分分析</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">本章通过实现一组不同的 Python 框架(Scikit-Learn、PySpark 和 H2O)来执行一个简单的降维器(主成分方法)。首先，它阐明了该方法如何计算组件。</p>
+<h2 class="Heading">探索主成分方法</h2>
+<p class="Para" id="Par3">主成分方法是一种简单的降维方法。它对整个数据集执行线性变换以获得向量(标识为<em class="EmphasisTypeItalic ">特征值</em>)，然后识别数据中的增量变化。它使您能够检测数据中要素的变化。此方法有助于确定每个要素的比率，以便您可以决定为建模保留哪些要素。当您的数据包含无数要素时，它非常适用，因为它有助于您识别对模型来说必不可少的要素。值得注意的是，虽然我在本章中称之为“方法”，但严格来说并非如此。与其他方法相比，它不考虑任何似是而非的假设；相反，您应该在执行线性、非线性和聚类方法之前执行它。</p>
+<p class="Para" id="Par4">本章使用上一章的数据，上一章介绍了 k-means 方法。</p>
+<p>清单<a href="#PC1"> 9-1 </a>从一个微软 CSV 文件中获取必要的数据。</p>
+<pre>import pandas as pd
+initial_data = df.drop(drop_column_names, axis="columns")
+
+Listing 9-1Attain the Data
+
+
+</pre>
+<p>列表<a href="#PC2"> 9-2 </a>删除数据中任何不必要的特征。</p>
+<pre>drop_column_names = df.columns[[0, 1]]
+initial_data = df.drop(drop_column_names, axis="columns")
+
+Listing 9-2Drop Unnecessary Features
+
+
+</pre>
+
+<h2 class="Heading">sci kit-在行动中学习</h2>
+<p>清单<a href="#PC3"> 9-3 </a>用标准的缩放器缩放整个数据集。</p>
+<pre>from sklearn.preprocessing import StandardScaler
+sk_standard_scaler = StandardScaler()
+sk_standard_scaled_data = sk_standard_scaler.fit_transform(initial_data))
+
+Listing 9-3Scale the Whole Data Set
+
+
+</pre>
+<p>清单<a href="#PC4"> 9-4 </a>用 Scikit-Learn 框架执行主成分方法。然后，它揭示了每个组件澄清的差异(见图<a href="#Fig1"> 9-1 </a>)。</p>
+<p><img alt="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig1_HTML.jpg" src="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig1_HTML.jpg" style="width:42.82em"/></p>
+<p>图 9-1</p><p class="SimplePara">Scikit-Learn 主成分方法的差异</p>
+
+
+<pre>import matplotlib.pyplot as plt
+%matplotlib inline
+from sklearn.decomposition import PCA
+sk_principal_component_method = PCA(n_components=3)
+sk_principal_component_method.fit_transform(sk_standard_scaled_data)
+sk_principal_component_method_variance = sk_principal_component_method.explained_variance_
+plt.bar(range(3), sk_principal_component_method_variance, label="Variance")
+plt.legend()
+plt.ylabel("Variance ratio")
+plt.xlabel("Components")
+plt.show()
+
+Listing 9-4Arrange the Explained Variance from the Scikit-Learn Principal Components Method
+
+
+</pre>
+<p class="Para" id="Par9">图 9-1 显示了方差超过 0.5 所有组件。因此，所有的主成分方法都有三个成分。</p>
+<p>清单<a href="#PC5"> 9-5 </a>显示了 Scikit-Learn 主成分方法的差异。</p>
+<pre>print("SciKit-Learn PCA explained variance ratio", sk_principal_component_method_variance)
+
+SciKit-Learn PCA explained variance ratio [1.33465831 1.00427272 0.67614435]
+
+Listing 9-5Print the Variance that the Scikit-Learn Principal Component Method Discloses
+
+
+</pre>
+<p>清单<a href="#PC6"> 9-6 </a>使用 Scikit-Learn 框架执行主成分方法，并显示较少的维度(参见图<a href="#Fig2"> 9-2 </a>)。</p>
+<p><img alt="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig2_HTML.jpg" src="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig2_HTML.jpg" style="width:42.82em"/></p>
+<p>图 9-2</p><p class="SimplePara">来自 Scikit 的维度-学习主成分方法</p>
+
+
+<pre>sk_principal_component_method_ = PCA(n_components=3)
+sk_principal_component_method_.fit(sk_standard_scaled_data)
+sk_principal_component_method_reduced_data = sk_principal_component_method_.transform(sk_standard_scaled_data)
+plt.scatter(sk_principal_component_method_reduced_data[:,0], sk_principal_component_method_reduced_data[:,2], c=initial_data.iloc[::, -1], cmap="coolwarm")
+plt.xlabel("y")
+plt.show()
+
+Listing 9-6Execute the Principal Component Method with the Scikit-Learn Framework
+
+
+</pre>
+<p class="Para" id="Par12">图<a href="#Fig2"> 9-2 </a>显示了通过 Scikit-Learn 主成分法找到的尺寸。</p>
+
+<h2 class="Heading">PySpark 在行动</h2>
+<p class="Para" id="Par13">本节使用 PySpark 框架执行主要组件方法。</p>
+<p>清单<a href="#PC7"> 9-7 </a>使用<code>findspark</code>框架准备 PySpark 框架。</p>
+<pre>import findspark as initiate_pyspark
+initiate_pyspark.init("filepath\spark-3.0.0-bin-hadoop2.7")
+
+Listing 9-7Prepare the PySpark Framework
+
+
+</pre>
+<p>清单<a href="#PC8"> 9-8 </a>使用<code>SparkConf()</code>方法规定了 PySpark 应用程序。</p>
+<pre>from pyspark import SparkConf
+pyspark_configuration = SparkConf().setAppName("pyspark_principal_components_analysis").setMaster("local")
+
+Listing 9-8Stipulate the PySpark App
+
+
+</pre>
+<p>清单<a href="#PC9"> 9-9 </a>使用<code>SparkSession()</code>方法准备 PySpark 会话。</p>
+<pre>from pyspark.sql import SparkSession
+pyspark_session = SparkSession(pyspark_context)
+from pyspark.sql import SparkSession
+
+Listing 9-9Prepare the Spark Session
+
+
+</pre>
+<p>清单<a href="#PC10"> 9-10 </a>使用<code>createDataFrame()</code>方法将本章前面创建的<code>pandas</code>数据帧更改为<code>PySpark</code>数据帧。</p>
+<pre>pyspark_initial_data = pyspark_session.createDataFrame(initial_data)
+
+Listing 9-10Change the Pandas Dataframe to a PySpark Dataframe
+
+
+</pre>
+<p>列表<a href="#PC11"> 9-11 </a>为独立特征创建一个列表，为从属特征创建一个字符串。然后，它使用 PySpark 框架建模的<code>VectorAssembler()</code>方法转换数据。</p>
+<pre>x_list = list(initial_data.iloc[::, 0:3].columns)
+from pyspark.ml.feature import VectorAssembler
+pyspark_data_columns = x_list
+pyspark_vector_assembler = VectorAssembler(inputCols=pyspark_data_columns, outputCol="variables")
+pyspark_data = pyspark_vector_assembler.transform(pyspark_initial_data)
+
+Listing 9-11Transform the Data
+
+
+</pre>
+<p>清单<a href="#PC12"> 9-12 </a>使用 Lifeline PySpark 框架扩展整个数据集。</p>
+<pre>from pyspark.ml.feature import StandardScaler
+pyspark_standard_scaler = StandardScaler(inputCol = pyspark_data.columns[-1], outputCol = "pyspark_scaled_features", withMean = True, withStd = True).fit(pyspark_data)
+pyspark_data_scaled_data = pyspark_standard_scaler.transform(pyspark_data)
+
+Listing 9-12Scale the Whole Data Set with the Lifeline PySpark Framework
+
+
+</pre>
+<p>清单<a href="#PC13"> 9-13 </a>执行 PySpark 主成分方法。</p>
+<pre>from pyspark.ml.feature import PCA
+number_of_k = 3
+pyspark_principal_components_method = PCA(k = number_of_k, inputCol = pyspark_data_scaled_data.columns[-1], outputCol = "pca_reduced_features").fit(pyspark_data_scaled_data)
+pyspark_principal_components_method_data = pyspark_principal_components_method.transform(pyspark_data_scaled_data)
+
+Listing 9-13Execute the PySpark Principal Component Method
+
+
+</pre>
+<p>清单<a href="#PC14"> 9-14 </a>公开了每个组件澄清的差异(见图<a href="#Fig3"> 9-3 </a>)。</p>
+<p><img alt="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig3_HTML.jpg" src="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig3_HTML.jpg" style="width:42.82em"/></p>
+<p>图 9-3</p><p class="SimplePara">解释了 PySpark 主成分方法的差异</p>
+
+
+<pre>pyspark_principal_component_method_variance = pyspark_principal_components_method.explainedVariance.toArray()
+plt.bar(range(3), pyspark_principal_component_method_variance, label="Variance")
+plt.legend()
+plt.ylabel("Variance ratio")
+plt.xlabel("Components")
+plt.show()
+
+Listing 9-14Arrange the PySpark Principal Components Method’s Explained Variance
+
+
+</pre>
+<p>清单<a href="#PC15"> 9-15 </a>打印 PySpark 主成分方法揭示的方差。</p>
+<pre>print('Explained variance ratio', pyspark_principal_components_method.explainedVariance.toArray())
+PySpark PCA variance ratio [0.44266167 0.33308378 0.22425454]
+
+Listing 9-15Print the Variance that the PySpark Principal Component Method Reveals
+
+
+</pre>
+<p class="Para" id="Par23">结果显示，第一个成分揭示了数据中特征相关变化的 0.44，第二个成分揭示了 0.33，第三个成分揭示了 0.22。</p>
+<p>清单<a href="#PC16"> 9-16 </a>使用 PySpark 主成分法减少数据。</p>
+<pre>pyspark_principal_components_method_reduced_data = pyspark_principal_components_method_data.rdd.map(lambda row: row.pyspark_scaled_features).collect()
+pyspark_principal_components_method_reduced_data = np.array(pyspark_principal_components_method_reduced_data)
+
+Listing 9-16Reduce the Data with the PySpark Principal Component Method
+
+
+</pre>
+<p>列表<a href="#PC17"> 9-17 </a>公开了 PySpark 主成分法缩减的数据(见图<a href="#Fig4"> 9-4 </a>)。</p>
+<p><img alt="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig4_HTML.jpg" src="../images/517508_1_En_9_Chapter/517508_1_En_9_Fig4_HTML.jpg" style="width:42.82em"/></p>
+<p>图 9-4</p><p class="SimplePara">PySpark 主成分法的维数</p>
+
+
+<pre>plt.scatter(pyspark_principal_components_method_reduced_data[:,0], pyspark_principal_components_method_reduced_data[:,1], c=initial_data.iloc[::, -1], cmap = "coolwarm")
+plt.xlabel("y")
+plt.show()
+
+Listing 9-17Disclose the Data that the PySpark Principal Component Method Reduced
+
+
+</pre>
+<p class="Para" id="Par26">图<a href="#Fig4"> 9-4 </a>显示了通过 PySpark 主成分法得到的尺寸。</p>
+<h3 class="Heading">H2O 在行动</h3>
+<p class="Para" id="Par27">这部分使用 H2O 框架执行和评估主成分方法。</p>
+<p>清单<a href="#PC18"> 9-18 </a>准备 H2O 框架。</p>
+<pre>import h2o as initialize_h2o
+initialize_h2o.init()
+
+Listing 9-18Prepare the H2O Framework
+
+
+</pre>
+<p>清单<a href="#PC19"> 9-19 </a>将<code>pandas</code>数据帧更改为 H2O 数据帧。</p>
+<pre>h2o_data = initialize_h2o.H2OFrame(initial_data)
+
+Listing 9-19Change the Pandas Dataframe to an H2O Dataframe
+
+
+</pre>
+<p>清单<a href="#PC20"> 9-20 </a>随机划分数据帧。</p>
+<pre>h2o_training_data, h2o_validation_data = h2o_data.split_frame(ratios=[.8])
+
+Listing 9-20Randomly Divide the Dataframe
+
+
+</pre>
+<p>清单<a href="#PC21"> 9-21 </a>执行 H2O 主成分法。</p>
+<pre>from h2o.estimators import H2OPrincipalComponentAnalysisEstimator
+h2o_principal_components_method = H2OPrincipalComponentAnalysisEstimator(k = 3, transform = "standardize")
+h2o_principal_components_method.train(training_frame = h2o_training_data)
+
+Listing 9-21Execute the H2O Principal Component Method
+
+
+</pre>
+<p>清单<a href="#PC22"> 9-22 </a>使用 H2O 主成分法减少数据。</p>
+<pre>h2o_yhat = h2o_principal_components_method.predict(h2o_validation_data)
+
+Listing 9-22Reduce the Data with the H2O Principal Component Method
+
+
+</pre>
+
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par33">本章执行了三个关键的机器学习框架(Scikit-Learn、PySpark 和 H2O)，以便通过使用主成分方法将数据压缩到几个维度中。正如本章开始时提到的，本章没有执行方法来测试似是而非的假设，因此没有客观评估方法的关键度量。</p>
+
+
+
+</body>
+</html>

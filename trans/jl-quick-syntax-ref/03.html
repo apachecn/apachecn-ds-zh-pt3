@@ -1,0 +1,291 @@
+<html lang="en">
+<head><title>Control Flow and Functions</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body epub:type="chapter">
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">3.控制流程和功能</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">既然已经向您介绍了 Julia 中可用的主要类型和容器，是时候让它们发挥作用了。</p>
+<h2 class="Heading">3.1 代码块结构和变量范围</h2>
+<p>支持所有典型的流控制结构(<code>for</code>、<code>while</code>、<code>if/else</code>和<code>do</code>)。语法通常采用以下形式:</p>
+<pre>&lt;keyword&gt; &lt;condition&gt;      JULIA
+    ... block content...
+end
+
+</pre>
+<p>例如:</p>
+<pre>for i in 1:5      JULIA
+    println(i)
+end
+
+</pre>
+<p class="Para" id="Par5">请注意，条件两边的括号不是必需的，代码块以关键字<code>end</code>结束。</p>
+<p class="Para ParaTypeImportant" id="Par6"><img alt="../images/477168_1_En_3_Chapter/477168_1_En_3_Figa_HTML.gif" src="../images/477168_1_En_3_Chapter/477168_1_En_3_Figa_HTML.gif" style="width:1.69em"/> <em class="EmphasisTypeItalic ">可变范围</em></p>
+<p class="Para ParaTypeImportant" id="Par7">请注意，在一个块中，变量的可见性是变化的，在这方面，Julia 比大多数其他语言更具限制性。</p>
+<p class="Para ParaTypeImportant" id="Par8">当您定义一个变量时(例如在<code>REPL</code>、Atom 或 IJulia 笔记本中)，您是在全局范围内这样做的。</p>
+<p class="Para ParaTypeImportant" id="Par9">大多数块(<code>for</code>、<code>while</code>，但明显不是<code>if</code>)和函数定义了从周围作用域继承的新的局部作用域。</p>
+<p>全局变量只能被读取而不能被写入。下面的代码片段将导致一个<code>UndefVarrError: code not defined</code>错误。</p>
+<pre>a =  4      JULIA
+while a &gt; 2
+    a -= 1
+end
+
+</pre>
+<p>要给一个全局变量赋值，你需要一个显式的<code>global</code>:</p>
+<pre>a =  5      JULIA
+while a &gt; 2
+    global a
+    println("a: $a")
+    b = a
+    while b &gt; 2
+        println("b: $b")
+        b -= 1
+    end
+    a -= 1
+end
+
+</pre>
+<p class="Para ParaTypeImportant" id="Par12">注意向<code>b</code>赋值仍然是可能的，因为<code>b</code>是<em class="EmphasisTypeItalic ">不是</em>全局变量，而是在第一个<code>while</code>块中定义的局部变量，然后在第二个块中继承。</p>
+<p class="Para ParaTypeImportant" id="Par13">用关键字<code>local x</code>指定变量<code>x</code>必须被视为一个新的局部变量，独立于同名的全局变量。</p>
+<p class="Para ParaTypeImportant" id="Par14">滥用全局变量会使代码更难阅读，可能会导致意想不到的结果，并且经常是计算瓶颈的原因。谨慎使用它们！</p>
+
+<h2 class="Heading">3.2 重复迭代:for 和 while 循环、列表理解、映射</h2>
+<p><code>for</code>和<code>while</code>构造非常灵活。首先，条件可以用多种方式表示:<code>for i = 1:2</code>、<code>for i in anArray</code>、<code>while i &lt; 3</code>……其次，可以在同一个循环中指定多个条件。考虑这个例子:</p>
+<pre>for i=1:2,j=2:5      JULIA
+ println("i: $i, j: $j")
+end
+
+</pre>
+<p class="Para" id="Par16">在这种情况下，更高级别的循环从范围<code>1:2</code>开始，然后对每个元素执行一个嵌套循环<code>2:5</code>。</p>
+<p class="Para" id="Par17"><code>break</code>和<code>continue</code>得到支持并按预期工作— <code>break</code>立即中止循环序列，而<code>continue</code>立即转到下一次迭代。</p>
+<p class="Para" id="Par18">Julia 支持用于重复迭代的其他构造，即列表理解和映射。</p>
+<p>列表理解本质上是编写<code>for</code>循环的一种非常简洁的方式:</p>
+<pre>[myfunction(i) for i in [1,2,3]]
+
+[x + 2y for x in [10,20,30], y in [1,2,3]]
+
+</pre>
+<p>例如，您可以使用列表理解从一个或多个数组中填充一个字典:</p>
+<pre>[mydict[i]=value for (i, value) in enumerate(mylist)]
+
+[students[name] = sex for (name,sex) in zip(names,sexes)]
+
+</pre>
+<p class="Para" id="Par21">您可以使用 list comprehension 编写复杂的表达式，例如<code>[println("i: $i - j: $j") for i in 1:5, j in 2:5 if i &gt; j]</code>，但是此时最好显式地编写循环。</p>
+<p>将函数应用于一系列参数。同样的填充字典的例子也可以用<code>map</code>编写(效率稍低):</p>
+<pre>map((n,s) -&gt; students[n] = s, names, sexes)
+
+</pre>
+<p>当映射具有单个参数的函数时，可以省略该参数，如下所示:</p>
+<pre>a = map(f, [1,2,3]) is equal to a = map(x-&gt;f(x), [1,2,3])
+
+</pre>
+
+<h2 class="Heading">3.3 条件语句:if 块，三元运算符</h2>
+<p>条件语句可以用典型的<code>if/elseif/else</code>结构编写:</p>
+<pre>i = 5      JULIA
+if i == 1
+    println("i is 1")
+elseif i == 2
+    println("i is 2")
+else
+    println("is in neither 1 or 2")
+end
+
+</pre>
+<p class="Para" id="Par25">使用逻辑运算符可以考虑多个条件:<em class="EmphasisTypeItalic ">和</em> ( <code>&amp;&amp;</code>)、<em class="EmphasisTypeItalic ">或</em> ( <code>||</code>)，以及<em class="EmphasisTypeItalic ">而非</em> ( <code>!</code>)(不要与按位运算符、<code>&amp;</code>和<code>|</code>混淆)。</p>
+<p class="Para" id="Par26">注意，当条件语句的结果可以在表达式求值结束之前推断出来时，其余部分不求值(它们被“短路”)。典型情况是<code>&amp;&amp;</code>运算符的第一个条件为<code>false</code>或者<code>||</code>运算符的条件为<code>true</code>。在这种情况下，评估第二个条件是没有用的。</p>
+<p class="Para" id="Par27">同样，列表理解是编写<code>for</code>循环的简洁方式，三元运算符是编写条件语句的简洁方式。</p>
+<p>语法如下:</p>
+<pre>a ? b : c
+
+</pre>
+<p class="Para" id="Par29">这意味着“如果<code>a</code>为真，则执行表达式<code>b</code>；否则，执行表达式<code>c</code>。确保<code>?</code>和<code>:</code>操作符周围有空间。与列表理解一样，重要的是不要为了编写复杂的条件逻辑而滥用三元运算符。</p>
+
+<h2 class="Heading">3.4 功能</h2>
+<p>朱莉娅的功能非常灵活。它们可以被内联定义为<code>f(x,y) = 2x+y</code>，或者使用<code>function</code>关键字引入它们自己的块:</p>
+<pre>function f(x)      JULIA
+  x+2
+end
+
+</pre>
+<p class="Para" id="Par31">定义函数的第三种常见方法是创建一个匿名函数，并将其分配给一个命名空间(我们稍后会讨论这一点)。</p>
+<p class="Para" id="Par32">在一个函数被<em class="EmphasisTypeItalic ">定义</em>后，你可以调用它来执行它。注意，和大多数高级语言一样，在 Julia 中没有单独的步骤让<em class="EmphasisTypeItalic ">声明</em>函数。</p>
+<p>函数甚至可以嵌套，即函数定义可以嵌入到另一个函数定义中，或者可以是递归的，即在函数定义中有对自身的调用:</p>
+<pre># A nested function:      JULIA
+function f1(x)
+    function f2(x,y)
+        x+y
+    end
+    f2(x,2)
+end
+# A recursive function:
+function fib(n)
+    if n == 0 return 0
+    elseif n == 1 return 1
+    else
+     return fib(n-1) + fib(n-2)
+    end
+end
+
+</pre>
+<p>在 Julia 社区中，调用函数时遵循以下规则被认为是良好的编程实践:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par35">包含函数逻辑所需的所有元素(即，除常量全局变量外，不能读取其他变量)。</p></li>
+<li><p class="Para" id="Par36">该函数不会改变不在参数范围内的程序的任何其他部分(即，除了最终修改其参数之外，它不会产生任何“副作用”)。</p></li>
+</ul>
+
+<p class="Para" id="Par37">遵循这些规则将帮助您获得快速、可靠(每个函数的输出唯一地依赖于它的输入集)、易于阅读和调试的代码。</p>
+<h3 class="Heading">论据</h3>
+<p class="Para" id="Par38">函数参数通常由位置指定(<em class="EmphasisTypeItalic ">位置参数</em>)。但是，如果在函数定义的参数列表中使用了分号(<code>;</code>)，则在该分号后列出的参数必须由名称(<em class="EmphasisTypeItalic ">关键字参数</em>)指定。</p>
+<p class="Para ParaTypeImportant" id="Par39">函数调用必须尊重这种区别，按位置调用位置参数，按名称调用关键字参数。换句话说，不可能通过名称调用位置参数或者通过位置调用关键字参数。</p>
+<p>最后一个参数(无论是位置参数还是关键字参数)可以与默认值一起指定。例如:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par41">定义:<code>myfunction(a,b=1;c=2) = (a+b+c)</code>(具有两个位置参数和一个关键字参数的定义)</p></li>
+<li><p class="Para" id="Par42">函数调用:<code>myfunction(1,c=3)</code>(调用<code>(1+1+3)</code>注意在调用中没有提供<code>b</code>，因此使用默认值)</p></li>
+</ul>
+
+<p>您可以选择性地限制函数应该接受的引数类型，方法是使用类型来注解参数:</p>
+<pre>myfunction(a::Int64,b::Int64=1;c::Int64=2) = (a+b+c)
+
+</pre>
+<p class="Para" id="Par44">指定参数类型的原因与其说是为了获得速度增益。Julia 将尝试解析可能的参数类型和返回值，只有在极少数情况下，它才能根据输入类型唯一地确定返回类型。在这些情况下(类型不稳定)，指定参数类型可能有助于解决类型不稳定问题。</p>
+<p class="Para" id="Par45">限制参数类型的最重要的原因是在早期捕捉错误，当函数被意外地用一个它没有被设计为使用的参数类型调用时。在这种情况下，如果函数用允许的参数类型进行了注释，Julia 将向用户返回一个有用的错误消息，而不是悄悄地尝试使用该参数。</p>
+<p>然而，一种常见的情况是，您希望函数处理给定参数的单个值(标量)或向量。那么你有两个选择:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par47">您可以编写函数来处理标量，然后依靠点符号在调用时广播函数(稍后将详细讨论)。</p></li>
+<li><p class="Para" id="Par48">或者，您可能希望在函数定义中直接处理这个问题。在这种情况下，可以使用 union 将参数声明为标量类型<code>T</code>或向量类型<code>T</code>。例如:<code>function f(par::Union{Float64, Vector{Float64}}) [...] end</code>。然后，您可以通过使用<code>typeof</code>检查参数类型来实现您想要的逻辑。</p></li>
+</ul>
+
+<p>最后，Julia 中的函数也可以接受可变数量的参数。splat 运算符(即省略号<code>...</code>)可以在函数定义内的参数声明中指定可变数量的参数，并且可以在函数调用内的参数中“拼接”一个列表或数组:</p>
+<pre>values = [1,2,3]      JULIA
+function additionalAverage(init, args...)
+#The parameter that uses the ellipsis must be the last one
+  s = 0
+  for arg in args
+    s += arg
+  end
+  return init + s/length(args)
+end
+a = additionalAverage(10,1,2,3)         # 12.0
+a = additionalAverage(10, values ...)   # 12.0
+
+
+
+
+</pre>
+
+<h3 class="Heading">返回值</h3>
+<p class="Para" id="Par50">使用<code>return</code>关键字提供返回值是可选的。默认情况下，函数返回最后一次计算的值。</p>
+<p>通常，<code>return</code>用于立即终止一个功能，例如，在某些条件发生时。注意，返回值也可以是元组(一次返回多个值):</p>
+<pre>myfunction(a,b) = a*2,b+2      JULIA
+x,y = myfunction(1,2)
+
+</pre>
+
+<h3 class="Heading">3.4.3 多重分派(又名多态)</h3>
+<p class="Para" id="Par52">当类似的逻辑应该应用于不同种类的对象(即不同类型)时，您可以编写共享相同名称但具有不同类型或不同参数数量(以及不同实现)的函数。这极大地简化了应用程序的应用程序编程接口(API ),因为只需要记住一个名字。</p>
+<p class="Para" id="Par53">当调用这样的函数时，Julia 将根据调用中的参数选择正确的函数，默认选择更严格的版本。</p>
+<p class="Para" id="Par54">这些不同的版本在 Julia 中被称为<em class="EmphasisTypeItalic ">方法</em>,如果函数是类型安全的，那么调度是在编译时实现的，速度非常快。</p>
+<p class="Para" id="Par55">您可以使用<code>methods(myfunction)</code>列出给定函数的所有方法。</p>
+<p class="Para" id="Par56">多分派多态性是面向对象运行时多态性的一种推广，其中相同的函数名执行不同的任务，这取决于哪个是对象的类。传统面向对象语言中的多态性仅适用于单个元素，而在 Julia 中，它适用于所有的函数参数(然而，面向对象语言在编译时具有多参数多态性仍然是事实)。</p>
+<p class="Para" id="Par57">在第 4 章处理类型继承时，我会更深入地研究多重分派。</p>
+
+<h3 class="Heading">模板(类型参数化)</h3>
+<p>可以指定函数使用哪些类型。使用<em class="EmphasisTypeItalic ">模板:</em>可以做到这一点</p>
+<pre>myfunction(x::T, y::T2, z::T2) where {T &lt;: Number, T2} = x + y + z
+
+</pre>
+<p class="Para" id="Par59">该函数首先定义两种类型，<code>T</code>(<code>Number</code>的子集)和<code>T2</code>，然后指定每个参数必须是这两种类型中的哪一种。</p>
+<p class="Para" id="Par60">你可以用<code>(1,2,3)</code>或<code>(1,2.5,3.5)</code>作为参数来调用它，但不能用<code>(1,2,3.5)</code>作为参数，因为<code>myfunction</code>的定义要求第二个和第三个参数必须是相同的类型(不管那是什么)。</p>
+
+<h3 class="Heading">3.4.5 作为对象的功能</h3>
+<p>函数本身是对象，可以赋给新变量、返回或嵌套。举个例子:</p>
+<pre>f(x) = 2x # define a function f inline      JULIA
+a = f(2)  # call f and assign the return value to a. `a` is a value
+a = f     # bind f to a new variable name. `a` is now a function
+a(5)      # call again the (same) function
+
+</pre>
+
+<h3 class="Heading">3.4.6 通过引用调用/通过值调用</h3>
+<p class="Para" id="Par62">Julia 函数是使用一种约定来调用的——在其他语言中有时被称为<em class="EmphasisTypeItalic ">共享调用</em>——这在某种程度上介于传统的<em class="EmphasisTypeItalic ">引用调用</em>(其中只有一个指向原始变量的内存指针被传递给函数)和<em class="EmphasisTypeItalic ">值调用</em>(其中传递了变量的一个副本，函数在这个副本上工作)。</p>
+<p>在 Julia 中，函数处理新的局部变量，这些变量只有在函数内部才知道。将变量分配给另一个对象不会影响原始变量。但是如果与变量绑定的对象是可变的(例如，一个数组)，这个对象的<em class="EmphasisTypeItalic ">突变</em>也将应用于原始变量:</p>
+<pre>function f(x,y)      JULIA
+    x = 10
+    y[1] = 10
+end
+x = 1
+y = [1,1]
+f(x,y) # x will not change, but y will now be [10,1]
+
+</pre>
+<p class="Para" id="Par64">(另请参见第<a href="02.html"> 2 </a>章末尾的“内存和复制问题”一节。)</p>
+<p class="Para" id="Par65">按照惯例，改变参数的函数有自己的名字，后跟一个<code>!</code>。比如<code>myfunction!(ref_par, other_pars)</code>。按照惯例，第一个参数将被修改。</p>
+
+<h3 class="Heading">3.4.7 匿名函数(又名“Lambda”函数)</h3>
+<p>有时你不需要命名一个函数(例如，当这个函数是传递给高阶函数的参数之一时，比如<code>map</code>函数)。要定义匿名函数，可以使用<code>-&gt;</code>语法，如下所示:</p>
+<pre>x -&gt; x^2 + 2x - 1      JULIA
+
+</pre>
+<p>这定义了一个无名函数，它接受一个参数<code>x</code>，并产生<code>x^2 + 2x - 1</code>。可以使用元组提供多个参数，如下所示:</p>
+<pre>(x,y,z) -&gt; x + y + z
+
+</pre>
+<p>您仍然可以通过以下方式将匿名函数赋给变量:</p>
+<pre>f = (x,y) -&gt; x+y
+
+</pre>
+<p class="Para ParaTypeImportant" id="Par69"><img alt="../images/477168_1_En_3_Chapter/477168_1_En_3_Figc_HTML.gif" src="../images/477168_1_En_3_Chapter/477168_1_En_3_Figc_HTML.gif" style="width:1.69em"/>不要混淆用于定义匿名函数的单箭头<code>-&gt;</code>和用于定义<code>pair</code>的双箭头<code>=&gt;</code>(例如，在字典中)。</p>
+
+<h3 class="Heading">3.4.8 广播功能</h3>
+<p class="Para" id="Par70">您通常会有一个设计用于标量的函数，但是您希望将它重复应用于容器中的值，比如数组的元素。不用编写<code>for</code>循环，你可以依赖于 Julia 的一个固有功能，即<em class="EmphasisTypeItalic ">在你希望的元素上广播</em>函数。</p>
+<p>以下面的函数为例:</p>
+<pre>f1(a::Int64,b::Int64) = a*b
+
+</pre>
+<p class="Para" id="Par72">它需要两个标量作为输入。例如:</p>
+<p class="Para ParaOneEmphasisChild" id="Par73"><code>f1(2,3)</code></p>
+<p class="Para" id="Par74">但是如果<code>a</code>和<code>b</code>是向量(比如说<code>a=[2,3]</code>和<code>b=[3,4]</code>)呢？你不能直接调用函数<code>f1([2,3],[3,4])</code>。解决方案是使用函数<code>broadcast()</code>，它将原始函数作为其第一个参数，后跟原始函数的参数:<code>broadcast(f1,[2,3],[3,4])</code>。</p>
+<p class="Para" id="Par75">输出是一个向量，保存最初应用于<code>(a=2,b=3)</code>然后应用于<code>(a=3,b=4)</code>的原始函数的结果。</p>
+<p class="Para" id="Par76">到<code>broadcast</code>的一个方便快捷的方法是使用点符号，即原始函数名后面跟一个点:<code>f1.([2,3],[3,4])</code>。</p>
+<p class="Para" id="Par77">有时，原始函数本身将一些参数作为向量，您希望将传播限制在标量参数上。</p>
+<p>在这种情况下，您可以使用<code>Ref()</code>功能来保护您不希望被广播的参数:</p>
+<pre>f2(a::Int64,b::Int64,c::Array{Int64,1},d::Array{Int64,1}) =a*b+sum(c)-sum(d)      JULIA
+f2(1,2,[1,2,3],[0,0,1]) # normal call without broadcast
+f2.([1,1,1],[2,2,2],Ref([1,2,3]),Ref([0,0,1])) # broadcast over the first two arguments only
+
+</pre>
+
+
+<h2 class="Heading">3.5 Do 块</h2>
+<p class="Para" id="Par79">我们通过分析<code>do</code>块来结束这一章。<code>Do</code>块允许开发人员定义“匿名”函数，作为参数传递给外部函数。</p>
+<p>比如你写<code>f1(f2,x,y) = f2(x+1,x+2)+y</code>。要使用这个<code>f1</code>函数，首先需要另一个函数充当<code>f2</code>(内部函数)。你可以把它定义为<code>f2(g,z) = g∗z</code>，然后把<code>f1</code>称为<code>f1(f2,2,8)</code>。每次第一个参数是一个函数，这可以用<code>do</code>块写<em class="EmphasisTypeItalic ">后验</em>。因此，您可以使用<code>do</code>模块获得相同的结果:</p>
+<pre>f1(2,8) do i,j      JULIA
+    i*j
+
+end
+
+</pre>
+<p class="Para" id="Par81">这将<code>i</code>和<code>j</code>定义为可用于<code>do</code>模块的局部变量。它们的值由<code>f1</code>函数决定(在本例中为<code>i=2+1</code>和<code>j=2+2</code>)。然后，块计算的结果可作为函数的输出，作为<code>f1</code>的第一个参数。同样，您如何处理这个值是由<code>f1</code>函数的定义指定的(在这种情况下，值<code>8</code>被添加到函数中，以使<code>20</code>成为返回值)。</p>
+<p class="Para" id="Par82"><code>do</code>模块的另一个典型应用是在输入/输出操作中，如第<a href="05.html"> 5 章</a>所述。</p>
+
+<h2 class="Heading">3.6 退出朱莉娅</h2>
+<p class="Para" id="Par83">要退出正在运行的 Julia 会话，请按<img alt="../images/477168_1_En_3_Chapter/477168_1_En_3_Figd_HTML.gif" src="../images/477168_1_En_3_Chapter/477168_1_En_3_Figd_HTML.gif" style="height:1.38em"/>(或者使用<img alt="../images/477168_1_En_3_Chapter/477168_1_En_3_Fige_HTML.gif" src="../images/477168_1_En_3_Chapter/477168_1_En_3_Fige_HTML.gif" style="height:1.38em"/>在可能的情况下抛出一个<code>InterruptException</code>，在不关闭进程的情况下重新获得对 Julia 提示符的控制)。</p>
+<p class="Para" id="Par84">要以编程方式退出脚本，请使用<code>exit(exit_code)</code>,其中默认的退出代码 0 按照惯例表示正常的程序终止。</p>
+<p class="Para" id="Par85">最后，有时您会希望能够定义 Julia 进程退出时代码应该运行的内容。</p>
+<p class="Para" id="Par86">这正是<code>atexit(f)</code>函数的作用。它允许您定义一个在退出时调用的零参数函数<code>f()</code>。</p>
+<p>例如，当调用给定的函数时，您可以使用它来启动一个新的“clean Julia session”。例如，在全局或本地<code>startup.jl</code>文件中键入以下函数:</p>
+<pre>function workspace()      JULIA
+   atexit() do
+       run(`$(Base.julia_cmd())`)
+   end
+   exit()
+end
+
+</pre>
+<p class="Para" id="Par88">现在，每当调用<code>workspace()</code>函数时，当前的 Julia 进程将被关闭，并启动一个新的进程(注意，<code>workspace</code>是以前的 Julia 版本中清理工作区的一个函数的名称；现在已经没有了。这个脚本复制了它的功能，尽管代价是强制重启整个 Julia 进程。).</p>
+
+
+</body>
+</html>

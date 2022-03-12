@@ -1,0 +1,1882 @@
+<html xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lang="en" xml:lang="en" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2/ http://www.w3.org/MarkUp/SCHEMA/xhtml2.xsd">
+<head>
+    <title>Unknown</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+© Joshua Cook 2017
+Joshua CookDocker for Data Science<a href="10.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">https://doi.org/10.1007/978-1-4842-3012-1_10</a>
+
+<!--Begin Abstract--><h1 class="chaptertitle" xml:lang="en">10.交互式软件开发</h1>
+
+Joshua Cook<sup class="calibre5">1 </sup>
+(1)Santa Monica, California, USA
+
+ 
+
+
+<!--End Abstract-->Developing software
+       as a data scientist is different from traditional software engineering and far less understood. For the traditional software developer, For any language, framworks built around reuse, extensibility, and stability exist. The most famous of these might be the Rails framework for the Ruby language. Rails is written from the ground up around its adopted paradigm, the Model-View-Controller design pattern, a pattern heavily favored in the implementation of user-facing software. Listing <a href="#Par2" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-1</a> shows the creation of and the default file structure for a new Rails application. Note that the new application has clear directories created for it based upon the usage pattern.
+
+          $ rails new myapp
+      create
+      ...
+$ tree -L 1 myapp/app
+myapp/app/
+├── assets
+├── channels
+├── controllers
+├── helpers
+├── jobs
+
+├── mailers
+├── models
+└── views
+
+Listing 10-1.A Default Rails Application
+                
+              
+            
+
+
+
+        
+
+      Data science-specific
+        
+       software development has no such design pattern around which a similar framework might be built. In Chapter <a href="03.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">3</a>, I introduced the idea of interactive computing as an alternative to conventional programming. In this chapter, I propose that the idea of interactive computing itself be adopted as the cornerstone idea for a potential framework. You’ll develop a project framework with infrastructure defined by a docker-compose.yml, built around Jupyter as your interactive computing driver. The goals of this framework are aligned with those of an interactive computing project. This framework should facilitate ease in
+<ul class="unorderedlistmarkbullet"><li class="calibre15">循环</li>
+<li class="calibre15">硬件的扩展和分布</li>
+<li class="calibre15">共享和记录工作</li>
+</ul>
+
+    
+<h2 class="heading2">组织计算生物学项目的快速指南</h2>
+For inspiration for this framework
+          
+        , let’s look at the work of William Noble of the University of Washington.<a href="#Fn1" id="Fn1_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">1</sup></a> Noble’s work describes “one good strategy for carrying out computational experiments,” focusing on “relatively mundane issues such as organizing files directories and documenting progress.”
+Noble focuses on a few key principles to structuring a project:
+<ul class="unorderedlistmarkbullet"><li class="calibre15">文件和目录组织</li>
+<li class="calibre15">记录工作</li>
+<li class="calibre15">执行工作</li>
+<li class="calibre15">版本控制</li>
+</ul>
+
+      
+Figure <a href="#Fig1" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-1</a> shows Noble’s diagram for file and directory organization for a sample project called msms.<img src="Images/A439726_1_En_10_Fig1_HTML.jpg" alt="A439726_1_En_10_Fig1_HTML.jpg" class="calibre91"/>
+Figure 10-1.Noble’s sample project, msms
+              
+
+
+
+      
+
+<h2 class="heading2">交互式开发的项目框架</h2>
+You’ll draw directly upon this work
+          
+         to develop your framework. You’ll use Jupyter Notebooks, numbered in sequence, as a method for both documenting and executing your work. These notebooks become a detailed record of activity as well as the means by which you drive this activity. Furthermore, you’ll present a directory hierarchy designed around the use of the Jupyter Notebook as the driver of your work. Figure <a href="#Fig2" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-2</a> shows a directory hierarchy built for interactive development.<img src="Images/A439726_1_En_10_Fig2_HTML.jpg" alt="A439726_1_En_10_Fig2_HTML.jpg" class="calibre92"/>
+Figure 10-2.Directory hierachy built for interactive development
+
+
+
+      
+You’ll build the directory hierarchy of your project using the following directories:
+<ul class="unorderedlistmarkbullet"><li class="calibre15">数据<ul class="unorderedlistmarkbullet"><li class="calibre15">包含原始数据文件</li>
+</ul>
+
+                </li>
+<li class="calibre15">码头工人<ul class="unorderedlistmarkbullet"><li class="calibre15">包含使用构建定义的每个图像的子目录</li>
+<li class="calibre15">每个子目录都将成为各自映像的构建上下文</li>
+</ul>
+
+                </li>
+<li class="calibre15">ipynb<ul class="unorderedlistmarkbullet"><li class="calibre15">包含所有 Jupyter 笔记本文件</li>
+<li class="calibre15">替换 bin、doc 和结果目录</li>
+<li class="calibre15">笔记本是驱动程序、脚本、文档和演示文稿</li>
+<li class="calibre15">笔记本以日期和活动命名，以便分类</li>
+</ul>
+
+                </li>
+<li class="calibre15">解放运动<ul class="unorderedlistmarkbullet"><li class="calibre15">包含在项目开发过程中定义的特定于项目的代码模块</li>
+</ul>
+
+                </li>
+</ul>
+
+      
+
+<h2 class="heading2">项目根设计模式</h2>
+In Chapter <a href="03.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">3</a>, I proposed that
+<blockquote class="blockquote">Jupyter 不能取代 vim，Sublime Text 或 PyCharm。Jupyter 替换 if __name__ == "__main__ ":。</blockquote>
+      
+The if __name__ == "__main__": design pattern provides a launch hook
+          
+         for running a Python program
+        . The project framework I propose here is not built around running code in such a way, and as such does not require such a launch hook. Rather, you are building this framework around the Jupyter Notebook as a driver. What you require is a pattern for importing modules into your notebooks.
+Maintaining a clean project directory structure requires you to keep your notebooks and your Python modules
+         in separate directories. Furthermore, I hold that it is less aesthetic to nest one inside
+          
+         of the other. This causes a problem at import time. Given a directory structure as shown in Listing <a href="#Par33" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-2</a>, you can’t import a module (e.g. some_module.py shown in Listing <a href="#Par34" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-3</a>) from lib/ directly into a Jupyter Notebook module in ipynb/.
+
+            $ tree
+.
+├── ipynb
+ │   └── some_notebook.ipynb
+└── lib
+    ├── __init__.py
+    ├── some_module.py
+Listing 10-2.Sample Project Structure
+
+
+
+          
+
+            #!/bin/python
+
+def say_hello ():
+    print("Hello!")
+
+Listing 10-3.A Demo Python
+                  
+                 Module, some_module.py
+              
+
+
+
+          
+Let’s solve this problem by using what I will refer to as the project root design pattern (Listing <a href="#Par36" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-4</a>).
+
+            In [1]: from os import chdir
+        chdir('/home/jovyan')
+Listing 10-4.The Project Root Design Pattern
+
+
+
+          
+The project root design pattern changes the current working directory of the Python kernel to be the root of the project. This is guaranteed by the configuration of the mounted volume in your docker-compose.yml file (Listing <a href="#Par45" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-8</a>), where you mount the current directory (.) to the working directory of the jupyter image, home/jovyan. Thus, in running chdir('/home/jovyan') in a Jupyter Notebook (running on a jupyter image), you can guarantee
+          
+         that you will be at the project root. Furthermore, since you are using an absolute path in your chdir statement, you can run this command idempotently. Running this as the first command in any Jupyter Notebook means that you can import from your lib directory at will (Listing <a href="#Par38" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-5</a>).
+
+            In [2]: from lib.some_module import say_hello
+        say_hello()
+
+        Hello! 
+                    
+                    
+                  
+            
+
+Listing 10-5.Import from lib.some_module.
+
+
+
+          
+
+<h2 class="heading2">初始化项目</h2>
+In Chapter <a href="09.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9</a>, you used a docker-compose.yml file to design an application consisting
+          
+         of a Jupyter Notebook Server
+         and a PostgreSQL database
+        . You used the docker-compose build tool and the design of the postgres image to gather your data and seed your database. Here, you do the same again, collecting your data from the UCI Machine Learning Repository. In this chapter, however, you formalize the process of gathering the data, documenting the process using a Jupyter Notebook.
+In Listing <a href="#Par42" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-6</a>, you initialize the project. You create a global directory for your project, ch10_adult. You create three subdirectories within this project, docker/, ipynb/, and lib/. You create a new __init__.py
+        <a href="#Fn2" id="Fn2_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">2</sup></a> file using the touch command. This has the effect of making the lib/ directory into a Python
+          
+         module. Finally, you initialize the project repository as a git repository using git init.
+
+            $ mkdir ch10_adult
+$ cd ch10_adult/
+$ mkdir docker ipynb lib
+$ touch lib/__init__.py
+$ git init
+Initialized empty Git repository in /home/ubuntu/ch10_adult/.git/
+Listing 10-6.Initialize the ch10_adult Project
+
+
+
+          
+In Listing <a href="#Par44" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-7</a>, you create the docker-compose.yml file (Listing <a href="#Par45" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-8</a>), which will define the infrastructure of your project. Note that you start simple
+          
+        . At this phase, you only have a single service, a Jupyter Notebook Server
+        .
+
+            $ vi docker-compose.yml
+Listing 10-7.Create the docker-compose.yml File
+
+
+
+          
+
+            version: '3'
+services:
+  this_jupyter:
+    image: jupyter/scipy-notebook
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan
+Listing 10-8.docker-compose.yml
+
+
+
+          
+Having defined your infrastructure
+          
+        , you bring the application online (Listing <a href="#Par47" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-9</a>). Since you have used the image: keyword rather than the build: keyword to define the image used for your service, it is not necessary to perform a build prior to the launching of your application. After launch, you use the docker-compose ps tool to examine the running containers associated with your application (Listing <a href="#Par48" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-10</a>). In order to access Jupyter through your browser, you will need to obtain a current authentication token (Listing <a href="#Par49" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-11</a>).
+
+            $ docker-compose up -d
+Starting ch10adult_this_jupyter_1
+Listing 10-9.Launch Initial System
+
+
+
+          
+
+            $ docker-compose ps
+Name                   Command                    State                Ports
+----------------------------------------------------------------------------
+ch10adult_this_jupyter_1  tini -- start-notebook.sh  Up   0.0.0.0:8888-&gt;8888/tcp
+              
+            
+          
+Listing 10-10.Examine Running Containers
+
+
+
+          
+
+            $ docker exec ch10adult_this_jupyter_1 jupyter notebook list
+Currently running servers:
+http://localhost:8888/?token=d6dc404c5e3c25ffd993579aeb06eeb2a801c4cbc75f727e :: /home/jovyan
+Listing 10-11.Obtain Authentication Token
+
+
+
+          
+
+<h2 class="heading2">检查数据库要求</h2>
+At this point, your application
+          
+         consists of a single service, a Jupyter Notebook server
+        . The next phase in project development is to bring a database online. Here, you launch a notebook and use pandas
+        <a href="#Fn3" id="Fn3_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">3</sup></a> to examine a sample of the data in order to develop a schema to handle your data. From there you will prepare your postgres build context in order to seed your database.
+You begin by navigating to the Jupyter Notebook server in your browser. Note that the home directory of the Notebook server is comprised of the files of the root directory of your project.
+In Figure <a href="#Fig3" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-3</a>, you navigate to the ipynb directory where you will create a new Python 3 Notebook (Figure <a href="#Fig4" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-4</a>).<img src="Images/A439726_1_En_10_Fig3_HTML.jpg" alt="A439726_1_En_10_Fig3_HTML.jpg" class="calibre93"/>
+Figure 10-3.Navigate to the ipynb directory
+
+
+
+        <img src="Images/A439726_1_En_10_Fig4_HTML.jpg" alt="A439726_1_En_10_Fig4_HTML.jpg" class="calibre94"/>
+Figure 10-4.Create a new Python 3 notebook
+
+
+
+      
+Noble cites the need for “a chronologically organized lab notebook.” I propose that in this project
+          
+         framework this need is met by the Jupyter Notebook. To chronologically organize your work, you simply name your notebook files with a year-month-date format followed by a high-level description of the task to be performed. So name this first
+          
+         notebook 20170611-Examine_Database_Requirements.ipynb. In Listing <a href="#Par55" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-12</a>, you begin the notebook with the project root design pattern, after which you import pandas (Listing <a href="#Par56" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-13</a>).
+
+            In [1]: from os import chdir
+        chdir('/home/jovyan')
+Listing 10-12.The Project Root Design Pattern
+
+
+
+          
+
+            In [2]: import random
+        import pandas as pd
+Listing 10-13.Import Necessary Libraries
+
+
+
+          
+In Figure <a href="#Fig5" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-5</a>, you use Jupyter’s capacity for annotation via markdown to include information on the dataset. The dataset is the adult dataset obtained from the UCI Machine Learning Repository.<a href="#Fn4" id="Fn4_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">4</sup></a> You obtain the markdown you include from the dataset description included with the dataset.<a href="#Fn5" id="Fn5_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">5</sup></a>
+        <img src="Images/A439726_1_En_10_Fig5_HTML.jpg" alt="A439726_1_En_10_Fig5_HTML.jpg" class="calibre95"/>
+Figure 10-5.Use markdown to include information on the dataset from UCI’s Machine Learning Repository
+
+
+
+      
+Listing <a href="#Par61" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-14</a> demonstrates the effect of the project root design pattern using a Jupyter shell call to ls. In Listing <a href="#Par62" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-15</a>, you make another Jupyter shell call to mkdir to create a top-level directory data, after which you make a third Jupyter shell call to use the wget tool to obtain the dataset (Listing <a href="#Par63" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-16</a>).
+
+            In [3]: ls -l
+
+        total 16
+        drwxrwxr-x 2 jovyan 1000 4096 Jun 11 23:53 docker
+        -rw-rw-r-- 1 jovyan 1000  145 Jun 11 23:55 docker-compose.yml
+        drwxrwxr-x 3 jovyan 1000 4096 Jun 12 03:12 ipynb
+        drwxrwxr-x 2 jovyan 1000 4096 Jun 11 23:53 lib
+
+Listing 10-14.List Current Directory
+
+
+
+          
+
+            In [4]: !mkdir data
+Listing 10-15.Create Data Directory
+
+
+
+          
+
+            In [5]: !wget -P data/ \
+        http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+
+        --2017-06-12 03:28:31--  http://archive.ics.uci.edu/ml/machine-learning-
+        databases/adult/adult.data
+        Resolving archive.ics.uci.edu (archive.ics.uci.edu)... 128.195.10.249
+        Connecting to archive.ics.uci.edu (archive.ics.uci.edu)|128.195.10.249|:80... connected.
+        HTTP request sent, awaiting response... 200 OK
+        Length: 3974305 (3.8M) [text/plain]
+        Saving to: 'data/adult.data'
+                
+              
+            
+
+        data/adult.data    100%[===============&gt;]  3.79M  7.93MB/s  in 0.5s
+
+        2017-06-12 03:28:31 (7.93 MB/s) - 'data/adult.data' saved [3974305/3974305]
+
+Listing 10-16.Get the Dataset
+
+
+
+          
+In Listing <a href="#Par65" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-17</a>, you use the wc tool to count the number of lines in the file. In Listing <a href="#Par66" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-18</a>, you use the head tool to see if the file has a header row. Note that the two rows shown are both data rows and therefore the file does not contain a header row.
+
+            In [6]: !wc -l data/adult.data
+
+        32562 data/adult.data
+
+Listing 10-17.Count the Number of Lines in the File
+
+
+
+          
+
+            In [7]: !head -n 2 data/adult.data
+
+        39, State-gov, 77516, Bachelors, 13, Never-married, Adm-clerical, Not-in-family, White,
+        Male, 2174, 0, 40, United-States, &lt;=50K
+        50, Self-emp-not-inc, 83311, Bachelors, 13, Married-civ-spouse, Exec-managerial,
+        Husband, White, Male, 0, 0, 13, United-States, &lt;=50K
+
+Listing 10-18.Check to See If the File Has a Header
+
+
+
+          
+In Listing <a href="#Par69" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-19</a>, you load a 10% sample of the dataset using the pandas.read_csv function. To do this, you first define two variables, number_of_rows and sample_size. The first is the number of rows present in your dataset, the second the number of rows you would like to include in your sample. You next create a list, rows_to_skip, by using the random.sample function. random.sample takes two arguments: a list from which you wish to sample and a sample size. Here, you create a range of number from 0 to number_of_rows and request a sample set of size number_of_rows - sample_size. The returned sample list is sorted and becomes your rows to skip. This list is passed to pandas.read_csv at runtime. The effect is that pandas.read_csv will load a set of size sample_
+        
+              size
+              
+              
+            .
+The output of pandas.read_csv is a pandas.DataFrame object. You save this pandas.DataFrame as adult_df. You assign a list of column names (obtained from the dataset description at the UCI Machine Learning Repository) to the object attribute adult_df.columns.
+
+            In [8]: number_of_rows = 32562
+        sample_size = 3300
+
+        rows_to_skip = random.sample(range(number_of_rows), number_of_rows - sample_size)
+        rows_to_skip.sort()
+
+        adult_df = pd.read_csv('data/adult.data', header=None, skiprows=rows_to_skip)
+        adult_df.columns = [
+            'age',
+            'workclass',
+            'fnlwgt',
+            'education',
+            'education_num',
+            'marital_status',
+            'occupation',
+            'relationship',
+            'race',
+            'gender',
+            'capital_gain',
+            'capital_loss',
+            'hours_per_week',
+            'native_country',
+            'income_label'
+        ]
+
+Listing 10-19.Load the File Using pandas
+              
+
+
+
+          
+In Figure <a href="#Fig6" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-6</a>, you display a sample of the loaded DataFrame using adult_df.sample(3).<img src="Images/A439726_1_En_10_Fig6_HTML.jpg" alt="A439726_1_En_10_Fig6_HTML.jpg" class="calibre96"/>
+Figure 10-6.A sample of the loaded DataFrame
+              
+
+
+
+      
+At this point, you begin to construct a schema for loading your dataset into a PostgreSQL database. In Figure <a href="#Fig7" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-7</a>, you use Jupyter markdown to annotate the datatypes of the different feature columns as providing by UCI, and then examine the adult_df.dtypes to display the data types of each column in the pandas.DataFrame. If the data is properly formatted in the CSV file, then pandas will assign the proper data types to each column. If the pandas.DataFrame data
+          
+         types match the data types in the meta-information providing by UCI, then you should be able to count on the integrity of the data at load time, and be able to use the suggested data types to define your schema. Note that the pandas.DataFrame data types do match the data types in the meta-information and therefore you can use the meta-information as the basis for your schema without the need for special data handling.<img src="Images/A439726_1_En_10_Fig7_HTML.jpg" alt="A439726_1_En_10_Fig7_HTML.jpg" class="calibre97"/>
+Figure 10-7.Comparing meta-information from UCI’s Machine Learning Repository to the DataFrame data types
+
+
+
+      
+Having completed your preliminary work, you save the file and stop the notebook by selecting “Close and Halt” from the File Menu (Figure <a href="#Fig8" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-8</a>). You will use what you discovered here to build your database.<img src="Images/A439726_1_En_10_Fig8_HTML.jpg" alt="A439726_1_En_10_Fig8_HTML.jpg" class="calibre98"/>
+Figure 10-8.Close and halt the notebook
+
+
+
+      
+<h3 class="heading3">通过 Git 管理项目</h3>
+Before moving on to the next phase
+            
+            
+           of the project, you commit all of your recent changes using git. In Listing <a href="#Par74" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-20</a>, you check the status of your project (that is, what changes are present in your code) using the git status tool. Because you have not made any commits since you initialized the project, there will be changes associated with your initial docker-compose.yml file definition, in addition to the work you just did preparing to write your schema.
+
+              $ git status
+On branch master
+
+Initial commit
+
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+
+        data/
+        docker-compose.yml
+        ipynb/
+
+Listing 10-20.Check Project Status
+
+
+
+            
+You will track each segment of work that you have done separately. First, in Listing <a href="#Par76" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-21</a>, you add and commit the creation of your initial docker-compose.yml file. Then, in Listing <a href="#Par77" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-22</a>, you do the same for your schema preparation work. Because this work
+            
+            
+           is everything left unstaged you can use the -A flag to signify that you wish to add “all”.
+
+              $ git add docker-compose.yml
+$ git commit -m 'initial docker-compose.yml file'
+[master (root-commit) 3029c78] initial docker-compose.yml file
+ 1 file changed, 8 insertions(+)
+ create mode 100644 docker-compose.yml
+Listing 10-21.Add and Commit Initial docker-compose.yml File
+
+
+
+            
+
+              $ git add -A
+$ git commit -m 'schema preparation work'
+[master 13de8e1] schema preparation work
+ 3 files changed, 33336 insertions(+)
+ create mode 100644 data/adult.data
+ create mode 100644 ipynb/.ipynb_checkpoints/20170611-Examine_Database_Requirements-checkpoint.ipynb
+ create mode 100644 ipynb/20170611-Examine_Database_Requirements.ipynb create mode 100644 docker-compose.yml
+Listing 10-22.Add and Commit Schema Preparation Work
+
+
+
+            
+Note that this most recent commit also added an .ipynb_checkpoints directory. This is undesirable. In Listing <a href="#Par79" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-23</a>, you create a .gitignore (Listing <a href="#Par80" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-24</a>) file and add a few files you do not wish to track
+            
+            
+           via git. In Listing <a href="#Par81" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-25</a>, you reset the git HEAD to remove the most recent commit. Finally, in Listing <a href="#Par82" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-26</a>, you perform the whole process once more.
+
+              $ vi .gitignore
+Listing 10-23.Create the .gitignore file.
+
+
+
+            
+
+              **/.ipynb_checkpoints
+**/*.pyc
+Listing 10-24.
+                      .gitignore
+                    
+
+
+
+            
+
+              $ git reset HEAD∼1
+$ git status
+On branch master
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+
+        .gitignore
+        data/
+        ipynb/
+
+nothing added to commit
+                  
+                  
+                 but untracked files present (use "git add" to track)
+
+Listing 10-25.Reset git HEAD to the Penultimate Commit and Display Status
+
+
+
+            
+
+              $ git add -A
+$ git commit -m 'schema preparation work'
+[master ad896e2] schema preparation work
+ 3 files changed, 32951 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 data/adult.data
+ create mode 100644 ipynb/20170611-Examine_Database_Requirements.ipynb
+Listing 10-26.Add and Commit Schema Preparation Work
+
+
+
+            
+Warning
+Be cautious when adding data files to a git commit. If syncing a local git repository with a cloud-based version-control system
+             such as GitHub, the files must be less than 100MB to be uploaded to GitHub. Removing a file from a git commit, particularly when it was not the most recent commit, can be challenging and its presence will cause the sync to fail even if it has been removed from the most recent commit. The bash tool split
+            <a href="#Fn6" id="Fn6_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"><sup class="calibre6">6</sup></a> is recommended for breaking CSV files into smaller files that are less than 100MB if a cloud backup is desired.
+
+
+
+<h2 class="heading2">向应用程序添加数据库</h2>
+You initially launched your application
+          
+         with a basic Jupyter service for some preliminary analysis of your dataset. Having done this, let’s use what you learned to seed a PostgreSQL database with this dataset using an appropriate schema. Figure <a href="#Fig9" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-9</a> shows a diagram of the next iteration of your system.<img src="Images/A439726_1_En_10_Fig9_HTML.jpg" alt="A439726_1_En_10_Fig9_HTML.jpg" class="calibre90"/>
+Figure 10-9.Second iteration of your application
+
+
+
+      
+To do this, you will add a few things to your docker-compose.yml file (Listing <a href="#Par90" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-27</a>):
+<ul class="unorderedlistmarkbullet"><li class="calibre15">使用构建的映像而不是现有的映像来定义 Jupyter 笔记本服务，以便包含您的数据库接口库 psycopg2。</li>
+<li class="calibre15">利用你在第<a href="09.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 9 </a>章看到的构建钩子定义一个 PostgreSQL 服务。</li>
+<li class="calibre15">创建供 PostgreSQL 服务使用的数据卷。</li>
+</ul>
+
+      
+
+            version: '3'
+services:
+  this_jupyter:
+    build: docker/jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan
+  this_postgres:
+    build: docker/postgres
+              
+            
+          
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+Listing 10-27.Next Version of Your docker-compose.yml
+              
+
+
+
+          
+Here, you make use of several patterns you have seen before, but in particular you must take care to mount the new data volume to the correct location within the this_postgres container.
+Next, you create directories for your two new build contexts (Listing <a href="#Par93" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-28</a>) and create (Listing <a href="#Par93" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-29</a>) a Dockerfile (Listing <a href="#Par94" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-30</a>) to define your this_jupyter service. At this time, you make only a single change: adding psycopg2 to your Python 3 environment.
+
+            $ mkdir docker/jupyter docker/postgres
+Listing 10-28.Create New Build Contexts
+
+
+
+          
+
+            $ vim docker/jupyter/Dockerfile
+Listing 10-29.Create docker/jupyter/Dockerfile
+              
+
+
+
+          
+
+            FROM jupyter/scipy-notebook
+USER root
+RUN conda install --yes --name root psycopg2
+USER jovyan
+Listing 10-30.
+                    docker/jupyter/Dockerfile
+                  
+
+
+
+          
+Then, you define the build context
+          
+         for your this_postgres service. As in Chapter <a href="09.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9</a>, the build context for your PostgreSQL is much more involved and includes several files: a Dockerfile (Listing <a href="#Par98" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-31</a> and <a href="#Par99" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">32</a>); a bash script, get_data.sh (Listing <a href="#Par101" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-34</a>), to obtain and clean your data; and a sql file, initdb.sql (Listing <a href="#Par103" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-36</a>), to initialize your database.
+Note
+The CSV file for your data obtained from the UCI Machine Learning Repository includes a blank line at the end of the file. PostgreSQL is intolerant of any aberrant behavior and rejects the data copy in your docker/postgres/initdb.sql file (Listing <a href="#Par102" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-35</a>) without special handling of this blank line. As in Chapter <a href="09.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9</a>, I used the sed tool to handle this issue in the get_data.sh file (Listing <a href="#Par100" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-33</a>). Here, I use the pattern /^\s*$/d. This has the effect of matching any lines comprised only of white space, including blank lines (^\s*$), and deleting them using the d command.
+
+
+            $ vim docker/postgres/Dockerfile
+Listing 10-31.Create docker/postgres/Dockerfile
+              
+
+
+
+          
+
+            FROM postgres:alpine
+COPY get_data.sh /docker-entrypoint-initdb.d/get_data.sh
+COPY initdb.sql /docker-entrypoint-initdb.d/initdb.sql
+Listing 10-32.
+                    docker/postgres/Dockerfile
+                  
+
+
+
+          
+
+            $ vim docker/postgres/get_data.sh
+Listing 10-33.Create docker/postgres/get_data.sh
+              
+
+
+
+          
+
+            #!/bin/bash
+wget -P /tmp/ http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+sed '/^\s*$/d' /tmp/adult.data &gt; /tmp/adult-clean.csv
+Listing 10-34.
+                    docker/postgres/get_data.sh
+                  
+
+
+
+          
+
+            $ vim docker/postgres/initdb.sql
+Listing 10-35.Create docker/postgres/Dockerfile
+                
+                      
+                      
+                    
+              
+
+
+
+          
+
+            CREATE TABLE adult (
+    age INTEGER,
+    workclass TEXT,
+    fnlwgt INTEGER,
+    education TEXT,
+    education_num INTEGER,
+    marital_status TEXT,
+    occupation TEXT,
+    relationship TEXT,
+    race TEXT,
+    gender TEXT,
+    capital_gain INTEGER,
+    capital_loss INTEGER,
+    hours_per_week INTEGER,
+    native_country TEXT,
+    income_label TEXT
+);
+                  
+                  
+                
+          
+COPY adult FROM '/tmp/adult.data' DELIMITER ',' CSV;
+Listing 10-36.
+                    docker/postgres/initdb.sql
+                  
+
+
+
+          
+In Listing <a href="#Par105" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-37</a>, you display your project using tree.
+
+            $ tree
+.
+├── data
+ │   └── adult.data
+├── docker
+ │   ├── jupyter
+ │   │   └── Dockerfile
+ │   └── postgres
+ │       ├── Dockerfile
+ │       ├── get_data.sh
+ │       └── initdb.sql
+├── docker-compose.yml
+├── ipynb
+ │   └── 20170611-Examine_Database_Requirements.ipynb
+└── lib
+Listing 10-37.Display project
+
+
+
+          
+In Listing <a href="#Par107" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-38</a>, you launch your updated application. Note that you have added the --build flag to your docker-compose up command to ensure that the new build
+          
+         contexts are built before use. You then examine your running containers using docker-compose ps (Listing <a href="#Par112" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-39</a>).
+
+            $ docker-compose up -d --build
+Creating network "ch10adult_default" with the default driver
+Creating volume "ch10adult_postgres_data" with default driver
+Building this_jupyter
+              
+            
+          
+...
+Building this_postgres
+...
+Successfully built de96ba591ad9
+Successfully tagged ch10adult_this_postgres:latest
+Creating ch10adult_this_jupyter_1
+Creating ch10adult_this_postgres_1
+Listing 10-38.Launch the Application
+
+
+
+          
+Configuring the seeding of a PostgreSQL database can be finicky. The difficulty of this task can be compounded when it is being done through a layer of abstraction, as you are doing here. Your initdb.sql file is being executed by the this_postgres container at runtime. This can make diagnosis and troubleshooting of any issues a challenege. I offer the following methods for verifying the success of database initialization:
+<ul class="unorderedlistmarkbullet"><li class="calibre15">通过 docker-compose ps 确认数据库正在运行。initdb.sql 文件中的语法错误将导致数据库在运行时失败并退出。如果发生这种情况，docker-compose ps 将显示 ch10adult_this_postgres_1 容器的退出状态(清单<a href="#Par112" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 10-39 </a>)。</li>
+<li class="calibre15">检查 this_postgres 服务的日志(清单<a href="#Par113" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 10-40 </a>)。如果初始化成功，日志应该包含初始化脚本和 sql 文件的执行记录。注意，在清单<a href="#Par113" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 10-40 </a>中，您可以看到 32561 条记录已经被成功复制到数据库中。</li>
+<li class="calibre15">通过对 psql 工具的 docker exec 调用连接到正在运行的容器(清单<a href="#Par114" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 10-41 </a>)。</li>
+</ul>
+
+      
+
+            $ docker-compose ps
+          Name          Command                    State              Ports
+----------------------------------------------------------------------------
+ch10adult_this_jupyter_1  tini--start-notebook.sh      Up    0.0.0.0:8888-&gt;8888/tcp
+ch10adult_this_postgres_1  docker-entrypoint.sh postgres  Up                5432/tcp
+Listing 10-39.Examine Running Containers
+
+
+
+          
+
+            ...
+this_postgres_1  | /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/get_data.sh
+              
+            
+          
+this_postgres_1  | Connecting to archive.ics.uci.edu (128.195.10.249:80)
+this_postgres_1  | adult.data             9% |**                             |   363k  0:00:09 ETA
+this_postgres_1  | adult.data           100% |*******************************|  3881k  0:00:00 ETA
+this_postgres_1  |
+this_postgres_1  |
+this_postgres_1  | /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/initdb.sql
+this_postgres_1  | CREATE TABLE
+this_postgres_1  | COPY 32561
+...
+Listing 10-40.Examine this_postgres Logs
+
+
+
+          
+
+            $ docker exec -it ch10adult_this_postgres_1 psql postgres postgres
+psql (9.6.3)
+Type "help" for help.
+
+postgres=# SELECT COUNT(*) FROM adult;
+ count
+-------
+ 32561
+(1 row)
+
+Listing 10-41.Connect to this_postgres via psql
+              
+
+
+
+          
+After verifying that the this_postgres service is properly configured, you commit these infrastructure changes to your git log (Listing <a href="#Par116" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-42</a>). In Listing <a href="#Par117" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-43</a>, you add all files and commit the changes.
+
+            $ git status
+On branch master
+Changes not staged for commit:
+  (use "git add &lt;file&gt;..." to update what will be committed)
+  (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
+
+        modified:   docker-compose.yml
+
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+
+        docker/
+                    
+                    
+                  
+            
+
+Listing 10-42.Check Project Status
+
+
+
+          
+
+            $ git add -A
+$ git commit -m 'add postgres service with database seed'
+[master 5a35f01] add postgres service with database seed
+ 5 files changed, 37 insertions(+), 1 deletion(-)
+ create mode 100644 docker/jupyter/Dockerfile
+ create mode 100644 docker/postgres/Dockerfile
+ create mode 100644 docker/postgres/get_data.sh
+ create mode 100644 docker/postgres/initdb.sql
+Listing 10-43.Add and Commit Changes
+
+
+
+          
+Since you have stopped and relaunched your Jupyter Notebook server, you will need to obtain a new authentication token in order to access the server in the browser once more (Listing <a href="#Par119" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-44</a>).
+
+            $ docker exec ch10adult_this_jupyter_1 jupyter notebook list
+Currently running servers:
+http://localhost:8888/?token=6ab886ef19e02fe8ac351d0c28d03a50ab13be69a69b46d7 :: /home/jovyan
+Listing 10-44.Obtain the Authentication Token
+
+
+
+          
+
+<h2 class="heading2">互动发展</h2>
+A major goal of this project to framework is to facilitate a new style of software development called interactive development. The interactive development of modules
+          
+         is as follows.
+<ol class="calibre7"><li class="listitem">1.使用 Jupyter 在笔记本中交互式编写代码。</li>
+<li class="listitem">2.当一段代码变得太大或者需要重复时，在 Jupyter 中将这段代码抽象成一个函数。</li>
+<li class="listitem">3.在 Jupyter 中测试这个新函数的性能。</li>
+<li class="listitem">4.将此函数移到代码库中的一个模块中。</li>
+<li class="listitem">5.根据需要导入代码以供使用。</li>
+</ol>
+
+      
+Let’s demonstrate the process here with a simple method you will use often, a basic connection from Jupyter to your database. In this case, you will abstract
+          
+         the function into your library of code to adhere to the best practice of not repeating code. You begin by navigating to ipynb/ and creating a new file. You rename the file with today’s date and what you will be doing (e.g. 20170613-Initial_Database_Connection.ipynb). In Listing <a href="#Par127" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-45</a>, you begin the notebook with the project root design pattern, after which you import psycopg2(Listing <a href="#Par128" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-46</a>).
+
+            In [1]: from os import chdir
+        chdir('/home/jovyan')
+Listing 10-45.The Project Root Design Pattern
+                  
+                
+              
+
+
+
+          
+
+            In [2]: import psycopg2 as pg2
+Listing 10-46.Import Necessary Libraries
+
+
+
+          
+In Listing <a href="#Par130" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-47</a>, you connect to your database as you have done previously, instantiating a connection and a cursor from that connection. You make use of the network created for you by Docker Compose and refer to the PostgreSQL
+          
+         by its name on the network, this_postges (that is, the same name you have given to the PostgreSQL service). In Listing <a href="#Par131" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-48</a>, you use the cursor to execute a query to the database, print the results of the query, and then close the connection.
+
+            In [3]: con = pg2.connect(host='this_postgres', user='postgres', database='postgres')
+        cur = con.cursor()
+Listing 10-47.Connect to postgres and Create a Cursor
+
+
+
+          
+
+            In [4]: cur.execute("SELECT COUNT(*) FROM adult;")
+        print(cur.fetchall())
+        con.close()
+
+        [(32561,)]
+
+Listing 10-48.Query the Database and Close the Connection
+
+
+
+          
+The code in Listing <a href="#Par130" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-47</a> is code that you will be using often. Although it is just two lines of code, it is worth abstracting into a function because you will be using it with frequency. In Figure <a href="#Fig10" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-10</a>, you write this function in a Jupyter cell, and then use a tab completion to display the function’s docstring
+          
+        .<img src="Images/A439726_1_En_10_Fig10_HTML.jpg" alt="A439726_1_En_10_Fig10_HTML.jpg" class="calibre92"/>
+Figure 10-10.Define a function and display its docstring
+
+
+
+      
+You next verify that your connect_to_postgres function works as you expect in Listing <a href="#Par134" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-49</a>.
+
+            In [6]: con, cur = connect_to_postgres()
+        cur.execute("SELECT COUNT(*) FROM adult;")
+        print(cur.fetchall())
+        con.close()
+
+        [(32561,)]
+
+Listing 10-49.Test connect_to_postgres
+
+
+
+          
+Having verified that your function for accessing this
+        
+          _postgres works
+          
+        , you can add the function to an external Python module for import. Since you are done with this notebook, you should save and then close and halt the notebook.
+<h3 class="heading3">使用 jupiter 创建一个 python 模块</h3>
+You will use the Jupyter
+            
+           Server’s
+            
+           capacity for creating and editing text files
+            
+           to build a lib.postgres module. In Figure <a href="#Fig11" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-11</a>, you navigate to lib/ using the Notebook server, and then within lib/ you create a new text file. In Figure <a href="#Fig12" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-12</a>, you rename this file postgres.py. Next, you populate the new text file with the code in Listing <a href="#Par137" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-50</a>.<img src="Images/A439726_1_En_10_Fig11_HTML.jpg" alt="A439726_1_En_10_Fig11_HTML.jpg" class="calibre99"/>
+Figure 10-11.Create a new text file
+
+
+
+          <img src="Images/A439726_1_En_10_Fig12_HTML.jpg" alt="A439726_1_En_10_Fig12_HTML.jpg" class="calibre100"/>
+Figure 10-12.Rename the next file to postgres.py
+                
+
+
+
+        
+
+              """Helper module for interfacing with PostgreSQL."""
+import psycopg2 as pg2
+
+def connect_to_postgres():
+                      
+                      
+                    
+              
+    """Preconfigured to connect to PostgreSQL. Returns connection and cursor.
+
+    con, cur = connect_to_postgres()
+    """
+    con = pg2.connect(host='this_postgres', user='postgres', database='postgres')
+    return con, con.cursor()
+
+Listing 10-50.
+                      lib.postgres
+                      Module
+                    
+                  
+                      
+                        
+                        
+                      
+                    
+
+
+
+            
+Next, you create a new notebook to test the function you have written. It may be a bit pedantic
+            
+           to create a new notebook for each task. You do so here to highlight the desired workflow of the interactive development method
+            
+          . You create a new notebook titled 20170613-Verify_Database_Connection.ipynb. In Listing <a href="#Par139" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-51</a>, you begin the notebook with the project root design pattern. In Listing <a href="#Par140" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-52</a>, you import lib.postgres and verify that connect_to_postgres functions as you expect.
+
+              In [1]: from os import chdir
+        chdir('/home/jovyan')
+Listing 10-51.The Project Root Design Pattern
+                    
+                  
+                
+
+
+
+            
+
+              In [2]: import lib.postgres as psql
+        con, cur = psql.connect_to_postgres()
+        cur.execute("SELECT COUNT(*) FROM bc_data;")
+        print(cur.fetchall())
+        con.close()
+
+        [(32561,)]
+
+Listing 10-52.Test psql.connect_to_postgres
+                
+
+
+
+            
+Finally, you track your work using 
+                git
+                
+                
+              . In Listing <a href="#Par142" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-53</a>, you check the status of your project
+            
+          . In Listing <a href="#Par143" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-54</a>, you add and commit all of your recent work.
+
+              $ git status
+On branch master
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+
+        ipynb/20170613-Initial_Database_Connection.ipynb
+        ipynb/20170613-Verify_Database_Connection.ipynb
+        lib/
+
+Listing 10-53.Check Status of Project
+
+
+
+            
+
+              $ git add -A
+ubuntu@LOCAL:∼/ch10_adult (master)
+$ git commit -m 'initial database connection'
+[master d2461f6] initial database connection
+ 4 files changed, 185 insertions(+)
+ create mode 100644 ipynb/20170613-Initial_Database_Connection.ipynb
+ create mode 100644 ipynb/20170613-Verify_Database_Connection.ipynb
+ create mode 100644 lib/__init__.py
+ create mode 100644 lib/postgres.py
+Listing 10-54.Add All Files and Commit
+
+
+
+            
+In Listing <a href="#Par145" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-55</a>, you display
+            
+           the current state of your project.
+
+              $ tree
+                
+              
+            
+.
+├── data
+ │   └── adult.data
+├── docker
+ │   ├── jupyter
+ │   │   └── Dockerfile
+ │   └── postgres
+ │       ├── Dockerfile
+ │       ├── get_data.sh
+ │       └── initdb.sql
+├── docker-compose.yml
+├── ipynb
+ │   ├── 20170611-Examine_Database_Requirements.ipynb
+                
+              
+            
+ │   ├── 20170613-Initial_Database_Connection.ipynb
+ │   └── 20170613-Verify_Database_Connection.ipynb
+                
+              
+              
+                    
+                    
+                  
+            
+└── lib
+    ├── __init__.py
+    ├── postgres.py
+    └── __pycache__
+        ├── __init__.cpython-35.pyc
+        └── postgres.cpython-35.pyc
+Listing 10-55.Current Project Status
+
+
+
+            
+
+
+<h2 class="heading2">向应用程序添加延迟处理</h2>
+You will now iterate on your application
+          
+         to its final state. You will add to your existing application a Redis service as well as two additional services defined as variations on the Jupyter image. In Chapter <a href="09.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">9</a>, I discussed how you might use Redis for caching intermediate results. Here you will explore another use for Redis as the backbone of a delayed job processing system. In addition to Redis, the delayed job processing system will use a Worker service, used for executing delayed jobs, and a Monitor service for monitoring the status of delayed jobs through a web browser. Figure <a href="#Fig13" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-13</a> shows a diagram of your final application.<img src="Images/A439726_1_En_10_Fig13_HTML.jpg" alt="A439726_1_En_10_Fig13_HTML.jpg" class="calibre101"/>
+Figure 10-13.Final application diagram
+
+
+
+      
+To do this, you will add a few things
+          
+         to your docker-compose.yml file (Listing <a href="#Par180" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-56</a>):
+<ul class="unorderedlistmarkbullet"><li class="calibre15">使用 image:关键字定义 Redis 服务。</li>
+<li class="calibre15">创建 Redis 服务要使用的数据卷。</li>
+<li class="calibre15">使用与 Jupyter 服务相同的构建上下文来定义工作服务。</li>
+<li class="calibre15">使用与 Jupyter 服务相同的构建上下文来定义 Monitor 服务。</li>
+</ul>
+
+      
+While both the Worker service
+          
+         and the Monitor service will be defined using the docker/jupyter build context, you will extend these images at runtime using the entrypoint: keyword. This keyword specifies the command with which the image should launch (in other words, the core process that will define the behavior of the container).
+The Worker service will use the rqworker tool in order to interface with Redis to obtain and then execute queued jobs. You use the exec form of the entrypoint: keyword and take advantage of yaml lists to specify the instantiating process. The entrypoint consists of
+<ul class="unorderedlistmarkbullet"><li class="calibre15">记忆合金<ul class="unorderedlistmarkbullet"><li class="calibre15">第<a href="05.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 5 </a>章提到的 PID 1 工具，Jupyter 用它来实例化所有容器</li>
+</ul>
+
+                </li>
+<li class="calibre15">-<ul class="unorderedlistmarkbullet"><li class="calibre15">用 tini <a href="#Fn7" id="Fn7_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> <sup class="calibre6"> 7 </sup> </a>实例化容器的最佳实践</li>
+</ul>
+
+                </li>
+<li class="calibre15">rqworker<ul class="unorderedlistmarkbullet"><li class="calibre15">您将用于运行工作服务的进程</li>
+</ul>
+
+                </li>
+<li class="calibre15">-你<ul class="unorderedlistmarkbullet"><li class="calibre15">URL 标志</li>
+</ul>
+
+                </li>
+<li class="calibre15">-=伊甸园美剧 http://sfile . ydy . com =-荣誉出品本字幕仅供学习交流，严禁用于商业途径<ul class="unorderedlistmarkbullet"><li class="calibre15">Redis 可用的 URL</li>
+<li class="calibre15">在 Docker Compose 创建的网络上使用 Redis 服务的名称</li>
+</ul>
+
+                </li>
+</ul>
+
+      
+The Monitor service will use the rq-dashboard tool in order to provide a web-based dashboard
+          
+         for monitoring the status of queued jobs. You use the exec form of the entrypoint: keyword and take advantage of yaml lists to specify the instantiating process. The entrypoint consists of
+<ul class="unorderedlistmarkbullet"><li class="calibre15">记忆合金</li>
+<li class="calibre15">-</li>
+<li class="calibre15">rq-仪表板<ul class="unorderedlistmarkbullet"><li class="calibre15">您将用于运行监控服务的进程</li>
+</ul>
+
+                </li>
+<li class="calibre15">-H<ul class="unorderedlistmarkbullet"><li class="calibre15">主机标志</li>
+</ul>
+
+                </li>
+<li class="calibre15">此 _redis<ul class="unorderedlistmarkbullet"><li class="calibre15">Docker Compose 在网络上创建的 Redis 服务的名称</li>
+</ul>
+
+                </li>
+<li class="calibre15">-p<ul class="unorderedlistmarkbullet"><li class="calibre15">港口旗帜</li>
+</ul>
+
+                </li>
+<li class="calibre15">Five thousand<ul class="unorderedlistmarkbullet"><li class="calibre15">您的监控服务可用的端口</li>
+</ul>
+
+                </li>
+</ul>
+
+      
+As before, you do not explicitly specify links between containers, letting Docker Compose establish the links for you. You make sure to connect the redis_data volume to the correct location within the this_redis container.
+
+            version: '3'
+services:
+  this_jupyter:
+    build: docker/jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan
+  this_postgres:
+    build: docker/postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  this_redis:
+    image: redis
+    volumes:
+      - redis_data:/data
+  this_worker:
+    build: docker/jupyter
+    volumes:
+      - .:/home/jovyan
+    entrypoint:
+      - "tini"
+      - "--"
+      - "rqworker"
+      - "-u"
+      - "redis://this_redis:6379"
+  this_monitor:
+    build: docker/jupyter
+    volumes:
+      - .:/home/jovyan
+    ports:
+      - "5000:5000"
+    entrypoint:
+      - "tini"
+      - "--"
+      - "rq-dashboard"
+      - "-H"
+      - "this_redis"
+      - "-p"
+      - "5000"
+volumes:
+  postgres_data:
+  redis_data:
+Listing 10-56.Next Version of Your docker-compose.yml
+              
+
+
+
+          
+Next (Listing <a href="#Par182" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-57</a>), you update the Jupyter Dockerfile (Listing <a href="#Par183" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-58</a>) to include the necessary libraries to drive the Worker and Monitor services
+          
+        .
+
+            $ vim docker/jupyter/Dockerfile
+Listing 10-57.Update the docker/jupyter/Dockerfile
+              
+
+
+
+          
+
+            FROM jupyter/scipy-notebook
+USER root
+RUN conda install --yes --name root psycopg2
+RUN conda install --yes --name root redis rq
+RUN ["bash", "-c", "source activate root &amp;&amp; pip install rq-dashboard"]
+USER jovyan
+Listing 10-58.
+                    docker/jupyter/Dockerfile
+                  
+
+
+
+          
+In Listing <a href="#Par185" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-59</a>, you display your project using tree.
+
+            $ tree
+.
+├── data
+ │   └── adult.data
+├── docker
+│   ├── jupyter
+ │   │   └── Dockerfile
+ │   └── postgres
+ │       ├── Dockerfile
+ │       ├── get_data.sh
+ │       └── initdb.sql
+├── docker-compose.yml
+├── ipynb
+ │   ├── 20170611-Examine_Database_Requirements.ipynb
+ │   ├── 20170613-Initial_Database_Connection.ipynb
+ │   └── 20170613-Verify_Database_Connection.ipynb
+              
+            
+          
+└── lib
+    ├── __init__.py
+    ├── postgres.py
+    └── __pycache__
+        ├── __init__.cpython-35.pyc
+        └── postgres.cpython-35.pyc
+Listing 10-59.Display Project
+
+
+
+          
+In Listing <a href="#Par187" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-60</a>, you launch your updated application. Note that you have continued to use the --build flag with your docker-compose up command to ensure that the new build contexts are built before use. You then examine your running containers using docker-compose ps (Listing <a href="#Par188" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-61</a>).
+
+            $ docker-compose up -d --build
+Creating network "ch10adult_default" with the default driver
+Creating volume "ch10adult_postgres_data" with default driver
+Creating volume "ch10adult_redis_data" with default driver
+              
+            
+          
+...
+Creating ch10adult_this_worker_1
+Creating ch10adult_this_redis_1
+Creating ch10adult_this_postgres_1
+Creating ch10adult_this_jupyter_1
+Creating ch10adult_this_monitor_1
+Listing 10-60.Launch Application
+
+
+
+          
+
+            $ docker-compose ps
+          Name          Command                     State              Ports
+----------------------------------------------------------------------------
+ch10adult_this_jupyter_1  tini--start-notebook.sh       Up  0.0.0.0:8888-&gt;8888/tcp
+ch10adult_this_monitor_1  tini--rq-dashboard -H th ...   Up 0.0.0.0:5000-&gt;5000/tcp...
+ch10adult_this_postgres_1  docker-entrypoint.sh postgres  Up                5432/tcp
+ch10adult_this_redis_1  docker-entrypoint.sh redis ... Up                6379/tcp
+ch10adult_this_worker_1    tini--rqworker -u redis: ...  Up        8888/tcp Creating
+Listing 10-61.Examine Running Containers
+
+
+
+          
+Configuring the delayed job system can also be a challenge, just as in configuring
+          
+         the PostgreSQL database. Troubleshooting can be done using very similar methods.
+<ul class="unorderedlistmarkbullet"><li class="calibre15">通过 docker-compose ps 确认服务正在运行。</li>
+<li class="calibre15">检查服务的日志(清单<a href="#Par193" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 10-62 </a>和<a href="#Par194" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1"> 10-63 </a>)。</li>
+<li class="calibre15">通过对 bash 工具的 docker exec 调用连接到正在运行的容器。</li>
+</ul>
+
+      
+
+            $ docker-compose logs this_monitor
+Attaching to ch10adult_this_monitor_1
+this_monitor_1   | RQ Dashboard version 0.3.8
+this_monitor_1   |  * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+Listing 10-62.Examine this_monitor Logs
+
+
+
+          
+
+            $ docker-compose logs this_worker
+Attaching to ch10adult_this_worker_1
+this_worker_1    | 20:28:59 RQ worker 'rq:worker:6a695d66b402.5' started, version 0.6.0
+this_worker_1    | 20:28:59 Cleaning registries for queue: default
+this_worker_1    | 20:28:59
+this_worker_1    | 20:28:59 *** Listening on default......
+Listing 10-63.Examine this_worker Logs
+
+
+
+          
+After verifying that the new services are properly configured, you commit these infrastructure changes
+          
+         to your git log (Listing <a href="#Par196" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-64</a>). In Listing <a href="#Par197" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-65</a>, you add all files and commit the changes.
+
+            $ git status
+On branch master
+Changes not staged for commit:
+  (use "git add &lt;file&gt;..." to update what will be committed)
+  (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
+
+        modified:   docker-compose.yml
+        modified:   docker/jupyter/Dockerfile
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Listing 10-64.Check Project Status
+
+
+
+          
+
+            $ git add -A
+ubuntu@LOCAL:∼/ch10_adult (master)
+$ git commit -m 'add delayed job system'
+[master 9564efd] add delayed job system
+ 2 files changed, 31 insertions(+), 1 deletion(-)
+Listing 10-65.Add and Commit Changes
+
+
+
+          
+Since you have stopped and relaunched your Jupyter Notebook server
+          
+        , you will need to obtain a new authentication token in order to access the server in the browser once more (Listing <a href="#Par199" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-66</a>).
+
+            $ docker exec ch10adult_this_jupyter_1 jupyter notebook list
+Currently running servers:
+http://localhost:8888/?token=46e478574fe9cf238c6e2e6bc9b9daccb7efa7154dfd9d08 :: /home/jovyan
+Listing 10-66.Obtain Authentication Token
+
+
+
+          
+
+<h2 class="heading2">扩展 Postgres 模块</h2>
+Let’s once more demonstrate
+          
+         the interactive development paradigm described in this chapter as you extend the postgres module you previously created. This time you will first develop a function for encoding your target. This function will be executed row by row by one or more workers. You will
+<ul class="unorderedlistmarkbullet"><li class="calibre15">使用 Jupyter 在笔记本中交互式编写代码。</li>
+<li class="calibre15">将这段代码抽象成 Jupyter 中的一个函数。</li>
+<li class="calibre15">在 Jupyter 中测试这个新函数的性能。</li>
+<li class="calibre15">将此函数移到代码库中的一个模块中。</li>
+<li class="calibre15">通过作业队列将功能传递给工人。</li>
+</ul>
+
+      
+You begin by navigating to ipynb/ and creating a new file. You rename the file with today’s date and what you will be doing (e.g. 20170619-Develop_encoding_target_function.ipynb). In Listing <a href="#Par207" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-67</a>, you begin the notebook with the project root design pattern, after which you import connect_to_(Listing <a href="#Par208" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-68</a>).
+
+            In [1]: from os import chdir
+        chdir('/home/jovyan')
+Listing 10-67.The Project Root Design Pattern
+
+
+
+          
+
+            In [2]: from lib.postgres import connect_to_postgres
+Listing 10-68.Import Database Connection
+
+
+
+          
+In Figure <a href="#Fig14" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-14</a>, you use a markdown cell to include the attribute type meta-information for your dataset, as you did in 20170611-Examine_Database_Requirements.ipynb.<img src="Images/A439726_1_En_10_Fig14_HTML.jpg" alt="A439726_1_En_10_Fig14_HTML.jpg" class="calibre102"/>
+Figure 10-14.Display the attribute type meta-information
+
+
+
+      
+In Listing <a href="#Par211" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-69</a>, you create new columns
+          
+         in your database. As in Chapter <a href="08.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">8</a>, you manage your transactions manually via BEGIN and COMMIT statements. Note that you close the connection after each transaction
+          
+        .
+
+            In [3]: con, cur = connect_to_postgres()
+        cur.execute("""
+        BEGIN;
+        ALTER TABLE adult ADD COLUMN _id SERIAL PRIMARY KEY;
+        ALTER TABLE adult ADD COLUMN target BOOLEAN;
+        COMMIT;
+        """)
+        con.close()
+Listing 10-69.Create New Columns
+
+
+
+          
+It is a best practice to monitor changes to the database. In Listing <a href="#Par213" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-70</a>, you use a psql via docker exec to examine the adult table.
+
+            $ docker exec -it ch10adult_this_postgres_1 psql postgres postgres
+                
+              
+            
+psql (9.6.3)
+Type "help" for help.
+
+postgres=# \d adult
+                              Table "public.adult"
+     Column     |  Type   |                      Modifiers
+----------------+---------+-----------------------------------------------------
+ age            | integer |
+ workclass      | text    |
+ fnlwgt         | integer |
+ education      | text    |
+ education_num  | integer |
+ marital_status | text    |
+ occupation     | text    |
+ relationship   | text    |
+ race           | text    |
+ gender         | text    |
+ capital_gain   | integer |
+ capital_loss   | integer |
+ hours_per_week | integer |
+ native_country | text    |
+ income_label   | text    |
+ _id            | integer | not null default nextval('adult__id_seq'::regclass)
+ target         | boolean |
+Indexes:
+    "adult_pkey" PRIMARY KEY, btree (_id)
+
+Listing 10-70.Examine the adult Table via a docker exec psql Call
+
+
+
+          
+In Listing <a href="#Par215" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-71</a>, you retrieve unique values
+          
+         for your target column, income_label.
+
+            In [4]: con, cur = connect_to_postgres()
+        cur.execute("""SELECT DISTINCT(income_label) FROM adult;""")
+        print(cur.fetchall())
+        con.close()
+
+        [(' &gt;50K',), (' &lt;=50K',)]
+
+Listing 10-71.Retrieve Unique Values for Target Column named income_label
+              
+
+
+
+          
+While income_label is categorical in nature, it only has two values and can thus be encoded as a Boolean value. In Listing <a href="#Par217" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-72</a>, you write a short Jupyter script to do just this. You first query the database to retrieve the _id and income_label for a single row where the target column is NULL. You create a Boolean-valued variable greater_than_50k. Finally, you update the table for the given _id and close the connection to the database
+          
+        .
+
+            In [5]: con, cur = connect_to_postgres()
+        cur.execute("""SELECT _id, income_label FROM adult WHERE target IS NULL;""")
+        this_id, income_label = cur.fetchone()
+
+        greater_than_50k = (income_label == ' &gt;50K')
+
+        cur.execute("""
+        BEGIN;
+        UPDATE adult
+        SET target = {}
+        WHERE _id = {};
+        COMMIT;
+        """.format(greater_than_50k, this_id))
+
+        con.close()
+
+Listing 10-72.Encode a Single Instance’s Target as a Boolean
+
+
+
+          
+In Listing <a href="#Par219" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-73</a>, you verify that the update was successful.
+
+            In [6]: con, cur = connect_to_postgres()
+        cur.execute("""
+        SELECT _id, income_label, target
+        FROM adult WHERE _id = {};
+        """.format(this_id))
+        print(this_id, cur.fetchone())
+        con.close()
+                    
+                    
+                  
+            
+
+        10 (10, ' &gt;50K', True)
+
+Listing 10-73.Verify Update
+
+
+
+          
+Having verified that your script works, you set about abstracting the script into a function (Listing <a href="#Par221" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-74</a>).
+
+            In [7]: def encode_target(_id):
+            """Encode the target for a single row as a boolean value. Takes a row _id."""
+            con, cur = connect_to_postgres()
+            cur.execute("""SELECT _id, income_label FROM adult where _id = {}""".format(_id))
+            this_id, income_label = cur.fetchone()
+            assert this_id == _id
+
+            greater_than_50k = (income_label == ' &gt;50K')
+
+            cur.execute("""
+                BEGIN;
+                UPDATE adult
+                SET target = {}
+                WHERE _id = {};
+                COMMIT;
+            """.format(greater_than_50k, _id))
+
+            con.close()
+
+Listing 10-74.
+                encode_target Function
+
+
+
+          
+In Listings <a href="#Par223" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-75</a> and <a href="#Par224" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-76</a>, you test the new function and verify its success
+          
+        .
+
+            In [8]: con, cur = connect_to_postgres()
+        cur.execute("""SELECT _id FROM adult WHERE target IS NULL;""")
+        this_id, = cur.fetchone()
+        encode_target(this_id)
+        con.close()
+Listing 10-75.Select a New Row with Null Target and Encode
+
+
+
+          
+
+            In [6]: con, cur = connect_to_postgres()
+        cur.execute("""
+        SELECT _id, income_label, target
+        FROM adult WHERE _id = {};
+                    
+                    
+                  
+            
+        """.format(this_id))
+        print(this_id, cur.fetchone())
+        con.close()
+
+        11 (11, ' &gt;50K', True)
+
+Listing 10-76.Verify Encoding
+
+
+
+          
+<h3 class="heading3">更新您的 Python 模块</h3>
+In Figure <a href="#Fig15" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-15</a>, you navigate
+            
+          
+          
+                
+                
+                
+               to lib/ using the notebook server, then within lib/ you select your postgres.py in order to update the module using the Jupyter Notebook server’s text interface. Next, you add the code in Listing <a href="#Par221" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-74</a> to the file, as shown in Figure <a href="#Fig16" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-16</a>. Note that a check mark will appear next to the text file name when all current changes have been saved, as in Figure <a href="#Fig17" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-17</a>.<img src="Images/A439726_1_En_10_Fig15_HTML.jpg" alt="A439726_1_En_10_Fig15_HTML.jpg" class="calibre25"/>
+Figure 10-15.Open postgres.py for editing
+
+
+
+          <img src="Images/A439726_1_En_10_Fig16_HTML.jpg" alt="A439726_1_En_10_Fig16_HTML.jpg" class="calibre103"/>
+Figure 10-16.Latest version of postgres.
+                  
+                        py
+                        
+                        
+                      
+                
+
+
+
+          <img src="Images/A439726_1_En_10_Fig17_HTML.jpg" alt="A439726_1_En_10_Fig17_HTML.jpg" class="calibre104"/>
+Figure 10-17.All changes saved for postgres.py
+                
+
+
+
+        
+Next, you will create a new notebook
+            
+            
+           to use the encode_target function via your delayed job system to encode all of the rows in the adult table
+            
+          . You create a new notebook titled 20170619-Encode_target.ipynb. In Listing <a href="#Par227" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-77</a>, you begin the notebook with the project root design pattern. In Listing <a href="#Par228" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-78</a>, you import the functions you need from lib.postgres.
+
+              In [1]: from os import chdir
+        chdir('/home/jovyan')
+Listing 10-77.The Project Root Design Pattern
+
+
+
+            
+
+              In [2]: from lib.postgres import connect_to_postgres, encode_target
+Listing 10-78.Import Functions from lib.postgres
+                
+
+
+
+            
+In Listing <a href="#Par230" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-79</a>, you see a new design pattern, the instantiation
+            
+           of a Queue from the rq library. The Queue is instantiated with a connection to a specific Redis server. As before, you use the name of your Redis service
+            
+            
+           on the network created by Docker Compose, this_redis.
+
+              In [3]: from redis import Redis
+        from rq import Queue
+        REDIS = Redis(host='this_redis')
+        Q = Queue(connection=REDIS)
+Listing 10-79.Create Connection to Redis and New Queue
+                
+
+
+
+            
+In Listing <a href="#Par232" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-80</a>, you put all of the pieces together. You create a new connection to PostgreSQL. You use a for-loop to pull the row _id for 100 rows from the adult table where the target has not yet been encoded. For each row, you add the encode_target function with an associated _id to the job queue using the .enqueue() function
+            
+            
+          . Note that the argument to be passed (that is, the _id, to encode_target at runtime) is passed as a second argument to .enqueue().
+
+              In [4]: con, cur = connect_to_postgres()
+        for _ in range(100):
+            cur.execute("""SELECT _id FROM adult WHERE target IS NULL;""")
+            this_id, = cur.fetchone()
+            Q.enqueue(encode_target, this_id)
+        con.close()
+Listing 10-80.Add 100 Target Encoding Requests to Queue
+                
+
+
+
+            
+During at least one execution of this cell (you will need to run this particular cell over 300 times in order to encode the entire table unless modifications are made), I recommend using the browser-based monitor, as well as “tailing” the Docker Compose logs, to watch the Worker
+            
+            
+           churn through these functions. The browser-based
+            
+           monitor will be available on the same IP address as your Jupyter Notebook server, but will be available on port 5000 (Figure <a href="#Fig18" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-18</a>). Listing <a href="#Par234" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-81</a> shows the “tailing” of the Docker Compose logs using the --follow flag. Each job process will pass through this log as it is executed.<img src="Images/A439726_1_En_10_Fig18_HTML.jpg" alt="A439726_1_En_10_Fig18_HTML.jpg" class="calibre105"/>
+Figure 10-18.Browser-based Queue and Worker monitor
+
+
+
+        
+
+              $ docker-compose logs --follow this_worker
+...
+this_worker_1    | 01:43:04 *** Listening on default...
+this_worker_1    | 01:43:04 default: lib.postgres.encode_target(24) (914a8229-a876-438f-98d4-d6cd39a469b2)
+                    
+                    
+                    
+                  
+              
+                    
+                    
+                  
+            
+this_worker_1    | 01:43:04 default: Job OK (914a8229-a876-438f-98d4-d6cd39a469b2)
+this_worker_1    | 01:43:04 Result is kept for 500 seconds
+this_worker_1    | 01:43:04
+this_worker_1    | 01:43:04 *** Listening on default...
+this_worker_1    | 01:43:04 default: lib.postgres.encode_target(24) (215ed343-0ca5-4f75-86e6-d8237e4a5983)
+this_worker_1    | 01:43:04 default: Job OK (215ed343-0ca5-4f75-86e6-d8237e4a5983)
+this_worker_1    | 01:43:04 Result is kept for 500 seconds
+this_worker_1    | 01:43:04
+this_worker_1    | 01:43:04 *** Listening on default...
+this_worker_1    | 01:43:04 default: lib.postgres.encode_target(24) (1dfe0282-cf90-49de-a904-8a2ced103c50)
+                    
+                    
+                  
+            
+this_worker_1    | 01:43:04 default: Job OK (1dfe0282-cf90-49de-a904-8a2ced103c50)
+this_worker_1    | 01:43:04 Result is kept for 500 seconds
+...
+Listing 10-81.Tailing the Docker Compose Logs
+
+
+
+            
+Finally, you track your work using git. In Listing <a href="#Par236" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-82</a>, you check the status of your project. In Listing <a href="#Par236" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-83</a>, you add and commit all of your recent work
+            
+            
+          .
+
+              $ git status
+On branch master
+Changes not staged for commit:
+  (use "git add &lt;file&gt;..." to update what will be committed)
+  (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
+
+        modified:   lib/postgres.py
+
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+
+        ipynb/20170619-Develop_encoding_target_function.ipynb
+        ipynb/20170619-Encode_target.ipynb
+
+no changes added to commit (use "git add" and/or "git commit -a")      lib/
+
+Listing 10-82.Check the Status of the Project
+
+
+
+            
+
+              $ git add -A
+$ git commit -m 'function and queueing for target encoding'
+[master 93f3033] function and queueing for target encoding
+ 3 files changed, 319 insertions(+)
+ create mode 100644 ipynb/20170619-Develop_encoding_target_function.ipynb
+ create mode 100644 ipynb/20170619-Encode_target.ipynb
+                
+                
+              
+            
+Listing 10-83.Add All Files and Commit
+
+
+
+            
+In Listing <a href="#Par239" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">10-84</a>, you display the current state of your project.
+
+              $ tree
+                
+              
+            
+.
+├── data
+ │   └── adult.data
+├── docker
+ │   ├── jupyter
+ │   │   └── Dockerfile
+ │   └── postgres
+ │       ├── Dockerfile
+ │       ├── get_data.sh
+ │       └── initdb.sql
+├── docker-compose.yml
+├── ipynb
+ │   ├── 20170611-Examine_Database_Requirements.ipynb
+ │   ├── 20170613-Initial_Database_Connection.ipynb
+ │   ├── 20170613-Verify_Database_Connection.ipynb
+ │   ├── 20170619-Develop_encoding_target_function.ipynb
+ │   └── 20170619-Encode_target.ipynb
+└── lib
+    ├── __init__.py
+    ├── postgres.py
+                
+                
+              
+            
+    └── __pycache__
+        ├── __init__.cpython-35.pyc
+        └── postgres.cpython-35.pyc
+Listing 10-84.Current Project Status
+
+
+
+            
+
+
+<h2 class="heading2">摘要</h2>
+This chapter marks the conclusion of the book. In this chapter, you revisited the idea of interactive programming and saw the sketch of what a framework for interactive software development might look like. You defined the project root design pattern and software design pattern used to place Jupyter at the center of a well-structured interactive software application. You outlined steps for creating code modules via an interactive development process. Finally, you used Docker Compose and Redis to build a delayed job processing system into your application. Having finished this chapter, I hope that you are excited and prepared to begin building your own interactive applications.
+
+Footnotes
+<a href="#Fn1_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">1</a>Noble, William Stafford; “A Quick Guide to Organizing Computational Biology Projects,” PLOS Computational Biology, July 31, 2009, <a href="http://journals.plos.org/ploscompbiol/article%3Fid=10.1371/journal.pcbi.1000424" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424
+                  </a>.
+
+ 
+
+<a href="#Fn2_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">2</a>
+                <a href="http://mikegrouchy.com/blog/2012/05/be-pythonic-__init__py.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    http://mikegrouchy.com/blog/2012/05/be-pythonic-__init__py.html
+                  </a>
+              
+
+ 
+
+<a href="#Fn3_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">3</a>
+                <a href="http://pandas.pydata.org" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    http://pandas.pydata.org
+                  </a>
+              
+
+ 
+
+<a href="#Fn4_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">4</a>
+                <a href="http://archive.ics.uci.edu/ml/datasets/Adult" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    http://archive.ics.uci.edu/ml/datasets/Adult
+                  </a>
+              
+
+ 
+
+<a href="#Fn5_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">5</a>
+                <a href="http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                    http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names
+                  </a>
+              
+
+ 
+
+<a href="#Fn6_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">6</a>
+                    <a href="https://ss64.com/bash/split.html" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                        https://ss64.com/bash/split.html
+                      </a>
+                  
+
+ 
+
+<a href="#Fn7_source" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">7</a>
+                            <a href="https://github.com/krallin/tini" class="calibre3 pcalibre pcalibre4 pcalibre3 pcalibre2 pcalibre1">
+                                https://github.com/krallin/tini
+                              </a>
+                          
+
+ 
+
+
+
+
+</body>
+</html>

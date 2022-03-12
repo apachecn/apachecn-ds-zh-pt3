@@ -1,0 +1,395 @@
+<html lang="en">
+<head><title>Data Types and Structures</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body epub:type="chapter">
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">2.数据类型和结构</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">Julia 本身提供了一套相当完整的、分层组织的预定义类型(尤其是数字类型)。这些或者是<em class="EmphasisTypeItalic ">标量</em>——比如整数、浮点数和字符，或者是<em class="EmphasisTypeItalic ">容器式的</em>结构，能够保存其他对象——比如多维数组、字典、集合等等。</p>
+<p class="Para" id="Par3">在这一章中，我们将讨论它们，在第四章中，我们将讨论 Julia 自定义类型，我们将考虑它们的层次结构。</p>
+<p class="Para" id="Par4">每个值(即使是原始值)都有自己独特的类型。按照惯例，类型以大写字母开头，比如<code>Int64</code>或<code>Bool</code>。有时(比如对于所有类似容器的结构和一些非容器的结构)，类型的名称后面是花括号内的其他参数，比如所包含元素的类型或维数。例如，<code>Array{Int64,2}</code>将用于二维整数数组。</p>
+<p class="Para" id="Par5">在 Julia 术语中，这些被称为<em class="EmphasisTypeItalic ">参数类型</em>。在本书中，我们将使用<code>T</code>作为占位符来泛指一种类型。</p>
+<p>对象值和非对象值之间没有界限。Julia 中的所有值都是具有类型的真实对象。只有值有类型，变量没有类型。变量只是绑定到值的名称。<code>::</code>操作符可以用来给程序中的表达式和变量附加类型注释。这样做有两个主要原因:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par7">作为一种断言来帮助确认您的程序按照您期望的方式工作。</p></li>
+<li><p class="Para" id="Par8">向编译器提供额外的类型信息，这在某些情况下可以提高性能。</p></li>
+</ul>
+
+<h2 class="Heading">2.1 简单类型(非容器)</h2>
+<p class="Para" id="Par9">单个字符由<code>Char</code>类型表示，例如<code>a = 'a'</code>(完全支持 Unicode)。布尔值由<code>Bool</code>类型表示，它的唯一实例是<code>true</code>和<code>false</code>。</p>
+<p class="Para ParaTypeImportant" id="Par10"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figa_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figa_HTML.gif" style="width:1.69em"/>在 Julia 中，单引号和双引号不能互换。双引号产生一个<code>char</code>(例如<code>x = 'a'</code>)，而单引号产生一个字符串(例如<code>x = "a"</code>)。</p>
+<p class="Para ParaTypeImportant" id="Par12">虽然整数上下文中的布尔值<code>true</code>和<code>false</code>会被自动转换并分别计算为<code>1</code>和<code>0</code>，但反之则不成立:<code>if 0 [...] end</code>确实会产生一个在布尔上下文<code>TypeError</code>中使用的非布尔(<code>Int64</code>)。</p>
+<p class="Para" id="Par13">Julia 中的“默认”整数类型是<code>Int64</code>(实际上有 10 种不同的整数类型)，它能够存储-2^63 和 2^63-1.之间的值同样，“默认”的浮点类型是<code>Float64</code>。复数(<code>Complex{T}</code>)通过全局常数<code>im</code>支持，代表<code>-1</code>的主平方根。</p>
+<p>然后可以将复数定义为<code>a = 1 + 2im</code>。Julia 对数学的关注是显而易见的，因为即使对于整数的精确比率来说，也有一个本地类型<code>Rational{Int64}</code>，它的实例可以使用<code>//</code>操作符来构造:</p>
+<pre>a = 2 // 3
+
+</pre>
+<h3 class="Heading">基本数学运算</h3>
+<p>所有标准的基本数学算术运算符都以明显的方式得到支持(<code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>)。使用<code>̂</code>运算符(如<code>a = 3^2</code>)对一个数进行幂运算。自然指数表达式(即以欧拉数<em class="EmphasisTypeItalic "> e </em>为基础)是通过<code>a = exp(b)</code>或使用全局常数ℯ(这不是普通的字母<code>e</code>，而是欧拉数的特殊 Unicode 符号:在<code>REPL</code>中键入<img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figb_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figb_HTML.gif" style="height:1.38em"/>以获得它或使用<code>MathConstants.e</code>创建的。).整数除法用<code>÷</code>运算符(<img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figc_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figc_HTML.gif" style="height:1.38em"/>)实现，它们的余数用“模”<code>%</code>运算符给出，如下所示:</p>
+<pre>a = 3 % 2
+
+</pre>
+<p class="Para" id="Par16">pi 常量可作为全局常量<code>pi</code>或π ( <img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figd_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figd_HTML.gif" style="height:1.44em"/>)使用。</p>
+
+<h3 class="Heading">2.1.2 字符串</h3>
+<p class="Para" id="Par17">Julia 中的<code>String</code>类型在某种程度上可以被看作是单个字符的特殊数组(例如，字符串支持索引或者像<code>Array</code>一样循环遍历它们的单个字母)。与数组不同，字符串是不可变的(<code>a="abc"; a[2]="B"</code>会引发错误)。</p>
+<p>单行上的字符串可以使用一对双引号创建，而多行上的字符串可以使用三对双引号创建:</p>
+<pre>a = "a string"      JULIA
+b = "a string\non multiple rows\n"
+c = """
+a string
+on multiple rows
+"""
+a[3] # Returns 's'
+
+</pre>
+<p>Julia 支持大多数典型的字符串操作。例如:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par20"><code>split(s, " ")</code>默认为空白</p></li>
+<li><p class="Para ParaOneEmphasisChild" id="Par21"><code>join([s1,s2], "")</code></p></li>
+<li><p class="Para ParaOneEmphasisChild" id="Par22"><code>replace(s, "toSearch" =&gt; "toReplace")</code></p></li>
+<li><p class="Para" id="Par23"><code>strip(s)</code>删除开头和结尾的空白</p></li>
+</ul>
+
+<p class="Para" id="Par24">要将代表数字的字符串转换成整数或浮点数，请使用<code>myInt = parse(Int,"2017")</code>。要将整数或浮点数转换成字符串，请使用<code>myString = string(123)</code>。</p>
+<h4 class="Heading">串联</h4>
+<p>有几种连接字符串的方法:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par26">使用串联运算符:<code>*</code></p></li>
+<li><p class="Para" id="Par27">使用<code>string</code>功能:<code>string(str1,str2,str3)</code></p></li>
+<li><p class="Para" id="Par28">使用内插法，即使用美元符号组合字符串变量:<code>a = "$str1 is a string and $(myObject.int1) is an integer"</code>(注意括号用于更大的表达式)</p></li>
+</ul>
+
+<p class="Para ParaTypeImportant" id="Par29"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Fige_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Fige_HTML.gif" style="width:1.69em"/>虽然<code>string</code>函数和插值的使用会自动将兼容的类型(如<code>Float64</code>和<code>Int64</code>)转换成字符串，但串联运算符<code>*</code>不会。注意不要将<code>string</code>函数(小写的 S)与<code>String</code>类型和同名的构造函数(大写的 S)混淆。</p>
+
+
+
+<h2 class="Heading">2.2 数组(列表)</h2>
+<p class="Para" id="Par30">数组<code>Array{T,nDims}</code>是 N 维可变容器。在本节中，我们处理一维数组(例如，<code>Array{Float64,1}</code>)。在下一节中，我们考虑二维或多维数组(例如，<code>Array{Float64,2}</code>)。</p>
+<p class="Para ParaTypeImportant" id="Par31"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figf_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figf_HTML.gif" style="width:1.44em"/>在朱丽亚，你可能还会遇到向量和矩阵。<code>Vector{T}</code>只是一维<code>Array{T,1}</code>的别名，<code>Matrix{T}</code>只是二维<code>Array{T,2}</code>的别名。</p>
+<p>有几种方法可以创建类型为<code>T</code>的<code>Array</code>:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par33">列向量(一维数组):<code>a = [1;2;3]</code>或<code>a=[1,2,3]</code></p></li>
+<li><p class="Para" id="Par34">Row vector(在 Julia 中，这是一个二维数组，其中第一维由单行组成；参见下一节“多维和嵌套数组”):<code>a = [1 2 3]</code></p></li>
+<li>空(零元素)数组:<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par36"><code>a = []</code>(产生一个<code>Array{Any,1}</code>)</p></li>
+<li><p class="Para" id="Par37"><code>a = T[]</code>，例如<code>a = Int64[]</code></p></li>
+<li><p class="Para" id="Par38">显式使用构造函数:<code>a = Array{T,1}()</code></p></li>
+<li><p class="Para" id="Par39">使用<code>Vector</code>别名:<code>c = Vector{T}()</code></p></li>
+</ul>
+
+</li>
+<li><p class="Para" id="Par40"><em class="EmphasisTypeItalic ">n</em>-元素零点数组:<code>a=zeros(n)</code>或<code>a=zeros(Int64,n)</code></p></li>
+<li><p class="Para" id="Par41"><em class="EmphasisTypeItalic ">n</em>-元素一数组:<code>a=ones(n)</code>或<code>a=ones(Int64,n)</code></p></li>
+<li><p class="Para" id="Par42"><em class="EmphasisTypeItalic ">n</em>-内容为垃圾的元素数组:<code>a=Array{T,1}(undef,n)</code></p></li>
+<li><p class="Para" id="Par43"><em class="EmphasisTypeItalic ">n</em>-相同<em class="EmphasisTypeItalic "> j </em>元素的元素数组:<code>a=fill(j, n)</code></p></li>
+<li><p class="Para" id="Par44"><em class="EmphasisTypeItalic ">n</em>-随机数元素数组:<code>a = rand(n)</code></p></li>
+</ul>
+
+<p class="Para" id="Par45">数组被允许存储不同的类型，但是在这种情况下，数组将是类型<code>Any</code>，并且它通常会慢得多:<code>x = [10, "foo", false]</code>。</p>
+<p class="Para" id="Par46">但是，如果您需要在数组中存储有限的一组类型，您可以使用<code>Union</code>关键字，并且仍然有一个有效的实现，例如<code>a = Union{Int64,String,Bool}[10, "Foo", false]</code>。</p>
+<p class="Para" id="Par47"><code>a = Int64[]</code>只是<code>a = Array{Int64,1}()</code>的简称(例如<code>a = Any[1,1.5,2.5]</code>相当于<code>a = Array{Any,1}([1,1.5,2.5])</code>)。</p>
+<p class="Para ParaTypeImportant" id="Par48"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figg_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figg_HTML.gif" style="width:1.69em"/> <code>a = Array{Int64,1}</code>(没有括号)根本不创建数组，只是把“数据类型”<code>Array{Int64,1}</code>赋给<code>a</code>。</p>
+<p>方括号用于访问数组的元素(例如<code>a[1]</code>)。切片语法<code>from:step:to</code>通常是受支持的，并且在一些上下文中将返回(快速)迭代器而不是数组。然后将迭代器转换成数组，使用<code>collect(myIterator)</code>，比如:</p>
+<pre>a = collect(5:10)
+
+</pre>
+<p class="Para" id="Par50">边界限制包含在序列中。比如，<code>collect(4:2:8)</code>会返回数组<code>[4,6,8]</code>，<code>collect(8:-2:4)</code>会返回<code>[8,6,4]</code>。</p>
+<p>与关键字<code>end</code>一起，您可以使用 slice 操作符来反转一个数组，尽管使用专用函数<code>reverse(a)</code>可能会更好。</p>
+<pre>collect(a[end:-1:1])
+
+</pre>
+<p>您可以使用<code>y = [2015; 2025:2030; 2100]</code>(注意分号！)或<code>vcat</code>命令(代表垂直连接):</p>
+<pre>y = vcat(2015, 2025:2030, 2100)
+
+</pre>
+<p class="Para" id="Par54">使用数组时，以下函数很有用:</p>
+<p class="Para ParaTypeImportant" id="Par55">按照惯例，以感叹号结尾的函数会修改它们的第一个参数。</p>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par57"><code>push!(a,b)</code>:将一个元素推到<code>a</code>的末端。如果<code>b</code>是一个数组，它将作为一个元素添加到<code>a</code>(相当于 Python <code>append</code>)。</p></li>
+<li><p class="Para" id="Par58"><code>append!(a,b)</code>:将<code>b</code>的所有元素追加到<code>a</code>中。如果<code>b</code>是标量，显然<code>push!</code>和<code>append!</code>是可以互换的。注意，字符串被<code>append!</code>视为数组。相当于 Python <code>extend</code>或者<code>+=</code>。</p></li>
+<li><p class="Para" id="Par59"><code>c = vcat(1,[2,3],[4,5])</code>:连接数组。</p></li>
+<li><p class="Para" id="Par60"><code>pop!(a)</code>:从末端移除一个元素。</p></li>
+<li><p class="Para" id="Par61"><code>popfirst!(a)</code>:从数组的开头(左边)删除一个元素。</p></li>
+<li><p class="Para" id="Par62"><code>deleteat!(a, pos)</code>:从任意位置移除一个元素。</p></li>
+<li><p class="Para" id="Par63"><code>pushfirst!(a,b)</code>:在<code>a</code>的开头(左边)加上<code>b</code>(还有不，对不起，<code>appendfirst!</code>不存在)。</p></li>
+<li><p class="Para" id="Par64"><code>sort!(a)</code>或<code>sort(a)</code>:排序<code>a</code>(取决于你是否要修改原数组)。</p></li>
+<li><p class="Para" id="Par65"><code>unique!(a)</code>或<code>unique(a)</code>:删除重复项(取决于是否要修改原数组)。</p></li>
+<li><p class="Para" id="Par66"><code>reverse(a)</code>或<code>a[end:-1:1]</code>:反转数组中元素的顺序。</p></li>
+<li><p class="Para" id="Par67"><code>in(b, a)</code>:检查<code>a</code>中的<code>b</code>是否存在。也可作为操作员:<code>if b in a [...] end</code>。</p></li>
+<li><p class="Para" id="Par68"><code>length(a)</code>:获取<code>a</code>的长度。</p></li>
+<li><p class="Para" id="Par69"><code>a...</code>(“splat”运算符):将数组的值转换成函数参数(用于函数调用内部；见下一行)。</p></li>
+<li><p class="Para" id="Par70"><code>maximum(a)</code>或<code>max(a...)</code>:获取最大值(<code>max</code>返回给定参数之间的最大值)。</p></li>
+<li><p class="Para" id="Par71"><code>minimum(a)</code>或<code>min(a...)</code>:获取最小值(<code>min</code>返回给定参数之间的最大值)。</p></li>
+<li><p class="Para" id="Par72"><code>sum(a)</code>:返回<code>a</code>元素的总和。</p></li>
+<li><p class="Para" id="Par73"><code>cumsum(a)</code>:返回<code>a</code>的每个元素的累积和(即返回一个数组)。</p></li>
+<li><p class="Para" id="Par74"><code>empty!(a)</code>:清空数组(仅对列向量有效，对行向量无效)。</p></li>
+<li><p class="Para" id="Par75"><code>b = vec(a)</code>:将行向量转换为列向量。</p></li>
+<li><p class="Para" id="Par76"><code>shuffle(a)</code>或<code>shuffle!(a)</code>:随机洗牌<code>a</code>的元素(之前需要<code>using Random</code>)。</p></li>
+<li><p class="Para" id="Par77"><code>isempty(a)</code>:检查数组是否为空。</p></li>
+<li><p class="Para" id="Par78"><code>findall(x -&gt; x == value, myArray)</code>:在数组中寻找一个值并返回其索引。这有点棘手。第一个参数是一个匿名函数(参见第<a href="03.html"> 3 章</a>)，它为<code>myArray</code>的每个值返回一个布尔值，然后<code>findall()</code>返回索引位置。</p></li>
+<li><p class="Para" id="Par79"><code>deleteat!(myarray, findall(x -&gt; x == myUnwantedItem, myArray))</code>:从列表中删除给定的项目。</p></li>
+<li><p class="Para" id="Par80"><code>enumerate(a)</code> : Get <code>(index,element)</code>对，即返回一个元组的迭代器，其中第一个元素是数组<code>a</code>中每个元素的索引，第二个是元素本身。</p></li>
+<li><p class="Para" id="Par81"><code>zip(a,b)</code> : Get <code>(a_element, b_element)</code>对，即返回一个迭代器给由每个自变量的元素组成的元组(例如，<code>zip(names,sex,age)</code>会产生类似<code>[("Marc",'M',18),("Anne",'F',16)])</code>的结果)。注意，像 enumerate 一样，返回的是迭代器。</p></li>
+</ul>
+
+<h3 class="Heading">2.2.1 多维和嵌套数组</h3>
+<p class="Para" id="Par82">在本节中，我们将多维数组(例如，二维数组<code>Array{T,2}</code>或<code>Matrix{T}</code>)和嵌套数组作为数组的数组<code>Array{Array{T,1},1}</code>(即，主结构仍然是一维数组，但各个元素本身是数组)。一个<em class="EmphasisTypeItalic ">矩阵</em>和一个<em class="EmphasisTypeItalic ">数组</em>的主要区别在于，对于一个矩阵，每列(行)上的元素数量必须相同，并且适用线性代数规则。与矩阵代数一样，第一维被解释为垂直维度(行)，第二维是水平维度(列)。</p>
+<p>多维数组<code>Array{T,N}</code>可以像一维数组一样创建(事实上，后者只是前者的特例):</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par84">按列:<code>a = [[1,2,3] [4,5,6]]</code>。第一列的元素、第二列的元素等等。请注意，只有在单行中书写矩阵时，这才有效。</p></li>
+<li><p class="Para" id="Par85">按排:<code>a = [1 4; 2 5; 3 6]</code>。第一行的元素，第二行的元素。</p></li>
+<li>空(零元素)数组:<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par87">显式使用构造函数:<code>a = Array{T}(undef, 0, 0, 0)</code></p></li>
+<li><p class="Para" id="Par88">使用<code>Matrix</code>别名:<code>a = Matrix{T}()</code></p></li>
+</ul>
+
+</li>
+<li><p class="Para" id="Par89"><em class="EmphasisTypeItalic "> n，m，g</em>-元素零点数组:<code>a = zeros(n,m,g)</code>或<code>a = zeros(Int64,n,m,g)</code></p></li>
+<li><p class="Para" id="Par90"><em class="EmphasisTypeItalic "> n，m，g</em>-元素一数组:<code>a = ones(n,m,g)</code>或<code>a = ones(Int64,n,m,g)</code></p></li>
+<li><p class="Para" id="Par91"><em class="EmphasisTypeItalic "> n，m，g</em>-内容为垃圾的元素数组:<code>a = Array{T,3}(undef,n,m,g)</code></p></li>
+<li><p class="Para" id="Par92"><em class="EmphasisTypeItalic "> n，m，g</em>-相同 j 个元素的元素数组:<code>a = fill(j,n,m,n)</code></p></li>
+<li><p class="Para" id="Par93"><em class="EmphasisTypeItalic "> n，m，g</em>-随机数的元素数组:<code>a = rand(n,m,g)</code></p></li>
+</ul>
+
+<p class="Para" id="Par94">多维数组通常来自于使用列表理解。例如，<code>a = [3x + 2y + z for x in 1:2, y in 2:3, z in 1:2]</code>(关于列表理解的详细内容，请参见第<a href="03.html"> 3 章</a>)。</p>
+<p class="Para ParaTypeImportant" id="Par95"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figi_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figi_HTML.gif" style="width:1.69em"/> <em class="EmphasisTypeItalic ">矩阵对嵌套数组</em></p>
+<p>请注意这一重要区别:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par97">创建一个包含两个元素的一维数组(每个元素都是一个向量)。</p></li>
+<li><p class="Para" id="Par98">创建一个有六个标量值的二维数组(一个有两列的矩阵)。</p></li>
+</ul>
+
+<p class="Para" id="Par99">嵌套数组可以用双方括号访问，比如<code>a[2][3]</code>。</p>
+<p class="Para" id="Par100">n 维数组的元素可以用<code>a[idxDim1,idxDim2,..,idxDimN]</code>语法来访问(例如，<code>a[row,col]</code>用于矩阵)，这里也可以使用切片语法。例如，假设<code>a</code>是一个 3x3 矩阵，<code>a[1:2,:]</code>将返回一个包含第一行和第二行所有列元素的 2x3 矩阵。</p>
+<p>请注意，为了将元素推入数组，它们必须与数组类型兼容。以下代码不起作用:</p>
+<pre>a = [1,2,3]; push!(a,[1 2])
+
+</pre>
+<p class="Para" id="Par102">因为第一个命令会自动创建一个<code>Array{Int64,1}</code>，也就是一个标量数组，所以您可以尝试将一个内部数组推送到它上面。为了完成这项工作，<code>a</code>必须被定义为<code>a = Any[1,2,3]</code>或者更明确地定义为<code>a = Union{Int64,Array{Int64,1}}[1,2,3]</code>。</p>
+<p>布尔选择通过使用布尔数组(可能是多维的)来实现:</p>
+<pre>a = [[1,2,3] [4,5,6]]      JULIA
+mask = [[true,true,false] [false,true,false]]
+
+</pre>
+<p class="Para" id="Par104"><code>a[mask]</code>返回包含 1、2 和 5 的一维数组。请注意，即使您删除了原始数据的一整行或一整列，布尔选择也总是会产生一个展平的数组。这取决于程序员相应地改变数据的形状。</p>
+<p class="Para ParaTypeImportant" id="Par105"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figj_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figj_HTML.gif" style="width:1.69em"/>对于行向量，<code>a[2]</code>和<code>a[1,2]</code>都返回第二个元素。</p>
+<p>在处理 n 维数组时，有几个函数特别有用(除了上一节中提到的那些函数之外):</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par107"><code>size(a)</code>:返回一个元组(即一个不可变列表)，其大小为<em class="EmphasisTypeItalic "> n </em>维。</p></li>
+<li><p class="Para" id="Par108"><code>ndims(a)</code>:返回数组的维数(如<code>2</code>表示矩阵)。</p></li>
+<li><p class="Para" id="Par109"><code>reshape(a, nElementsDim1, nElementsDim2,...,nElemensDimN)</code>:按照给定的维度，将<code>a</code>的元素整形为一个新的 n 维数组。如果新维度与<code>a</code>保存的元素数量不一致，则返回<code>DimensionMismatch</code>错误。</p></li>
+<li><p class="Para" id="Par110"><code>dropdims(a, dims=(dimToDrop1,dimToDrop2))</code>:删除指定维度，前提是指定维度只有一个元素，例如<code>a = rand(2,1,3); dropdims(a,dims=(2))</code>。</p></li>
+<li><p class="Para" id="Par111"><code>transpose(a)</code>或<code>a'</code>:转置一维或二维数组。</p></li>
+</ul>
+
+<p><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figk_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figk_HTML.gif" style="width:1.69em"/>不要混淆<code>reshape(a)</code>和<code>transpose(a)</code>:</p>
+<pre>julia&gt; a = [[1 2 3]; [4 5 6]]      JULIA
+2×3 Array{Int64,2}:
+ 1  2  3
+ 4  5  6
+
+julia&gt; reshape(a,3,2)
+3×2 Array{Int64,2}:
+ 1  5
+ 4  3
+ 2  6
+
+julia&gt; transpose(a)
+3×2 LinearAlgebra.Adjoint{Int64,Array{Int64,2}}:
+ 1  4
+ 2  5
+ 3  6
+
+</pre>
+<p> 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par113"><code>collect(Iterators.flatten(a))</code>、<code>vec(a)</code>或<code>a[:]</code>:将多维数组展平成列向量。</p></li>
+</ul>
+
+<p class="Para ParaTypeImportant" id="Par114"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figl_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figl_HTML.gif" style="width:1.69em"/>注意，<code>reshape()</code>、<code>transpose()</code>和<code>vec()</code>执行<em class="EmphasisTypeItalic ">阴影复制</em>，返回底层数据的不同“视图”(因此修改原始矩阵会修改整形、转置或展平的矩阵)。您可以使用<code>collect()</code>强制进行<em class="EmphasisTypeItalic ">深度复制</em>，其中新矩阵保存独立数据(参见“内存和复制问题”一节了解详细信息)。</p>
+<p> 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par115">水平连接任何有意义的东西(向量、矩阵、数据帧等等)。</p></li>
+<li><p class="Para" id="Par116">垂直连接任何有意义的东西(向量、矩阵、数据帧等等)。</p></li>
+</ul>
+
+
+
+<h2 class="Heading">2.3 元组</h2>
+<p>使用元组(<code>Tuple{T1,T2,...}</code>)创建不可变的元素列表:</p>
+<pre>t = (1,2.5,"a")
+
+</pre>
+<p>或者不带括号:</p>
+<pre>t = 1,2.5,"a"
+
+</pre>
+<p class="Para" id="Par119"><em class="EmphasisTypeItalic ">不可变</em>指的是一旦被创建，这个数据结构的元素就不能被添加、删除或更改(反弹到其他对象)。</p>
+<p class="Para ParaTypeImportant" id="Par120"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figm_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figm_HTML.gif" style="width:1.44em"/>注意，如果元组中的元素本身是可变的(例如，<code>Array</code>)，这仍然允许变异(即，“内部”改变)。“不可变的”是元组中各种对象的内存地址或实际位。</p>
+<p class="Para" id="Par121">元组可以很容易地解包到多个变量:<code>var1, var2 = (x,y)</code>。例如，这对于收集返回多个值的函数的值很有用，其中返回的对象是一个元组。</p>
+<p class="Para ParaTypeImportant" id="Par122"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Fign_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Fign_HTML.gif" style="width:1.69em"/>与数组相比，元组即使在托管异构类型时也能保持高效，因为托管的每个元素的类型信息都保留在类型签名中。例如，<code>typeof(((1,2.5,"a"))</code>是<em class="EmphasisTypeItalic ">而不是</em> <code>Tuple{Any}</code>(对于一个数组来说也是如此)而是<code>Tuple{Int64,Float64,String}</code>(你会在第<a href="08.html"> 8 </a>章中看到为什么这很重要。).</p>
+<p>有用的技巧:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par124">将元组转换成数组:<code>t=(1,2,3); a = [t...]</code>或<code>a = [i[1] for i in t]</code>或<code>a=collect(t)</code></p></li>
+<li><p class="Para" id="Par125">将数组转换成元组:<code>t = (a...,)</code>(注意 splat 操作符后面的逗号)</p></li>
+</ul>
+
+
+<h2 class="Heading">2.4 命名元组</h2>
+<p>命名元组(<code>NamedTuple</code>)是项目的集合，这些项目在集合(索引)中的位置不仅可以通过它们的位置来标识，还可以通过它们的名称来标识。</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par127"><code>nt = (a=1, b=2.5)</code>:定义一个<code>NamedTuple</code></p></li>
+<li><p class="Para" id="Par128"><code>nt.a</code>:用点符号访问元素</p></li>
+<li><p class="Para" id="Par129"><code>keys(nt)</code>:返回一组键</p></li>
+<li><p class="Para" id="Par130"><code>values(nt)</code>:返回一组值</p></li>
+<li><p class="Para" id="Par131"><code>collect(nt)</code>:返回一个数值数组</p></li>
+<li><p class="Para" id="Par132"><code>pairs(nt)</code>:返回一个 iterable 对(key，value)。用于循环:<code>for (k,v) in pairs(nt) [...] end</code></p></li>
+</ul>
+
+<p class="Para" id="Par133">如同“普通”元组一样，命名元组可以保存任何值，但是不能被修改(即，不可变)。即使在托管异构类型时，它们也能保持高效。</p>
+<p class="Para ParaTypeImportant" id="Par134"><img alt="../images/477168_1_En_2_Chapter/477168_1_En_2_Figo_HTML.gif" src="../images/477168_1_En_2_Chapter/477168_1_En_2_Figo_HTML.gif" style="width:1.69em"/>在 Julia 1.0 之前，命名元组是在单独的包中实现的(<code>NamedTuple.jl</code>，at <a href="https://github.com/JuliaData/NamedTuples.jl"> <code>https://github.com/JuliaData/NamedTuples.jl</code> </a>)。)既然它们是在 Julia 核心中实现的，那么就不鼓励使用该包实现，除非您必须使用仍然依赖于它的包。</p>
+
+<h2 class="Heading">2.5 词典</h2>
+<p class="Para" id="Par135">字典(<code>Dict{Tkey,Tvalue}</code>)存储从键到值的映射，它们有一个明显的随机排序。</p>
+<p>您可以用<code>mydict = Dict()</code>创建一个空的(零元素)字典，或者用<code>Dict{String,Int64}()</code>指定键和值的类型。要用一些值初始化字典，请使用:</p>
+<pre>mydict = Dict('a'=&gt;1, 'b'=&gt;2, 'c'=&gt;3)
+
+</pre>
+<p>以下是一些使用字典的有用方法:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par138"><code>mydict[akey] = avalue</code>:向字典中添加配对。</p></li>
+<li><p class="Para" id="Par139"><code>delete!(amydict,'akey')</code>:从字典中删除带有指定关键字的配对。</p></li>
+<li><p class="Para" id="Par140"><code>map((i,j) -&gt; mydict[i]=j, ['a','b','c'], [1,2,3])</code>:使用映射添加对(即，从键和值的向量到字典)。</p></li>
+<li><p class="Para" id="Par141"><code>mydict['a']</code>:使用键检索一个值(如果键不存在，它会产生一个错误)。</p></li>
+<li><p class="Para" id="Par142"><code>get(mydict,'a',0)</code>:为不存在的键检索一个带有默认值的值。</p></li>
+<li><p class="Para" id="Par143"><code>keys(mydict)</code>:返回所有键(结果是迭代器，不是数组)。用<code>collect()</code>改造一下。</p></li>
+<li><p class="Para" id="Par144"><code>values(mydict)</code>:返回所有的值(结果还是一个迭代器)。</p></li>
+<li><p class="Para" id="Par145"><code>haskey(mydict, 'a')</code>:检查是否存在密钥。</p></li>
+<li><p class="Para" id="Par146"><code>in(('a' =&gt; 1), mydict)</code>:检查给定的键/值对是否存在(即，键是否存在并具有该特定值)。</p></li>
+</ul>
+
+<p>您可以同时遍历字典的键和值:</p>
+<pre>for (k,v) in mydict      JULIA
+   println("$k is $v")
+end
+
+</pre>
+<p>虽然命名元组和字典看起来很相似，但它们之间有一些重要的区别:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par149">名称元组是不可变的，而字典是可变的。</p></li>
+<li>如果存储不同类型的值，则字典是类型不稳定的，而命名元组保持类型稳定:<ul class="UnorderedListMarkBullet"><li><p class="Para ParaOneEmphasisChild" id="Par151"><code>d = Dict(:k1=&gt;"v1", :k2=&gt;2) # Dict{Symbol,Any}</code></p></li>
+<li><p class="Para ParaOneEmphasisChild" id="Par152"><code>nt = (k1="v1", k2=2) # NamedTuple{(:k1, :k2),Tuple{String,Int64}}</code></p></li>
+</ul>
+
+</li>
+<li><p class="Para" id="Par153">对于命名元组:<code>nt.k1</code>对<code>d[:k1]</code>，语法稍微不那么冗长，可读性更好。</p></li>
+</ul>
+
+<p class="Para" id="Par154">总的来说，命名元组通常更有效，应该更多地被认为是匿名的，而不是字典。</p>
+
+<h2 class="Heading">2.6 套</h2>
+<p class="Para" id="Par155">使用集合(<code>Set{T}</code>)来表示无序的唯一值的集合。集合是可变的集合。</p>
+<p>以下是一些方法:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par157"><code>s = Set()</code>或<code>s = Set{T}()</code>:创建一个空集(零元素)。</p></li>
+<li><p class="Para" id="Par158"><code>s = Set([1,2,2,3,4])</code>:用值初始化集合。请注意，该集合将只有一个<code>2</code>实例。</p></li>
+<li><p class="Para" id="Par159"><code>push!(s, 5)</code>:添加元素。</p></li>
+<li><p class="Para" id="Par160"><code>delete!(s,1)</code>:删除元素。</p></li>
+<li><p class="Para" id="Par161"><code>intersect(set1,set2)</code>、<code>union(set1,set2)</code>、<code>setdiff(set1,set2)</code>:设置交、并、差的常用运算。</p></li>
+</ul>
+
+
+<h2 class="Heading">2.7 内存和复制问题</h2>
+<p class="Para" id="Par162">为了避免复制大量数据，默认情况下，Julia 只复制对象的内存地址，除非程序员明确请求所谓的“深度”复制，或者编译器确定实际复制更有效。</p>
+<p class="Para" id="Par163">当您不想将复制对象的后续修改应用到原始对象时，使用<code>copy()</code>或<code>deepcopy()</code>。</p>
+<p>详细地说:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par165">这执行了一个<em class="EmphasisTypeItalic ">名称绑定</em>，即它将<code>b</code>引用的实体(对象)绑定(分配)到<code>a</code>标识符(变量名)。</p></li>
+<li>可能的结果如下:<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par167">如果<code>b</code>重新绑定到某个其他对象，<code>a</code>仍然引用原始对象。</p></li>
+<li><p class="Para" id="Par168">如果被<code>b</code>引用的对象发生了变化(即，它在内部发生了变化)，那么被<code>a</code>引用的对象也会发生变化(是同一个对象)。</p></li>
+</ul>
+
+</li>
+<li><p class="Para" id="Par169">如果<code>b</code>是不可变的并且在内存中很小，那么在某些情况下，编译器会创建一个新的对象并将它绑定到<code>a</code>，但是对于不可变的用户来说，这种差异是不明显的</p></li>
+<li><p class="Para" id="Par170">对于许多高级语言，您不需要明确地担心内存泄漏。垃圾收集器的存在使得不再可访问的对象被自动销毁。</p>
+ 
+<pre>a = copy(b)
+
+</pre>
+</li>
+<li><p class="Para" id="Par172">这将创建对象的一个新的“独立”副本，并将其绑定到<code>a</code>。这个新对象可以通过其他对象的内存地址来引用它们。在这种情况下，复制的是它们的内存地址，而不是被引用的对象。</p></li>
+<li>可能的结果如下:<pre>a = deepcopy(b)
+
+</pre><ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par174">如果这些被引用的对象(例如，向量的单个元素)被反弹到一些其他对象，则由<code>a</code>引用的新对象保持对原始对象的引用。</p></li>
+<li><p class="Para" id="Par175">如果这些被引用的对象发生变化，那么<code>a</code>引用的新对象所引用的对象也会发生变化(因为它们是相同的对象)。</p></li>
+</ul>
+
+
+ 
+</li>
+<li><p class="Para" id="Par177">一切都是递归地“深度复制”的。</p></li>
+</ul>
+
+<pre>Equal sign (a=b)
+
+</pre>
+<p>下面的代码片段强调了这三种“复制”对象的方法之间的区别:</p>
+<pre>julia&gt; a = [[[1,2],3],4] # [[[1, 2], 3], 4] JULIA
+julia&gt; b = a             # [[[1, 2], 3], 4]
+julia&gt; c = copy(a)       # [[[1, 2], 3], 4]
+julia&gt; d = deepcopy(a)   # [[[1, 2], 3], 4]
+# Rebinds a[2] to an other objects.
+# At the same time mutates object a:
+julia&gt; a[2] = 40         # 40
+julia&gt; b                 # [[[1, 2], 3], 40]
+julia&gt; c                 # [[[1, 2], 3], 4]
+julia&gt; d                 # [[[1, 2], 3], 4]
+# Rebinds a[1][2] and at the same time
+# mutates both a and a[1]:
+julia&gt; a[1][2] = 30      # 30
+julia&gt; b                 # [[[1, 2], 30], 40]
+julia&gt; c                 # [[[1, 2], 30], 4]
+julia&gt; d                 # [[[1, 2], 3], 4]
+# Rebinds a[1][1][2] and at the same time
+# mutates a, a[1] and a[1][1]:
+julia&gt; a[1][1][2] = 20   # 20
+julia&gt; b                 # [[[1, 20], 30], 40]
+julia&gt; c                 # [[[1, 20], 30], 4]
+julia&gt; d                 # [[[1, 2], 3], 4]
+# Rebinds a:
+julia&gt; a = 5             # 5
+julia&gt; b                 # [[[1, 20], 30], 40]
+julia&gt; c                 # [[[1, 20], 30], 4]
+julia&gt; d                 # [[[1, 2], 3], 4]
+
+</pre>
+<p>你可以用<code>==</code>检查两个对象是否有相同的值，用<code>===</code>检查两个对象是否真的相同(记住，不可变对象是在比特级别检查的，可变对象是检查它们的内存地址。):</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par180">假设<code>a = [1, 2]; b = [1, 2]; a == b</code>和<code>a === a</code>为真，但<code>a === b</code>为假。</p></li>
+<li><p class="Para" id="Par181">假设<code>a = (1, 2); b = (1, 2);</code>所有的<code>a == b, a === a</code>和<code>a === b</code>都为真。</p></li>
+</ul>
+
+
+<h2 class="Heading">2.8 关于数据类型的各种注释</h2>
+<p class="Para" id="Par182">要将对象转换(“投射”)为不同的类型，请使用<code>convertedObj = convert(T,x)</code>。当转换不可能时，例如，当您试图将一个<code>6.4 Float64</code>转换成一个<code>Int64</code>值时，将会抛出一个错误(在本例中为<code>InexactError</code>)。</p>
+<p class="Para" id="Par183"><code>const</code>关键字在应用于变量(例如<code>const x = 5</code>)时，表示该标识符不能用于绑定不同类型的对象。被引用的对象仍然可能发生变化，或者标识符反弹到同类型的另一个对象(但是在后一种情况下，会发出警告)。只有全局变量可以被声明为<code>const</code>。</p>
+<p class="Para" id="Par184">您可以使用点(<code>.</code>)操作符“广播”一个函数来处理集合(而不是标量)。</p>
+<p>例如，要广播<code>parse</code>来处理一个数组，您可以使用:</p>
+<pre>myNewList = parse.(Float64,["1.1","1.2"])
+
+</pre>
+<p class="Para" id="Par186">(参见第<a href="03.html"> 3 </a>章中有关广播的更多信息。)</p>
+<h3 class="Heading">随机数</h3>
+<p>在 Julia 中很容易获得伪数字:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par188">[0，1]中的随机浮点数:<code>rand()</code></p></li>
+<li><p class="Para" id="Par189">[a，b]中的随机整数:<code>rand(a:b)</code></p></li>
+<li><p class="Para" id="Par190">在[a，b]中随机浮点，精确到第二位:<code>rand(a:0.01:b)</code></p></li>
+<li><p class="Para" id="Par191">[a，b]: <code>rand(Uniform(a,b))</code>中的随机浮点(需要<code>Distributions</code>包)</p></li>
+<li><p class="Para" id="Par192">使用特定分布(正态分布、泊松分布、…)的[a，b]中的随机浮点数:<code>rand(DistributionName([distribution parameters]))</code></p></li>
+</ul>
+
+<p class="Para" id="Par193">您可以通过简单地将请求的大小指定给<code>rand()</code>来获得一个随机数数组或矩阵。例如，2×3 矩阵的<code>rand(2,3)</code>或<code>rand(Uniform(a,b),2,3)</code>。</p>
+<p class="Para" id="Par194">可以用<code>import Random:seed!; seed!(1234)</code>来“修复”伪随机数发生器的种子。这样做，您仍然在处理(伪)随机数，但是每次运行 Julia 脚本时生成的序列都是相同的，即生成可再现的输出。如果你需要回复到不可复制的随机性，你可以使用<code>seed!()</code>而不用参数。</p>
+
+<h3 class="Heading">2.8.2 失踪、一无所获和楠</h3>
+<p>茱莉亚支持不同的<em class="EmphasisTypeItalic ">思念概念:</em></p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par196"><code>nothing</code> (type <code>Nothing</code>):这是不返回任何东西的代码块和函数返回的值。它是单例类型<code>Nothing</code>的单个实例，更接近 C 风格<code>NULL</code>(有时它被称为“软件工程师的空值”)。大多数使用<code>nothing</code>值的操作会导致运行类型错误。在特定的上下文中，它被打印为<code>#NULL</code>。</p></li>
+<li><p class="Para" id="Par197"><code>missing</code> (type <code>Missing</code>):表示统计意义上的缺失值。应该有一个值，但你不知道它是什么(所以它有时被称为“数据科学家的空值”)。大多数缺少值的操作将会传播(静默)。当容器被声明为<code>Union{T,Missing}</code>类型时，它们可以有效地处理缺失值。<code>Missing.jl</code> ( <a href="https://github.com/JuliaData/Missings.jl"> <code>https://github.com/JuliaData/Missings.jl</code> </a>)包提供了额外的方法来处理缺失的元素。</p></li>
+<li><p class="Para" id="Par198"><code>NaN</code> (type <code>Float64</code>):表示运算结果为非数字值(如 0/0)。它与<code>missing</code>的相似之处在于它静默传播，而不是导致运行类型的错误。同样，茱莉亚也提供了<code>Inf</code>(如<code>1/0</code>)和<code>-Inf</code>(如<code>-1/0</code>)。</p></li>
+</ul>
+
+
+
+
+</body>
+</html>

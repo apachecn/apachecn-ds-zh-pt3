@@ -1,0 +1,1071 @@
+<html lang="en">
+<head><title>Economic Causal Analysis Applying Structural Equation Modeling</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">10.应用结构方程模型的经济因果分析</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">这本书的最后一章介绍了通过应用各种定量技术解决经济问题的方法。它涵盖了结构方程模型(SEM)。注意，这不是单一的方法，而是包含多种方法的框架。这种方法有多种用途。它应用协方差分析来调查联合变异性、相关性分析来调查统计相关性、因子分析来调查由模型数据解释的变异性，以及多元回归分析来调查各种预测变量如何影响响应变量。它还使用路径分析来研究没有测量模型的结构模型。</p>
+<p class="Para" id="Par3">结构方程模型包括一组确定变量组之间因果关系性质的模型。它包括因子分析、路径分析和回归分析。它有助于开发人员调查中介关系，因此他们可以检测其他变量的存在如何削弱或加强预测变量和响应变量之间的结构关系的性质。</p>
+<p>SEM 比之前介绍的模型更有优势，因为它调查多种关系，同时预测多个响应变量。图<a href="#Fig1"> 10-1 </a>显示了前面章节中的模型是如何工作的。大多数模型关注预测变量对响应变量的直接影响。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig1_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig1_HTML.png" style="width:22.72em"/></p>
+<p>图 10-1</p><p class="SimplePara">机器学习模型</p>
+
+
+<p class="Para" id="Par5">图<a href="#Fig1"> 10-1 </a>显示<em class="EmphasisTypeItalic "> x </em>对<em class="EmphasisTypeItalic "> y </em>有直接影响。函数可用于对预测变量(<em class="EmphasisTypeItalic "> x </em>)进行操作，并生成输出值(<em class="EmphasisTypeItalic "> y </em>)。当有多个响应变量时，模型会遇到问题。分别估计多个方程也很繁琐。这就是 SEM 的用武之地。SEM 处理的不仅仅是预测变量。此外，它使开发者能够考虑其他变量的中介效应。</p>
+<h2 class="Heading">框架结构关系</h2>
+<p>SEM 使您能够研究直接和间接的影响。图<a href="#Fig2"> 10-2 </a>显示变量<em class="EmphasisTypeItalic "> m </em>调解了<em class="EmphasisTypeItalic "> x </em>和<em class="EmphasisTypeItalic "> y </em>之间的结构关系。调解人帮助确定是削弱还是加强关系。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig2_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig2_HTML.png" style="width:22.72em"/></p>
+<p>图 10-2</p><p class="SimplePara">结构方程模型</p>
+
+
+<p class="Para" id="Par7">在图<a href="#Fig2"> 10-2 </a>中，<em class="EmphasisTypeItalic "> x </em>代表预测变量，<em class="EmphasisTypeItalic "> y </em>代表响应变量，<em class="EmphasisTypeItalic "> m </em>代表中介变量。SEM 将同时研究<em class="EmphasisTypeItalic "> x </em>对<em class="EmphasisTypeItalic "> y </em>的直接影响和<em class="EmphasisTypeItalic "> m </em>对<em class="EmphasisTypeItalic "> x </em>和<em class="EmphasisTypeItalic "> y </em>关系的间接影响。这将使你有多个方程。</p>
+
+<h2 class="Heading">本章的背景</h2>
+<p class="Para" id="Par8">图<a href="#Fig3"> 10-3 </a>展示了本章探讨的假设框架。</p>
+<p>主要的研究问题是:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par10">瑞典人均 GDP 增长(以年百分比计)在多大程度上影响最终消费支出(以现值美元计)？</p></li>
+<li><p class="Para" id="Par11">瑞典通货膨胀/消费价格指数(百分比)如何影响最终消费支出(现值美元)？</p></li>
+</ul>
+
+<p>次要研究问题包括:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par13">瑞典人出生时的预期寿命(以年计)是否影响人均 GDP 增长(以年百分比计)和最终消费支出(以现值美元计)之间的关系？</p></li>
+</ul>
+
+<p>基于这些研究问题，研究假设如下:</p>
+<ul class="UnorderedListMarkNone"><li><p class="Para" id="Par15">H <sub> 0 </sub>:瑞典通胀/消费价格指数(以百分比表示)不影响最终消费支出(以当前美元计算)。</p></li>
+<li><p class="Para" id="Par16">H <sub> A </sub>:瑞典通胀/消费价格指数(以百分比表示)影响最终消费支出(以现值美元计)。</p></li>
+<li><p class="Para" id="Par17">H <sub> 0 </sub>:瑞典人均国内生产总值的增长(以年百分比计)并不影响最终消费支出(以现值美元计)。</p></li>
+<li><p class="Para" id="Par18">H <sub> A </sub>:瑞典人均国内生产总值的增长(以年百分比计)影响最终消费支出(以现值美元计)。</p></li>
+<li><p class="Para" id="Par19">H <sub> 0 </sub>:瑞典人的预期寿命并不影响人均 GDP 增长(以年百分比计)和最终消费支出(以现值美元计)之间的关系。</p></li>
+<li><p class="Para" id="Par20">H <sub> A </sub>:瑞典人的预期寿命确实会影响人均 GDP 增长(以年百分比表示)和最终消费支出(以当前美元计算)之间的关系。</p></li>
+</ul>
+
+<p>表<a href="#Tab1"> 10-1 </a>概述了本章的宏观经济指标。</p>
+<p>表 10-1</p><p class="SimplePara">本章的瑞典宏观经济指标</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">密码</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">标题</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>FP.CPI.TOTL.ZG</code></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典通货膨胀/消费价格指数(百分比)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>NY.GDP.PCAP.KD.ZG</code></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人均国内生产总值增长率(以年度百分比表示)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>SP.DYN.LE00.IN</code></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人的预期寿命(年)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>NE.CON.TOTL.CD</code></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">瑞典最终消费支出(现值美元)</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h2 class="Heading">理论框架</h2>
+<p class="Para" id="Par22">图<a href="#Fig3"> 10-3 </a>为这个问题提供了框架。</p>
+<p>在继续之前，请确保您的环境中安装了<code>semopy</code>库。要在 Python 环境中安装<code>semopy</code>，请使用<code>pip install semopy</code>。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig3_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig3_HTML.png" style="width:37.72em"/></p>
+<p>图 10-3</p><p class="SimplePara">假设框架</p>
+
+
+<h3 class="Heading">最终消费支出</h3>
+<p>图 10-4 显示了瑞典家庭购买的所有商品和服务的市场价值。这包括耐用产品，如汽车和个人电脑。见清单<a href="#PC1"> 10-1 </a>。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig4_HTML.jpg" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig4_HTML.jpg" style="width:43.02em"/></p>
+<p>图 10-4</p><p class="SimplePara">瑞典最终消费支出线图</p>
+
+
+<pre>country = ["SWE"]
+indicator = {"NE.CON.TOTL.CD":"final_con"}
+final_con = wbdata.get_dataframe(indicator, country=country, convert_date=True)
+final_con.plot(kind="line",color="green",lw=4)
+plt.title("Swedish final consumption expenditure")
+plt.ylabel("Final consumption expenditure")
+plt.xlabel("Date")
+plt.show()
+
+Listing 10-1Swedish Final Consumption Expenditure Line Plot
+
+
+</pre>
+<p class="Para" id="Par25">图<a href="#Fig4"> 10-4 </a>显示了自 1960 年以来瑞典最终消费支出的持续增长。1960 年处于最低水平，2015 年达到顶峰。</p>
+
+<h3 class="Heading">通货膨胀和消费价格</h3>
+<p>通货膨胀和消费者价格一起被用来估计通货膨胀。这部分是通过消费价格指数(普通消费者为商品或服务支付的费用的估计)的年度变化来估计的。它是确定特定国家生活费用的典型指标。列表<a href="#PC2"> 10-2 </a>和图<a href="#Fig5"> 10-5 </a>显示了瑞典的年度通货膨胀和消费者价格。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig5_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig5_HTML.png" style="width:36.65em"/></p>
+<p>图 10-5</p><p class="SimplePara">瑞典通货膨胀和消费价格(以年度百分比表示)</p>
+
+
+<pre>country = ["SWE"]
+indicator = {"FP.CPI.TOTL.ZG":"inflation"}
+inflation = wbdata.get_dataframe(indicator, country=country, convert_date=True)
+inflation.plot(kind="line",color="orange",lw=4)
+plt.title("Swedish inflation, consumer prices (annual %)")
+plt.ylabel("Inflation, consumer prices (annual %)")
+plt.xlabel("Date")
+plt.show()
+
+Listing 10-2Swedish Inflation and Consumer Prices
+
+
+</pre>
+<p class="Para" id="Par27">图<a href="#Fig5"> 10-5 </a>显示，从 20 世纪 60 年代末到 1980 年代初，瑞典的通货膨胀和消费价格翻了三番。这一指标在 1982 年达到最高峰(15%)。</p>
+
+<h3 class="Heading">瑞典的预期寿命</h3>
+<p>图<a href="#Fig6"> 10-6 </a>显示了假设当前的死亡率模式在未来保持不变的情况下，瑞典新生儿的平均预期寿命。见清单<a href="#PC3"> 10-3 </a>。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig6_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig6_HTML.png" style="width:43.12em"/></p>
+<p>图 10-6</p><p class="SimplePara">瑞典人出生时的预期寿命(年)</p>
+
+
+<pre>country = ["SWE"]
+indicator = {"SP.DYN.LE00.IN":"life_exp"}
+life_exp = wbdata.get_dataframe(indicator, country=country, convert_date=True)
+life_exp.plot(kind="line",color="navy",lw=4)
+plt.title("Swedish life expectancy at birth, total (years)")
+plt.ylabel("Life expectancy at birth, total (years)")
+plt.xlabel("Date")
+plt.show()
+
+Listing 10-3Swedish Life Expectancy (in Years)
+
+
+</pre>
+<p class="Para" id="Par29">图<a href="#Fig6"> 10-6 </a>显示了瑞典人预期寿命的极端上升趋势。1960 年，平均寿命为 74 岁。截至 2020 年，这一数字超过了 82 岁。</p>
+
+<h3 class="Heading">人均国内生产总值增长</h3>
+<p>人均 GDP 增长是指一个经济体的年度 GDP 除以人口。图<a href="#Fig7"> 10-7 </a>展示了瑞典人均 GDP 的增长(以年度百分比表示)。见清单<a href="#PC4"> 10-4 </a>。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig7_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig7_HTML.png" style="width:43.12em"/></p>
+<p>图 10-7</p><p class="SimplePara">瑞典人均国内生产总值增长率(以年度百分比表示)</p>
+
+
+<pre>country = ["SWE"]
+indicator = {"NY.GDP.PCAP.KD.ZG":"gdp"}
+gdp = wbdata.get_dataframe(indicator, country=country, convert_date=True)
+gdp.plot(kind="line",color="red",lw=4)
+plt.title("Swedish GDP per capita growth (annual %)")
+plt.ylabel("GDP per capita growth (annual %)")
+plt.xlabel("Date")
+plt.show()
+
+Listing 10-4Swedish GDP Per Capita Growth (as an Annual Percentage)
+
+
+</pre>
+<p>图<a href="#Fig7"> 10-7 </a>显示瑞典人均 GDP 增长不稳定。2019 年达到最低点(5.151263)，1970 年达到最高点(6.292338)。清单<a href="#PC5"> 10-5 </a>检索本章的所有瑞典宏观经济数据，清单<a href="#PC6"> 10-6 </a>显示描述性摘要(见表<a href="#Tab2"> 10-2 </a>)。</p>
+<p>表 10-2</p><p class="SimplePara">描述性总结</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+<col class="tcol7 align-left"/>
+<col class="tcol8 align-left"/>
+<col class="tcol9 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">数数</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">平均</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">标准</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">福建话</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">25%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">50%</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">75%</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最大</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>final_con</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">48.881491</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.647688</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">44.307210</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">46.935678</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">48.399953</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">50.415939</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">55.829462</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>inflation</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty-one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4.297861</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.673401</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.494461</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.360215</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.961151</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7.016359</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">13.706322</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>life_exp</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">77.766451</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.015892</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">73.005610</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">74.977683</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">77.601829</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">80.509756</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">82.958537</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>gdp_per_capita</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Sixty</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.931304</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.285016</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">-5.151263</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.790254</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.040267</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.446864</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">6.292338</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>df.describe().transpose()
+
+Listing 10-6Descriptive Summary
+
+
+</pre>
+<pre>country = ["SWE"]
+indicator = {"NE.CON.PRVT.ZS":"final_con",
+             "FP.CPI.TOTL.ZG":"inflation",
+             "SP.DYN.LE00.IN":"life_exp",
+            "NY.GDP.PCAP.KD.ZG":"gdp"}
+df = wbdata.get_dataframe(indicator, country=country, convert_date=True)
+
+Listing 10-5Load Swedish Macroeconomic Indicators
+
+
+</pre>
+<p>表<a href="#Tab2"> 10-2 </a>显示，对于瑞典:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par33">平均最终消费支出为 48.881491 美元。</p></li>
+<li><p class="Para" id="Par34">平均通货膨胀/消费价格指数为 4.297861%。</p></li>
+<li><p class="Para" id="Par35">平均预期寿命为 77.766451 岁。</p></li>
+<li><p class="Para" id="Par36">人均 GDP 平均增长 1.931304%。</p></li>
+<li><p class="Para" id="Par37">最终消费支出的独立数据点偏离平均值 2.647688。</p></li>
+<li><p class="Para" id="Par38">通货膨胀/消费者价格指数偏离了 3.673401。</p></li>
+<li><p class="Para" id="Par39">预期寿命相差 3.015892 岁。</p></li>
+<li><p class="Para" id="Par40">GDP 增长偏离 2.285016%。</p></li>
+</ul>
+
+
+
+<h2 class="Heading">协方差分析</h2>
+<p>列表<a href="#PC7"> 10-7 </a>调查变量间的联合可变性(见表<a href="#Tab3"> 10-3 </a>)。</p>
+<p>表 10-3</p><p class="SimplePara">协方差矩阵</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">膨胀</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">生活经验</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人均国内生产总值</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>final_con</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7.010251</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.467993</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-7.010302</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.559997</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>inflation</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.467993</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">13.493871</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-6.615968</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.905779</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>life_exp</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-7.010302</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-6.615968</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">9.095604</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.771163</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>gdp_per_capita</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.559997</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.905779</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">-1.771163</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">5.221296</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>dfcov = df.cov()
+dfcov
+
+Listing 10-7Covariance Matrix
+
+
+</pre>
+<p class="Para" id="Par42">表<a href="#Tab3"> 10-3 </a>概述了您检索的变量集的估计协方差。</p>
+
+<h2 class="Heading">相关分析</h2>
+<p>图<a href="#Fig8"> 10-8 </a>显示了变量之间的统计相关性，这由清单<a href="#PC8"> 10-8 </a>确定。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig8_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig8_HTML.png" style="width:43.12em"/></p>
+<p>图 10-8</p><p class="SimplePara">皮尔逊相关矩阵</p>
+
+
+<pre>import seaborn as sns
+dfcorr = df.corr(method="pearson")
+sns.heatmap(dfcorr, annot=True, annot_kws={"size":12},cmap="Blues")
+plt.title("Pearson correlation matrix")
+plt.show()
+
+Listing 10-8Pearson Correlation Matrix
+
+
+</pre>
+<p>表<a href="#Tab4"> 10-4 </a>解释图<a href="#Fig8"> 10-8 </a>中的结果。</p>
+<p>表 10-4</p><p class="SimplePara">皮尔逊相关系数的解释</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">变量</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">皮尔逊相关系数</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">调查的结果</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典通货膨胀/消费价格指数和最终消费支出</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point three six</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典通货膨胀/消费价格指数和最终消费支出之间存在微弱的正相关关系。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典贷款利率和最终消费支出</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.89</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典贷款利率与最终消费支出之间存在极端的负相关关系。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典预期寿命和通货膨胀/消费价格指数</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.6</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人的预期寿命与通货膨胀/消费价格指数之间存在适度的负相关关系。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人均国内生产总值增长和预期寿命(年)</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.27</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人均 GDP 增长与预期寿命之间存在微弱的负相关关系。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人均国内生产总值增长和通货膨胀/消费价格指数</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.11</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人均 GDP 增长与通货膨胀/消费价格指数之间存在微弱的负相关关系。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">瑞典人均 GDP 增长和最终消费支出</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point two seven</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">瑞典人均 GDP 增长和最终消费支出之间存在微弱的正相关关系。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>在发现这些变量之间的相关性之后，您可以创建一个图来图形化地表示相关关系(使用清单<a href="#PC9"> 10-9 </a>中的命令)。图<a href="#Fig9"> 10-9 </a>显示了最终的成对图。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig9_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig9_HTML.png" style="width:43.12em"/></p>
+<p>图 10-9</p><p class="SimplePara">配对图</p>
+
+
+<pre>sns.pairplot(df)
+
+Listing 10-9Pair plot
+
+
+</pre>
+<p class="Para" id="Par46">图<a href="#Fig9"> 10-9 </a>显示了数据中所有变量的直方图和变量间关系的散点图。</p>
+
+<h2 class="Heading">相关性严重性分析</h2>
+<p>清单<a href="#PC10"> 10-10 </a>通过应用特征矩阵来确定每个依赖的严重性(见表<a href="#Tab5"> 10-5 </a>)。特征值是最大方差的度量。</p>
+<p>表 10-5</p><p class="SimplePara">自定义矩阵</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">特征值</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">膨胀</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">生活经验</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人均国内生产总值</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>final_con</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.323484</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.594607</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.595973</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.527068</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.116012</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>inflation</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.059704</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.432198</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.262541</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.662923</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.552096</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>life_exp</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.512778</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.641591</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.755077</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.133840</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.017516</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>gdp_per_capita</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.104034</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.219109</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.075813</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.514606</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">0.825484</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>eigenvalues, eigenvectors = np.linalg.eig(dfcorr)
+eigenvalues = pd.DataFrame(eigenvalues)
+eigenvalues.columns = ["Eigen values"]
+eigenvectors = pd.DataFrame(eigenvectors)
+eigenvectors.columns = df.columns
+eigenvectors = pd.DataFrame(eigenvectors)
+eigenmatrix = pd.concat([eigenvalues, eigenvectors],axis=1)
+eigenmatrix.index = df.columns
+eigenmatrix
+
+Listing 10-10Eigen Matrix
+
+
+</pre>
+<p class="Para" id="Par48">根据表<a href="03.html#Tab4"> 3-4 </a>，数据中不存在多重共线性。特征值都在 3 以下。</p>
+
+<h2 class="Heading">结构方程模型估计</h2>
+<p>SEM 通过应用最大似然法或一般最小二乘法对变量进行操作。当回归的隐含假设不满足时，最大似然法起作用，它确定最适合数据的参数。一般的最小二乘法回归变量。清单<a href="#PC11"> 10-11 </a>构建了模型的假设框架。</p>
+<pre>import semopy
+import wbdata
+from semopy import Model
+import semopy
+import wbdata
+from semopy import Model
+mod = """   life_exp ~ gdp_per_capita
+            final_con ~ inflation + life_exp + gdp_per_capita
+      """
+
+Listing 10-11Develop Hypothetical Structure
+
+
+</pre>
+
+<h2 class="Heading">结构方程模型开发</h2>
+<p>清单<a href="#PC12"> 10-12 </a>用默认超参数训练 SEM。</p>
+<pre>m = Model(mod)
+m.fit(df)
+SolverResult(fun=0.549063553713184, success=True, n_it=18, x=array([-0.33778359, -0.19991271, -0.92551867, -0.04842324,  8.35819007,
+        1.2715286 ]), message='Optimization terminated successfully', name_method='SLSQP', name_obj='MLW')
+
+Listing 10-12Structural Equation Model
+
+
+</pre>
+<p class="Para" id="Par51">这些结果表明，结构方程模型应用最大似然法，包括目标函数。</p>
+
+<h2 class="Heading">结构方程模型信息</h2>
+<p>清单<a href="#PC13"> 10-13 </a>检索与目标名称、优化方法、目标值和迭代次数相关的 SEM 信息。</p>
+<pre>print(m.fit(df))
+Name of objective: MLW
+Optimization method: SLSQP
+Optimization successful.
+Optimization terminated successfully
+Objective value: 0.549
+Number of iterations: 1
+Params: -0.338 -0.200 -0.926 -0.048 8.358 1.272
+
+Listing 10-13Model Information
+
+
+</pre>
+<p>清单<a href="#PC14"> 10-14 </a>返回 SEM 预测的值，然后将这些值制成表格(见表<a href="#Tab6"> 10-6 </a>)。</p>
+<p>表 10-6</p><p class="SimplePara">瑞典实际和预测的最终消费支出</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">日期</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人均国内生产总值</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">膨胀</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">生活经验</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2020-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">44.307210</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-3.517627</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.497367</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-40.408627</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2019-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">45.287253</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.347439</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.784151</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">82.958537</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2018-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">45.697290</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.772577</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.953535</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">82.558537</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2017-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">45.718184</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.195148</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.794499</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">82.409756</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2016-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">45.856915</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.796146</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.984269</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">82.307317</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">...</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">...</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">...</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">...</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">...</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1964-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">52.543020</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">6.026059</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.387662</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">73.733171</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1963-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">54.398699</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4.735940</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.871740</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">73.555366</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1962-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">54.746401</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.685605</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4.766197</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">73.350488</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1961-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">55.275500</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">5.184619</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.157973</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">73.474390</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">1960-01-01</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">55.829462</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">-36.394777</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">4.141779</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">73.005610</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>preds = m.predict(df)
+preds
+
+Listing 10-14Make Predictions
+
+
+</pre>
+<p>图<a href="#Fig10"> 10-10 </a>显示了瑞典最终消费支出的实际值和预测值。见清单<a href="#PC15"> 10-15 </a>。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig10_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig10_HTML.png" style="width:43.12em"/></p>
+<p>图 10-10</p><p class="SimplePara">瑞典实际和预测的最终消费支出</p>
+
+
+<pre>preds["final_con"].plot(lw=4)
+df["final_con"].plot(lw=4)
+plt.title("Swedish actual and predicted FCE")
+plt.xlabel("Date")
+plt.ylabel("FCE")
+plt.show()
+
+Listing 10-15Swedish Actual and Predicted Final Consumption Expenditures
+
+
+</pre>
+<p class="Para" id="Par55">图<a href="#Fig10"> 10-10 </a>显示了结构方程模型在预测瑞典最终消费支出方面的技巧。</p>
+
+<h2 class="Heading">结构方程模型检验</h2>
+<p>清单<a href="#PC16"> 10-16 </a>检索估计值、标准误差、z 值和 p 值，然后将这些信息制成表格<a href="#Tab7"> 10-7 </a>。您可以应用 p 值来确定本章前面提出的假设索赔的重要性。此外，使用标准误差来确定误差的大小。</p>
+<p>表 10-7</p><p class="SimplePara">结构方程模型剖面表</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+<col class="tcol7 align-left"/>
+<col class="tcol8 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-伊凡</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">外科手术</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">rval(消歧义)</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">估计</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Std。犯罪</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">z 值</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">p 值</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 0 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">生活经验</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">~</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人均国内生产总值</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.337784</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.163362</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-2.067697</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.866852e-02</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 1 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">~</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">膨胀</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.199913</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.039862</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-5.015087</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">5.300940e-07</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 2 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">~</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">生活经验</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.925519</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.049939</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-18.532890</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.000000e+00</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 3 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">~</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">人均国内生产总值</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.048423</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.066274</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-0.730648</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4.649940e-01</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 4 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">生活经验</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">~~</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">生活经验</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">8.358190</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.513430</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">5.522681</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.338665e-08</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> 5 </strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">~~</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">最后一个</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.271529</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.230238</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">5.522681</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">3.338665e-08</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>m.inspect()
+
+Listing 10-16Structural Equation Model Inspection
+
+
+</pre>
+<p>表<a href="#Tab7"> 10-7 </a>显示所有的关系都是显著的(参考“可视化结构关系”部分以更好地解释这些结果)。要进一步研究 SEM 的性能，请使用以下方法之一:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par58">绝对拟合指数(AFI)通过应用似然比检验等检验来确定模型是否符合数据。应用这些指数时，主要关注χ <sup> 2 </sup>(卡方)值。</p></li>
+<li><p class="Para" id="Par59">增量拟合指数包括赋范拟合指数(NFI)和比较拟合指数(CFI)，前者将模型的χ2 值与零模型的χ2 进行比较，后者将模型的χ2 值与零模型的χ2 进行比较，并考虑样本大小。</p></li>
+</ul>
+
+<h3 class="Heading">报告索引</h3>
+<p>清单<a href="#PC17"> 10-17 </a>检索报告索引(见表<a href="#Tab8"> 10-8 </a>)。</p>
+<p>表 10-8</p><p class="SimplePara">报告索引</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+<col class="tcol7 align-left"/>
+<col class="tcol8 align-left"/>
+<col class="tcol9 align-left"/>
+<col class="tcol10 align-left"/>
+<col class="tcol11 align-left"/>
+<col class="tcol12 align-left"/>
+<col class="tcol13 align-left"/>
+<col class="tcol14 align-left"/>
+<col class="tcol15 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">愚蠢的</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">自由度基线</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">chi2</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">chi2 p 值</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">chi2 基线</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">晶体频率指示器</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">无胰高血糖素的胰岛素</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">阿格菲</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">评分</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">传输层接口</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">RMSEA(密西西比州)</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">美国化学师学会(American Institute of Chemists)</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">比克</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">洛格里克</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">值</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">four</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">eight</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">36.813532</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.967869e-07</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">172.658646</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.800718</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.786784</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.573569</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.786784</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.601436</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.369761</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">10.792999</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">23.458242</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">0.603501</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>stats = semopy.calc_stats(m)
+stats.transpose()
+
+Listing 10-17Report Indices
+
+
+</pre>
+<p>表<a href="#Tab8"> 10-8 </a>显示，SEM 在解释数据生成过程时丢失了大约 11%的信息(参见 AIC，它告诉了我们许多关于模型质量的信息)。自由度为 4，χ2 为 36.813532。最重要的指标是χ2 p 值。我们用它来决定是接受还是拒绝以下假设:</p>
+<ul class="UnorderedListMarkNone"><li><p class="Para" id="Par62">H <sub> 0 </sub>:结果没有统计学意义。</p></li>
+<li><p class="Para" id="Par63">H <sub> A </sub>:结果有统计学意义。</p></li>
+</ul>
+
+<p class="Para" id="Par64">表<a href="#Tab8"> 10-8 </a>显示χ2 p 值为 0.0000001967869，小于 0.05。这意味着我们拒绝零假设，支持替代方案。结果<em class="EmphasisTypeItalic ">是</em>统计上显著的。</p>
+
+
+<h2 class="Heading">可视化结构关系</h2>
+<p>图<a href="#Fig11"> 10-11 </a>显示了变量之间的关系。它还绘制了协方差估计和 p 值。使用清单<a href="#PC18"> 10-18 </a>中的命令绘制该信息。</p>
+<p><img alt="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig11_HTML.png" src="../images/516940_1_En_10_Chapter/516940_1_En_10_Fig11_HTML.png" style="width:22.5em"/></p>
+<p>图 10-11</p><p class="SimplePara">结构方程模型图</p>
+
+
+<pre>g = semopy.semplot(m, "semplot.png", plot_covs=True)
+g
+
+Listing 10-18Visualize Structural Relationships
+
+
+</pre>
+<p>图<a href="#Fig11"> 10-11 </a>显示:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par67">瑞典通货膨胀/消费价格指数影响最终消费支出。它们相差-0.200。</p></li>
+<li><p class="Para" id="Par68">瑞典人均 GDP 增长影响最终消费支出。它们相差-0.048。</p></li>
+<li><p class="Para" id="Par69">瑞典人的预期寿命加强了人均国内生产总值增长和最终消费支出之间的关系。</p></li>
+<li><p class="Para" id="Par70">通货膨胀/消费价格指数随预期寿命变化-0.338，预期寿命随最终消费支出变化-0.926。</p></li>
+</ul>
+
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par71">本章介绍了结构方程模型。它探讨了瑞典人均国内生产总值增长、通货膨胀/消费价格指数和最终消费支出之间的结构关系。此外，它还探讨了瑞典人的预期寿命对人均国内生产总值增长和最终消费支出之间关系的中介作用。</p>
+<p class="Para" id="Par72">首先，它解释了如何开发一个可以通过应用该方法来测试的理论框架。其次，它介绍了如何通过应用协方差来确定联合可变性，如何通过应用皮尔逊相关性来确定关联性，以及如何通过应用特征矩阵来确定相关性的严重性。您看到了如何通过应用主成分分析来减少数据。最后，您开发了 SEM，并发现结果是显著的。</p>
+
+
+
+</body>
+</html>

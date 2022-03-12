@@ -1,0 +1,422 @@
+<html lang="en">
+<head><title>Effectively Write Efficient Code</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body epub:type="chapter">
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">8.有效地编写高效的代码</h1>
+
+ 
+<!--End Abstract--><p>本章包括对以下第三方软件包的讨论:</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">包名</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">统一资源定位器</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">版本</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>BenchmarkTools.jl</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><a href="https://github.com/JuliaCI/BenchmarkTools.jl">T2<code>https://github.com/JuliaCI/BenchmarkTools.jl</code></a></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">v0.4.2</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>ProfileView.jl</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><a href="https://github.com/timholy/ProfileView.jl">T2<code>https://github.com/timholy/ProfileView.jl</code></a></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">v0.4.1</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>JuliaInterpreter.jl</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><a href="https://github.com/JuliaDebug/JuliaInterpreter.jl">T2<code>https://github.com/JuliaDebug/JuliaInterpreter.jl</code></a></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">v0.6.1</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>Juno</code></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><a href="https://junolab.org">T2<code>https://junolab.org</code></a></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"> </td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><a href="https://github.com/JunoLab/Atom.jl">T2<code>https://github.com/JunoLab/Atom.jl</code></a></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">v0.9.1</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"> </td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><a href="https://github.com/JunoLab/atom-julia-client">T2<code>https://github.com/JunoLab/atom-julia-client</code></a></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">v0.9.4</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p class="Para" id="Par3">本章的目的是介绍一些主题，虽然这些主题可能不是绝对必要的，但是对于以有效的方式编写有效的代码是非常重要的，例如，运行速度快并且容易(并且有趣)编写的代码。我首先处理代码性能，然后转向并行化，以便进一步加快执行速度。我继续讨论允许开发人员检查程序是否遵循预期行为并促进早期 bug 确定的工具。我用可以用来隔离并可能纠正运行时出现的问题的结构来结束这一章。</p>
+<h2 class="Heading">8.1 性能</h2>
+<p class="Para" id="Par4">Julia 在处理类型为<code>Any</code>的数据对象时已经相当快了，也就是说，在执行之前，对象的类型是不确定的。但是当编译器可以推断出一个特定的类型(或者几个类型的并集)时，Julia 程序就可以和 C 程序运行在同一个数量级。</p>
+<p class="Para" id="Par5">好消息是程序员通常不需要指定变量类型。它们实际上是由编译器直接推断出来的，以产生高效的、专门的代码。只有在极少数情况下，编译器才能推断出具体的类型。</p>
+<p class="Para" id="Par6">在这一节中，您将看到如何测量(或基准测试)Julia 代码，如何避免这个问题，并看到其他一些专门针对 Julia 的技巧，它们可以帮助提高性能。</p>
+<h3 class="Heading">基准测试</h3>
+<p class="Para" id="Par7">当您在编辑器中突出显示代码并运行它来评估相应的指令时，Julia 执行两个独立的任务:它编译代码(并最终编译它的依赖项)，然后评估它。</p>
+<p class="Para ParaTypeImportant" id="Par8">除非您对 Julia 在交互式开发中的效率感兴趣，否则您应该只对第二个操作(评估)进行基准测试和/或剖析，而不是代码编译。</p>
+<p class="Para ParaTypeImportant" id="Par9">因此，如果您想使用最简单的基准测试宏<code>@time [a Julia expression]</code>，您应该运行它两次，并丢弃第一次读取的数据(包括编译时间)。</p>
+<p class="Para" id="Par10">让我们考虑一个计算斐波那契数列的函数，其中每个数字是应用于前两个数字的斐波那契函数的和(即，F<sub>n</sub>= F<sub>n-1</sub>+F<sub>n-2</sub>)，F <sub> 0 </sub>和 F <sub> 1 </sub>分别被定义为 0 和 1。</p>
+<p>一个简单的递归实现应该是这样的(注意，计算斐波那契数的算法要快得多):</p>
+<pre>julia&gt; function fib(n)      JULIA
+           if n == 0 return 0 end
+           if n == 1 return 1 end
+           return fib(n-1) + fib(n-2)
+       end
+fib (generic function with 1 method)
+
+</pre>
+<p>如果您启动一个新的 Julia 会话，您可以运行这段代码，并尝试用<code>@time</code>宏来计时。您将获得与此类似的内容:</p>
+<pre>julia&gt; @time fib(10)      JULIA
+  0.004276 seconds (4.63 k allocations: 254.928 KiB)
+55
+julia&gt; @time fib(10)
+  0.000006 seconds (4 allocations: 160 bytes)
+55
+
+</pre>
+<p class="Para" id="Par13">虽然<code>@time</code>宏可以接受任何有效的 Julia 表达式，但它最常用于函数调用。</p>
+<p class="Para" id="Par14">您可以看到报告的第一次时间和内存使用信息包括函数的编译(您也可以推断出函数的编译发生在“恰好及时”(JIT)，这是函数第一次被调用，而不是在它被定义的时候。).</p>
+<p class="Para" id="Par15">进一步说，函数时间<em class="EmphasisTypeItalic ">真的是</em> 0.000006 秒吗？这只是变量的一个例子，变量包括一些与机器状态相关的随机成分。一个更好的方法是用一些<em class="EmphasisTypeItalic ">平均值</em>计时，通过多次抽签使平均值具有统计学意义。</p>
+<p class="Para" id="Par16">BenchmarkTools 包(参见<a href="https://github.com/JuliaCI/BenchmarkTools.jl"> <code>https://github.com/JuliaCI/BenchmarkTools.jl</code> </a>)正是这么做的:它提供了<code>@benchmark</code>，一个替代宏，它自动跳过编译时间并运行代码几次，以便报告准确的时间。</p>
+<p>应用于此函数，您将得到以下结果:</p>
+<pre>julia&gt; @benchmark fib(10)      JULIA
+BenchmarkTools.Trial:
+  memory estimate:  0 bytes
+  allocs estimate:  0
+  --------------
+  minimum time:     292.131 ns (0.00% GC)
+  median time:      292.401 ns (0.00% GC)
+  mean time:        299.772 ns (0.00% GC)
+  maximum time:     492.895 ns (0.00% GC)
+  --------------
+  samples:          10000
+  evals/sample:     267
+
+</pre>
+<p class="Para" id="Par18">这为您提供了更加精确的基准测试结果。</p>
+
+<h3 class="Heading">特征分析</h3>
+<p class="Para" id="Par19">虽然基准测试给出了关于运行给定指令所花费的总时间的信息，但通常您想知道时间在函数调用中是如何分配的，以便找到瓶颈。</p>
+<p class="Para" id="Par20">这是一名<em class="EmphasisTypeItalic ">侧写员</em>的任务。Julia 附带了一个集成的统计分析器(在标准库的<code>Profile</code>包中)。当用表达式调用时，分析器运行表达式，并每隔 x 毫秒记录一次程序当时所在的代码行。一行代码命中的次数越多，计算开销就越大。</p>
+<p>使用这种采样方法，以损失一些精度为代价，剖析可以非常有效。与不使用它来运行代码相比，这将导致非常小的开销。它非常易于使用:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par22"><code>@profile myfunct()</code>:剖析一个函数(记得之前运行过一次函数，不然也会测 JIT 编译)。</p></li>
+<li><p class="Para" id="Par23"><code>Profile.print()</code>:打印剖析结果。</p></li>
+<li><p class="Para" id="Par24"><code>Profile.clear()</code>:清除轮廓数据。</p></li>
+</ul>
+
+<p>配置文件数据会一直累积，直到您将其清除。这使得开发人员甚至可以分析非常小(快速)的函数，而单次分析运行是不准确的。只需对它们进行多次描述，例如:</p>
+<pre>@profile (for i = 1:100; foo(); end)
+
+</pre>
+<p>例如，让我们假设您在一个名为<code>myCode.jl</code>的文件中有以下要分析的函数，左边的数字是行号:</p>
+<pre>64 function lAlgb(n)      JULIA
+65   a = rand(n,n) # matrix initialization with random numbers
+66   b = a + a     # matrix sum
+67   c = b * b     # matrix multiplication
+68 end
+
+</pre>
+<p>如果您运行<code>@profile (for i = 1:100; lAlgb(1000); end)</code>(同样，在为 JIT 编译运行一次函数之后)，然后运行<code>Profile.print()</code>，您可能会得到类似下面的输出(由于空间原因，它被部分删减):</p>
+<pre>julia&gt; Profile.print()      JULIA
+1627 ./task.jl:259; (::getfield(REPL, Symbol("##26#27")){REPL.REPLBackend})()
+1627 ...ld/usr/share/julia/stdlib/v1.1/REPL/src/REPL.jl:117; macro expansion
+ 1627 ...obianco/.julia/packages/Atom/E4PBh/src/repl.jl:135; repleval(::Module, ::Expr)
+  1627 ./boot.jl:328; eval
+   1627 ...share/julia/stdlib/v1.1/Profile/src/Profile.jl:25; top-level scope
+    1627 ./none:1; macro expansion
+     267 /full/path/to/myCode.jl:65; lAlgb(::Int64)
+      267 .../share/julia/stdlib/v1.1/Random/src/Random.jl:243; rand
+     443 /full/path/to/myCode.jl:66; lAlgb(::Int64)
+      443 ./arraymath.jl:47; +(::Array{Float64,2}, ::Array{Float64,2})
+       440 ./broadcast.jl:707; broadcast(::typeof(+), ::Array{Float64,2}, ::Array{Float64,2})
+       1 ./int.jl:0; broadcast(::typeof(+), ::Array{Float64,2}, ::Array{Float64,2})
+       2 ./simdloop.jl:71; broadcast(::typeof(+), ::Array{Float64,2}, ::Array{Float64,2})
+     917 /full/path/to/myCode.jl:67; lAlgb(::Int64)
+      181 ./boot.jl:404; *
+      736 ...julia/stdlib/v1.1/LinearAlgebra/src/matmul.jl:142; *
+
+</pre>
+<p class="Para" id="Par28">输出中每行的格式是相应行和所有下游代码中的样本数、文件名、行号，然后是函数名。</p>
+<p class="Para" id="Par29">重要的行是那些与单个函数的操作相关的行。从概要文件日志中，您可以看到用随机数初始化矩阵(第 65 行)被点击了 267 次，矩阵求和(第 66 行)被点击了 443 次，矩阵乘法(第 67 行)被点击了 917 次。</p>
+<p class="Para" id="Par30">这有助于您确定在<code>lAlgb</code>函数中花费的<em class="EmphasisTypeItalic ">相对</em>时间，矩阵乘法是计算量最大的操作。</p>
+<p class="Para" id="Par31">在实际使用中，事情会很快变得复杂，您可能会喜欢用图形化的方式表示带有概要分析数据的调用堆栈。然后你可能想使用<code>ProfileView</code>包。使用<code>ProfileView.view()</code>，它提供了一个漂亮的调用堆栈图表，其宽度与命中次数成比例。<sup> <a epub:type="noteref" href="#Fn1" id="Fn1_source"> 1 </a> </sup></p>
+<p>如果你使用最新版本的 Juno 作为你的 Julia IDE，你也有一些方便的用户界面，如图<a href="#Fig1"> 8-1 </a>所示(你仍然需要使用<code>@profile</code>宏来收集你感兴趣的数据):</p>
+<p><img alt="../images/477168_1_En_8_Chapter/477168_1_En_8_Fig1_HTML.jpg" src="../images/477168_1_En_8_Chapter/477168_1_En_8_Fig1_HTML.jpg" style="width:35.62em"/></p>
+<p>图 8-1</p><p class="SimplePara">Atom IDE 中的分析工具</p>
+
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par33"><code>Juno.profiletree()</code>为<code>Profile.print()</code>提供了一个很好的替代，在这里，树项目可以在点击时折叠/展开，并链接到相关的源代码。</p></li>
+<li><p class="Para" id="Par34">以类似的方式，<code>Juno.profiler()</code>通过在面板中显示调用图并移除由于使用 Atom 而产生的噪声，重点关注用户代码的调用堆栈，从而对<code>ProfileView.view()</code>进行了改进。</p></li>
+</ul>
+
+
+<h3 class="Heading">类型稳定性</h3>
+<p class="Para" id="Par35">当一个函数的返回类型只依赖于输入的类型，而不依赖于输入的值时，就说这个函数是类型稳定的。虽然类型不稳定的函数将其返回类型编译为<code>Any</code>，并且仅在运行时才转换为特定类型，但类型稳定的函数可以由编译器优化，因为它能够为调用该函数的所有可能类型编译专门的版本。此外，类型稳定性对于保留编译器推断各种链接调用中各种对象的类型的能力是至关重要的。</p>
+<p class="Para" id="Par36">值得注意的是，类型稳定性是<em class="EmphasisTypeItalic ">而不是</em>参数没有用特定类型注释的问题。通常，编译器仍然能够在编译时列出该函数所有可能的参数类型，并且仍然能够生成高性能代码，即使没有显式的类型注释。</p>
+<p>让我们看一个类型不稳定函数的例子:</p>
+<pre>function fUnstable(s::AbstractString, n)      JULIA
+    # This returns the type that is given in parameter `s` as a text string:
+    T = getfield(Base, Symbol(s))
+    x = one(T)
+    for i in 1:n
+        x = x+x
+    end
+    return x
+end
+
+</pre>
+<p class="Para" id="Par38">这里的问题是返回值依赖于作为输入输入的特定文本，也就是说，依赖于<code>s</code>参数的<em class="EmphasisTypeItalic ">值</em>。虽然这似乎是一个极端的情况，但在处理用户数据或从一些输入中读取数据时，类型不稳定的函数经常出现。</p>
+<p class="Para" id="Par39">可以用<code>@code_warntype myfunct()</code>宏检查函数的类型稳定性。</p>
+<p class="Para" id="Par40">如果您在终端中运行<code>@code_warntype fUnstable("Float64",100000)</code>，您将获得一个很长的输出，但是重要的是第一行显示为<code>Body::Any</code>(在 Julia <code>REPL</code>中显示为红色)。正是这些信息告诉你这个函数是类型不稳定的。</p>
+<p>本例中消除类型不稳定性的一种方法是将<code>x</code>变量固定为<code>Float64</code>:</p>
+<pre>function fStable(s::AbstractString, n)      JULIA
+    T = getfield(Base, Symbol(s))
+    x = one(Float64)
+    for i in 1:n
+        x = x+x
+    end
+    return x
+end
+
+</pre>
+<p class="Para" id="Par42">如果您运行<code>@code_warntype fStable("Float64",100000)</code>，您会在输出的第一行收到一个<code>Body::Float64</code>(显示为令人放心的蓝色)，这确认了函数的类型稳定性。</p>
+<p>您可以对这两个函数进行基准测试。类型稳定性带来的改进是巨大的:</p>
+<pre>@benchmark fUnstable("Float64",100000) # median time: 1.299 ms JULIA
+@benchmark fStable("Float64",100000) # median time: 111.461 μs
+
+</pre>
+<p class="Para" id="Par44">最后，如果确实有函数不能保持类型稳定，一种策略是将函数分解成多个定义，希望计算密集型部分可以保持类型稳定。</p>
+
+<h3 class="Heading">8.1.4 提高性能的其他技巧</h3>
+<h4 class="Heading">避免使用全局变量，在函数中运行对性能至关重要的代码</h4>
+<p class="Para" id="Par45">全局变量(定义在任何函数外部的变量)可以随时改变它们的类型。</p>
+<p class="Para" id="Par46">不要在函数中使用全局变量，而是将变量作为函数参数传递。如果这不可能或不实际，至少尝试将全局变量声明为<code>const</code>(以固定其类型)或在函数中使用时注释其类型。</p>
+
+<h4 class="Heading">注释数据结构的类型</h4>
+<p class="Para" id="Par47">Julia 中的注释通常对性能没有用，作为一个例外，用具体类型来注释数据容器内部元素的类型有助于提高性能。</p>
+<p class="Para" id="Par48">假定基元类型具有固定的内存大小，它们的数组(例如，<code>Array{Float64}</code>)可以以高效的方式连续存储在内存中。相反，<code>Any</code>元素的容器，甚至任何抽象类型，都被存储为指向实际内存的指针，这些内存最终被稀疏地存储，因此访问起来相对较慢。</p>
+
+<h4 class="Heading">注释复合类型的字段</h4>
+<p>作为不需要注释规则的另一个例外，不注释(或用抽象类型注释)结构的字段会使所有使用该结构的函数类型不稳定。如果希望保持灵活性，请改用参数化结构。例如:</p>
+<pre>struct MyType2      JULIA
+  a::Float64
+end
+# ..or..
+struct MyType3{T}
+  a::T
+end
+# ..rather than..
+struct MyType
+  a
+end
+
+</pre>
+
+<h4 class="Heading">按列然后按行循环矩阵元素</h4>
+<p class="Para" id="Par50">矩阵数据以各种列数组(<em class="EmphasisTypeItalic ">列主</em>顺序)的串联形式存储在内存中，即第一列，接着是第二列，依此类推。</p>
+<p>因此，先遍历矩阵的列，然后遍历矩阵的行会更快一些(这样可以不断读取连续的值):</p>
+<pre>M = rand(2000,2000)      JULIA
+function sumRowCol(M) # slower
+    s = 0.0
+    for r in 1:size(M)[1]
+        for c in 1:size(M)[2]
+            s += M[r,c]
+        end
+    end
+    return s
+end
+function sumColRow(M) # faster
+    s = 0.0
+    for c in 1:size(M)[2]
+        for r in 1:size(M)[1]
+            s += M[r,c]
+        end
+    end
+    return s
+end
+@benchmark sumRowCol(M) # median time:    21.684 ms
+@benchmark sumColRow(M) # median time:    4.787 ms
+
+
+
+
+</pre>
+
+
+
+<h2 class="Heading">8.2 代码并行化</h2>
+<p class="Para" id="Par52">Julia 提供核心功能来促进代码并行化，使用多线程或多个进程。线程共享相同的内存(因此不需要跨多个线程复制数据)，但是被限制在同一个 CPU 上运行。此外，很难“保证”安全的多线程。Julia 中的线程支持仍然是实验性的，尽管它的发展正在快速推进<sup> <a epub:type="noteref" href="#Fn2" id="Fn2_source"> 2 </a> </sup>。</p>
+<p class="Para" id="Par53">每个进程都在它们自己的内存上工作(因此，数据需要跨进程复制，这代表了与并行执行所带来的优势相平衡的计算成本)，并且可以在多个 CPU 上甚至在多个机器上繁殖(例如，通过 SSH 连接)。因为 Julia 中的多进程并行化是成熟和稳定的，所以在本节的剩余部分，我将讨论它。你看到的所有函数都是<code>Distributed</code>标准库包的一部分。</p>
+<h3 class="Heading">8.2.1 添加和删除流程</h3>
+<p>可以随时添加和删除流程:</p>
+<pre>wksIDs = addprocs(3) # 2,3,4      JULIA
+
+println("Worker pids: ")
+for pid in workers()
+    println(pid) # 2,3,4
+end
+
+rmprocs(wksIDs[2]) # or rmprocs(workers()[2]) remove process pid 3
+
+println("Worker pids: ")
+for pid in workers()
+    println(pid) # 2,4 left
+end
+
+@everywhere println(myid()) # 2,4
+
+</pre>
+<p class="Para" id="Par55">第一行添加了三个进程。在这种情况下，它将它们添加到运行主 Julia 进程的同一台机器上，但是也可以在<code>addprocs()</code>中直接指定 SSH 连接细节，以便将进程添加到其他机器上(Julia 也必须安装在那些机器上)。</p>
+<p class="Para" id="Par56">一般来说，<code>n</code>等于机器上可用内核的数量是有意义的。</p>
+<p class="Para" id="Par57">也可以使用命令行标志<code>-p</code>(例如<code>./julia -p 2</code>)通过多个进程直接启动 Julia。<code>-p</code>参数隐式加载了<code>Distributed</code>模块。</p>
+<p class="Para" id="Par58">在本例中，新进程的“内部 id ”(不同于 OS 级分配的 PID)保存在数组<code>wksIDs</code>中，尽管您并不真正需要它，因为调用<code>workers()</code>也会返回该数组。</p>
+<p class="Para" id="Par59">主 Julia 进程(例如，提供交互提示的进程)总是有一个 pid 为<code>1</code>的进程，除非它是唯一的进程，否则它不被视为工作进程。</p>
+<p class="Para" id="Par60">然后，您可以检查活动的工作进程，并使用<code>rmprocs(pid)</code>删除那些您不再需要的进程。</p>
+<p class="Para" id="Par61">最后，您可以使用函数<code>myid()</code>返回一个进程的 PID，并使用<code>@everywhere</code>宏将该函数扩展到所有工作进程。</p>
+
+<h3 class="Heading">8.2.2 在项目列表上运行繁重的计算</h3>
+<p class="Para" id="Par62">本节考虑两种常见的并行化模式。</p>
+<p class="Para" id="Par63">第一种方法涉及对一系列项目运行计算量很大的操作，您对每个项目的结果都感兴趣。重要的是，每一项的计算都是独立于其他项的。</p>
+<p class="Para" id="Par64">例如，您将重用前面看到的<code>fib</code>函数。您首先需要确保所有进程(假设您用<code>addprocs(3)</code>添加了三个工作进程)都知道您希望它们使用的功能。您可以在函数定义的前面使用<code>@everywhere</code>宏，以便将该函数传递给所有的工人(如果您在后面的阶段添加更多的进程，他们将无法访问这样的函数)。如果在工作线程中有多个函数要调用(或者有几个子函数要调用)，一个方便的选择是在一个以<code>@everywhere</code>宏为前缀的<code>begin</code>块中定义所有函数和它们最终需要的全局变量(即<code>@everywhere begin [shared functions definitions] end</code>)，或者将它们放在一个文件中并运行<code>@everywhere include("computationalcode.jl")</code>。</p>
+<p>然后，您可以创建输入数据的数组，并使用<code>pmap(op,inputData)</code>对其中的每个元素运行 heavy 操作:</p>
+<pre>a = rand(1:35,100)      JULIA
+@everywhere function fib(n)
+    if n == 0 return 0 end
+    if n == 1 return 1 end
+    return fib(n-1) + fib(n-2)
+end
+@benchmark results = map(fib,a)  # serialized: median time: 490.473 ms
+@benchmark results = pmap(fib,a) # parallelized: median time: 249.295 ms
+
+</pre>
+<p class="Para" id="Par66"><code>pmap</code>函数自动地、动态地挑选“自由”进程，给它们分配任务，并将结果合并到返回的数组中。只有功能的评估是在工人中完成的。</p>
+<p class="Para" id="Par67">当函数的计算成本很高时,<code>pmap</code>很方便，就像这种情况。但是，请注意，即使您使用三个工作线程，计算时间也会除以一个远低于 3<sup><a epub:type="noteref" href="#Fn3" id="Fn3_source">3</a></sup>的因子。</p>
+
+<h3 class="Heading">8.2.3 汇总结果</h3>
+<p class="Para" id="Par68">第二种情况是当您想对每一项执行一个小操作，但是您还想在最后执行一个“聚合函数”来检索一个标量值(或者一个数组，如果输入是一个矩阵的话)。</p>
+<p>在这些情况下，您可以使用<code>@distributed (aggregationFunction) for</code>构造。例如，您并行运行一个除以 2 的除法，然后使用该和作为聚合函数(假设有三个工作流程可用):</p>
+<pre>function f(n)      JULIA
+  s = 0.0
+  for i = 1:n
+    s += i/2
+  end
+    return s
+end
+function pf(n)
+  s = @distributed (+) for i = 1:n # aggregate using sum on variable s
+        i/2                        # last element of for cycle is used by the aggregator
+  end
+  return s
+end
+@benchmark  f(10000000) # median time:    11.478 ms
+@benchmark pf(10000000) # median time:    4.458 ms
+
+</pre>
+<p class="Para" id="Par70">这两种情况是代码并行化中最常见的情况。Julia 为并行化提供了一个相当完整的高级和低级函数列表，一些外部包，如<code>DistributedArrays</code>(参见<a href="https://github.com/JuliaParallel/DistributedArrays.jl"> <code>https://github.com/JuliaParallel/DistributedArrays.jl</code> </a>)，可以帮助你以一种相对简单的方式在许多情况下实现高效的并行化代码。</p>
+<p class="Para" id="Par71">值得注意的是，Julia 中的并行计算可以扩展到 GPU(图形处理单元)上，而不是 CPU 上。这个主题超出了本书的范围，但是你可以查看官方文档(参见<a href="https://docs.julialang.org/en/v1/manual/parallel-computing/index.html"> <code>https://docs.julialang.org/en/v1/manual/parallel-computing/index.html</code> </a>)，其中提出了几个提供低级和高级接口的包。</p>
+
+
+<h2 class="Heading">8.3 调试</h2>
+<p class="Para" id="Par72">一般来说，调试是“消除计算机程序中的错误或故障的过程”(来自韦氏词典词典)。</p>
+<p class="Para" id="Par73">在编译语言中调试要困难得多，这促使开发了许多复杂的专用工具来帮助调试程序。</p>
+<p class="Para" id="Par74">Julia 的交互性和自省性使得调试相对简单，因为程序员可以在任何步骤轻松地分析并最终更改代码。尽管如此，已经开发了专门的调试工具来帮助调试函数中的代码，否则这些代码很难在单独的组件中进行分析。</p>
+<h3 class="Heading">8.3.1 自检工具</h3>
+<p class="Para" id="Par75"><em class="EmphasisTypeItalic ">自省</em>是程序检查自身的能力，特别是<em class="EmphasisTypeItalic ">类型自省</em>是程序在运行时检查对象类型或属性的能力。</p>
+<p>从广义上讲，第一个“自省”工具是工作区面板，它在几个 Julia 开发环境中都可用(图<a href="#Fig2"> 8-2 </a>显示了 Juno 中可用的一个)。它显示了当前作用域中所有可用的标识符(变量、函数等等)以及绑定到它们的对象。</p>
+<p><img alt="../images/477168_1_En_8_Chapter/477168_1_En_8_Fig2_HTML.jpg" src="../images/477168_1_En_8_Chapter/477168_1_En_8_Fig2_HTML.jpg" style="width:25em"/></p>
+<p>图 8-2</p><p class="SimplePara">Juno IDE 中的工作区面板</p>
+
+
+<p>此外，Julia 还提供了以下自省功能:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par78"><code>methods(myfunction):</code>检索所有的函数签名，即函数被调用时接受的所有不同类型的参数。</p></li>
+<li><p class="Para" id="Par79"><code>@which myfunction(myargs):</code>发现在特定的调用中使用哪种方法(在几种可用的方法中，因为 Julia 支持多分派)。</p></li>
+<li><p class="Para" id="Par80"><code>typeof(a):</code>发现给定对象的类型。</p></li>
+<li><p class="Para" id="Par81"><code>eltype(a):</code>发现给定对象内部元素的类型，例如<code>typeof(ones(Int64,10))</code>是<code>Array{Int64,1}</code>,<code>eltype(ones(Int64,10))</code>是<code>Int64</code>。</p></li>
+<li><p class="Para" id="Par82">发现哪些字段是给定类型的一部分。</p></li>
+<li><p class="Para" id="Par83"><code>dump(myobj):</code>获取关于给定对象的详细信息。</p></li>
+</ul>
+
+
+<h3 class="Heading">8.3.2 调试工具</h3>
+<p class="Para" id="Par84">Julia 提供了一个全功能的调试器堆栈。基本功能由<code>JuliaInterpreter.jl</code>包提供(参见<a href="https://github.com/JuliaDebug/JuliaInterpreter.jl"> <code>https://github.com/JuliaDebug/JuliaInterpreter.jl</code> </a>)，而用户界面由命令行包<code>Debugger.jl</code> ( <a href="https://github.com/JuliaDebug/Debugger.jl"> <code>https://github.com/JuliaDebug/Debugger.jl</code> </a>)和<code>Rebugger.jl</code> ( <a href="https://github.com/timholy/Rebugger.jl"> <code>https://github.com/timholy/Rebugger.jl</code> </a>)或 Juno IDE ( <a href="https://junolab.org/"> <code>https://junolab.org/</code> </a>)提供。</p>
+<p class="Para" id="Par85">由于这些功能是相似的，而且使用图形用户界面可能更舒服一些，所以我们只讨论 Juno 中调试器的集成。Juno 集成调试器允许开发人员在任何点检查源代码，并设置<em class="EmphasisTypeItalic ">断点</em>，断点是执行停止的点，以便程序员可以检查情况、更改代码或继续。</p>
+<p>让我们重用<code>fib</code>函数，并为它打开一个调试会话(见图<a href="#Fig3"> 8-3 </a>)。</p>
+<p><img alt="../images/477168_1_En_8_Chapter/477168_1_En_8_Fig3_HTML.jpg" src="../images/477168_1_En_8_Chapter/477168_1_En_8_Fig3_HTML.jpg" style="width:35.62em"/></p>
+<p>图 8-3</p><p class="SimplePara">Juno IDE 中的调试会话</p>
+
+
+<p class="Para" id="Par87">您可以通过在 Juno REPL 中键入<code>Juno.@enter function(args)</code>来启动调试会话。这种情况下可以用<code>Juno.@enter fib(10)</code>。</p>
+<p class="Para" id="Par88">如果它还不可见，启动调试会话将打开特定的调试器面板(如图<a href="#Fig3"> 8-3 </a>右侧所示)。<code>REPL</code>提示也变为<code>debug&gt;</code>。</p>
+<p class="Para" id="Par89">从图<a href="#Fig3"> 8-3 </a>中，您可以看到您使用了调试提示来打印变量<code>n</code>的值(但是您已经从左边的工作区面板中知道了它)，并且，最有趣的是，动态地改变了它的值。您用它来运行一个奇数斐波纳契数列，跳过了从 8 到 6 的递归。</p>
+<p class="Para" id="Par90">单击主编辑器面板中行号的左侧将在该行切换一个断点(一个红点)。断点列在调试器面板的底部。它们可以被禁用(因此不再有效)或被编辑，以便仅在满足特定条件时应用(这里，当<code>n</code>小于或等于<code>4</code>)。圆点将变成蓝色，表示一个<em class="EmphasisTypeItalic ">条件断点</em>。</p>
+<p>调试器面板的顶部是调试会话的图形控件。从左到右，这些控件是:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par92"><em class="EmphasisTypeItalic ">继续:</em>继续执行，直到被调试的函数终止或者遇到有效的断点。<code>Juno.@run function(args)</code>是<code>Juno.@enter function(args)</code>加按继续的快捷键。</p></li>
+<li><p class="Para" id="Par93"><em class="EmphasisTypeItalic ">完成函数:</em>继续执行，直到当前函数退出或遇到有效断点。</p></li>
+<li><p class="Para" id="Par94"><em class="EmphasisTypeItalic ">下一行:</em>评估当前行，并在评估下一行之前停止。</p></li>
+<li><p class="Para" id="Par95"><em class="EmphasisTypeItalic ">跳到选中的行:</em>继续执行，直到遇到选中的行或有效的断点。</p></li>
+<li><p class="Para" id="Par96"><em class="EmphasisTypeItalic ">下一个表达式:</em>对下面的表达式求值。仅当在同一行中定义了多个表达式时，才与下一行不同。</p></li>
+<li><p class="Para" id="Par97"><em class="EmphasisTypeItalic ">进入函数:</em>执行下一个函数调用，并在子函数的开始处停止(例如图<a href="#Fig3"> 8-3 </a>，它会调用<code>fib(2)</code>，并在其开始处停止)。要调用的函数显示在控件的正下方。</p></li>
+<li><p class="Para" id="Par98"><em class="EmphasisTypeItalic ">停止调试:</em>终止调试会话，并将控制权交给正常的<code>REPL</code>。</p></li>
+</ul>
+
+<p class="Para" id="Par99">最后，注意调试器面板中间的 Callstack 会话:它提供了导致当前状态的调用链的可点击历史记录。</p>
+
+
+<h2 class="Heading">8.4 管理运行时错误(异常)</h2>
+<p>与许多其他语言一样，运行时错误可以用一个<code>try/catch</code>块来处理:</p>
+<pre>try      JULIA
+  # ..some dangerous code..
+catch
+  # ..what to do if an error happens, for example send an error message using:
+  error("My detailed message")
+end
+
+</pre>
+<p>您还可以检查特定于<em class="EmphasisTypeItalic ">的</em>类型的异常。在下面的代码片段中，如果在表示某些数据的字典中找不到特定的键，则使用异常返回<code>missing</code>:</p>
+<pre>function volume(region, year)      JULIA
+    try
+        return data["volume",region,year]
+    catch e
+        if isa(e, KeyError)
+          return missing
+        end
+        rethrow(e)
+    end
+end
+
+</pre>
+
+<aside class="FootnoteSection" epub:type="footnotes">Footnotes
+<a href="#Fn1_source">1</a><p class="Para" id="Par8117">在撰写本文时，<code>ProfileView</code>似乎在 MacOS 上安装有问题。</p>
+
+ 
+
+<a href="#Fn2_source">2</a><p class="Para" id="Par8118">Julia 1.3 将引入全面的线程 API。</p>
+
+ 
+
+<a href="#Fn3_source">3</a><p class="Para" id="Par871">这在计算机科学中被称为<em class="EmphasisTypeItalic ">阿姆达尔定律</em>，这是由于代码序列化部分的瓶颈和并行化的计算成本造成的。</p>
+
+ 
+
+</aside>
+
+</body>
+</html>

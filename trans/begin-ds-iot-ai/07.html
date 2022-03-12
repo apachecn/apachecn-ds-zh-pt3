@@ -1,0 +1,253 @@
+<html lang="en">
+<head><title>Using Bluetooth for Data Science</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">7.将蓝牙用于数据科学</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">在本章之前，我们已经了解了如何使用 BBC micro:bit 构建数据收集工具，使我们能够进行有意义的真实世界数据科学实验。在这个过程中，我们发现了我们能力中的一个缺陷:micro:bit 可以测量几乎无限量的数据，但保存这些数据和/或将其从 micro:bit 中取出(并放入我们可以使用它的环境中)一直具有挑战性。</p>
+<p class="Para" id="Par3">在第<strong class="EmphasisTypeBold ">章</strong> <a href="06.html"> <strong class="EmphasisTypeBold "> 6 </strong> </a>结束时，我们得出结论，无线技术可以为我们提供提取记录数据的方法。在这一章中，我们将会看到一种可以提供这种功能的技术:我们将会看到蓝牙是如何帮助满足这种需求的。</p>
+<h2 class="Heading">7.1 什么是蓝牙？</h2>
+<p>本质上，两个微处理器之间的无线通信是一个相对简单的概念。它是这样工作的:</p>
+<ol><li class="ListItem"><p class="Para" id="Par5">拿两个微处理器，给每个微处理器增加一个短程无线电发射器。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par6">这些微处理器可以通过编程来发送和接收无线电信号。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par7">所以，我们可以给一个微处理器编程，让它以特定的频率发送特定的信号。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par8">我们可以对另一个微处理器进行编程，使其监听相同的特定频率，并在接收到特定信号时做出反应。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par9">我们的两个微处理器现在可以无线通讯了。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par10">蓝牙是一套管理无线通信的规则和程序:它是人们同意遵循的标准。它定义了该过程的五个组成部分是如何实现的:第一个处理器如何将数据转换成特定的信号？使用什么频率？第二个处理器如何知道消息来自第一个处理器，而不是恶意的第三个处理器？</p>
+<p class="Para" id="Par11">当人类进行无线通信(即交谈)时，我们使用口语。我们说的话传达了意思，其他因素也是如此，例如，我们如何强调我们的话，我们选择哪些词，以及我们说话的声音有多大。我们交流我们的情感和思想，为了让其他人理解我们交流的所有深度和层次，他们需要理解我们使用的口头语言以及控制微妙之处的“规则”。我们的话语产生的声波就像无线电信号，其他的一切就像蓝牙标准。</p>
+<p>对蓝牙标准的深入理解与我们的数据科学之旅并不特别相关，因此我们将在需要使用它们时挑选出我们需要的关键特性。现在，知道蓝牙是管理无线通信的标准方式就足够了，而且:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par13">这个标准/规则列表是由人们写下来并由人们维护的。</p></li>
+<li><p class="Para" id="Par14">有了一个一致同意的标准，不同的制造商就可以制造彼此兼容的“蓝牙”设备。</p></li>
+<li><p class="Para" id="Par15">蓝牙特别兴趣小组(SIG)确保蓝牙规范得到维护、推广、保护，并在必要时进行更新。他们使其与不断变化的技术环境保持关联。</p></li>
+<li><p class="Para" id="Par16">如果一个设备遵循标准中的所有规则，那么称它为<strong class="EmphasisTypeBold ">支持蓝牙的设备</strong>是合理的。</p></li>
+</ul>
+
+
+<h2 class="Heading">7.2 为什么要用蓝牙？</h2>
+<p>我们调查蓝牙适配性最有说服力的理由是 BBC micro:bit 内置了“蓝牙低能量”(<strong class="EmphasisTypeBold "> BLE </strong>)天线，如图<strong class="EmphasisTypeBold ">图</strong><a href="#Fig1">T5】7-1</a>所示。BLE 是蓝牙的一个版本，它被设计成非常节能。</p>
+<p><img alt="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig1_HTML.jpg" src="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig1_HTML.jpg" style="width:12.5em"/></p>
+<p>图 7-1</p><p class="SimplePara">一个微型:钻头的后部带有盘旋的 BLE 天线</p>
+
+
+<p class="Para" id="Par18">如果板载 BLE 能够满足我们在第<strong class="EmphasisTypeBold ">章</strong><a href="06.html"><strong class="EmphasisTypeBold ">6</strong></a><strong class="EmphasisTypeBold "/>中确定的需求，那么我们的拼图的最后一块已经就位，我们可以将云服务和物联网添加到我们的数据科学工具包中。</p>
+
+<h2 class="Heading">7.3 在微钻头上使用 BLE</h2>
+<p class="Para" id="Par19">我们使用无线通信的主要目的是收集我们的数据，然后将其传输到一个更合适的位置:也许是像 Excel 这样的程序，或者是 5000 英里以外的服务器，甚至可能是人工智能服务。简单！</p>
+<p class="Para" id="Par20">听说事情没这么简单，你们中很少有人会感到惊讶；在 micro:bit 上用 BLE 可以做的事情有一些限制；</p>
+<p class="Para" id="Par21">没有将 BLE 与 MicroPython 一起使用的选项。</p>
+<p class="Para" id="Par22">使用 MakeCode，最稳定的 ble 实现是使用 UART 电缆，而不是无线电缆。</p>
+<p>尽管有这些限制，我们仍然有很多方法可以在追求数据科学的过程中利用 BLE，但我们需要先了解一下 BLE 是如何处理数据的:</p><ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par24">BLE 规范要求 BLE 设备具有<strong class="EmphasisTypeBold ">配置文件</strong>，该配置文件是关于设备及其能够提供的数据的信息(称为<strong class="EmphasisTypeBold ">服务</strong>)。</p></li>
+<li><p class="Para" id="Par25">一个 micro:bit 有一个配置文件，定义了它将根据请求共享的数据(即它提供的<strong class="EmphasisTypeBold ">服务</strong>)，包括来自加速度计、磁力计、板载温度传感器、按钮和其他一些 bit 的数据。</p></li>
+<li><p class="Para" id="Par26">当另一个支持 BLE 的设备<strong class="EmphasisTypeBold ">将</strong> <sup> <a epub:type="noteref" href="#Fn1" id="Fn1_source" role="doc-noteref"> 1 </a> </sup>与 micro:bit 配对时，两者共享它们的简档，并且每一个都可以访问由另一个提供的数据服务。</p></li>
+<li><p class="Para" id="Par28">术语<strong class="EmphasisTypeBold ">任意数据</strong>是指不包括在简档中的任何数据。如果我们向 micro:bit 添加一个外设，比如气象站或 CO2 监测器，那么来自该外设的数据是任意的，不能作为服务使用。</p></li>
+</ul>
+
+
+<p class="Para" id="Par29">我们的范围不仅仅是 micro:bit 固有的数据。我们可能想今天测量天气，明天测量二氧化碳水平，第二天测量土壤酸度。对于仅使用加速度计和/或磁力计数据的实验，micro:bit 和 BLE 是一个很好的工具，但对于其他所有东西，我们需要另一个解决方案。</p>
+<p class="Para" id="Par30">BLE 有一些巧妙的使用方式，可能对我们有价值，例如，基于 MakeCode 的<strong class="EmphasisTypeBold ">蓝牙 UART </strong>允许我们将<strong class="EmphasisTypeBold ">任意</strong>数据传输到联网的智能设备上；我们将在<strong class="EmphasisTypeBold ">第 7.4 节</strong>中讨论这一点。还有一些使用 USB 电缆的其他实现也相当稳定。但是，对于任何需要通过 USB 电缆将 micro:bit 连接到计算机的用例，第<strong class="EmphasisTypeBold ">章</strong> <a href="06.html"> <strong class="EmphasisTypeBold "> 6 </strong> </a>中提到的 Excel 数据流工具都是无可匹敌的。</p>
+
+<h2 class="Heading">7.4 利用蓝牙 UART 建立 BLE 气象站</h2>
+<p class="Para" id="Par31">我们将重建气象站，以便它利用蓝牙 UART:我们将从一个 micro:bit 直接向智能设备馈送数据。</p>
+<p><strong class="EmphasisTypeBold ">图</strong> <a href="#Fig2"> <strong class="EmphasisTypeBold "> 7-2 </strong> </a>显示了支持 BLE 的数字气象站仪器的电路框图。</p>
+<p><img alt="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig2_HTML.jpg" src="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig2_HTML.jpg" style="width:32.5em"/></p>
+<p>图 7-2</p><p class="SimplePara">BLE 数字气象站的电路图</p>
+
+
+<p><strong class="EmphasisTypeBold ">表</strong> <a href="#Tab1"> <strong class="EmphasisTypeBold "> 7-1 </strong> </a>列出了我们将用来构建蓝牙气象站工具的硬件。</p>
+<p>表 7-1</p><p class="SimplePara">蓝牙气象站工具的硬件要求</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">你需要什么</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">我们用什么</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">数量</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">可供选择的事物</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">一个微处理器和闪存代码的方法</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">微:位</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Adafruit Feather 32u4 蓝果 LE</p>
+<p class="SimplePara">阿尔杜伊诺</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">力量</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2 个 AAA 电池盒，带 JST 连接器</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">锂离子聚合物电池–3.7v</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">读取天气数据的传感器</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">中国盒子 SW01</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Adafruit BME280 I2C 或 SPI 温度湿度压力传感器</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">蓝牙收音机将天气数据发送到应用程序</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">micro:bit 内置蓝牙收音机</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Adafruit Bluefruit 神盾局</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">将它们连接在一起的方法</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">XinaBox IM01 微:位桥和</p>
+<p class="SimplePara">xBus 连接器</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+<p class="SimplePara">one</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">连接线</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>选择合适的工具，按照<strong class="EmphasisTypeBold ">图</strong> <a href="#Fig3"> <strong class="EmphasisTypeBold "> 7-3 </strong> </a>组装零件。</p>
+<p><img alt="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig3_HTML.jpg" src="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig3_HTML.jpg" style="width:20em"/></p>
+<p>图 7-3</p><p class="SimplePara">使用 micro:bit 内置蓝牙无线电的气象站</p>
+
+
+
+<h2 class="Heading">7.5 使用串行蓝牙终端应用程序</h2>
+<p class="Para" id="Par35">我们将使用蓝牙 UART 向智能手机/平板电脑发送数据。为此，我们的智能设备需要支持蓝牙，我们需要在上面安装一个兼容的应用程序。在<strong class="EmphasisTypeBold "> Google Play </strong>上可以找到大量用于 micro:bit 蓝牙 UART 的应用程序；我们已经测试了其中的许多产品，发现一些产品在基于蓝牙 UART 的数据传输方面取得了一些成功，但我们也遇到了一些问题。我们发现大多数时候提供成功的最佳应用程序是<strong class="EmphasisTypeBold ">串行蓝牙终端</strong>应用程序。</p>
+<p class="Para" id="Par36">蓝牙 UART 的带宽是相当低的，这意味着你不能非常快速地发送大量数据。对于一次发送小块数据来说，这已经足够了。</p>
+<p class="Para" id="Par37">为运行 Android 操作系统的智能手机/平板电脑安装来自<strong class="EmphasisTypeBold "> Google Play </strong>的<strong class="EmphasisTypeBold ">串行蓝牙终端</strong>应用。目前，这款应用还没有面向 iOS 用户的版本。</p>
+
+<h2 class="Heading">7.6 气象站编码</h2>
+<p>我们需要编写的代码与我们之前的气象站代码非常相似(例如，<strong class="EmphasisTypeBold ">章</strong> <a href="03.html"> <strong class="EmphasisTypeBold "> 3 </strong> </a> <strong class="EmphasisTypeBold ">，第 3-7 节</strong>):主要区别是我们必须打开我们的蓝牙 UART 服务并通过该服务输出数据(而不是将数据输出到屏幕上)。自然语言代码只有很小的不同。</p>
+<p>表 7-2</p><p class="SimplePara">蓝牙低能耗气象站的自然语言代码</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">步骤</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">自然语言代码</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">笔记</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">导入任何必要的库。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">我们需要一个天气传感器和蓝牙库。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">启动蓝牙 UART 服务。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">蓝牙 UART 服务允许智能手机/平板电脑等其他设备与 micro:bit 交换任何数据。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">three</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">重复以下步骤。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"> </td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">four</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">从天气传感器读取温度。</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">如果你喜欢，你可以使用湿度或压力。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">five</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">通过蓝牙 UART 发送温度数据。</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">我们通过 BLE 将数据发送到智能设备上运行的<strong class="EmphasisTypeBold ">串行蓝牙终端</strong>应用程序，从而输出数据。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p class="Para" id="Par39"><strong class="EmphasisTypeBold ">无代码选项</strong>:你可以在我们的<strong class="EmphasisTypeBold ">资源网站</strong>上找到本节使用的代码的预编译版本。进入<a href="https://nam12.safelinks.protection.outlook.com/?url%253Dhttp%253A%252F%252Fxib.one%252FXB%2526data%253D02%257C01%257C%257C96ee9c32c458423e9b6a08d7c36cd73f%257C84df9e7fe9f640afb435aaaaaaaaaaaa%257C1%257C0%257C637192744542720716%2526sdata%253D0W1OfWTmIx3U20MIwolvjFvh9lCQJVpw9KNNvUwCdU8%253D%2526reserved%253D0"> <code>http://xib.one/XB</code> </a>，搜索<strong class="EmphasisTypeBold ">第 7.6 节</strong>。</p>
+<p><strong class="EmphasisTypeBold ">图</strong> <a href="#Fig4"> <strong class="EmphasisTypeBold "> 7-4 </strong> </a>显示了 micro:bit 蓝牙低能耗气象站的完整<strong class="EmphasisTypeBold "> MakeCode </strong>程序。</p>
+<p><img alt="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig4_HTML.jpg" src="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig4_HTML.jpg" style="width:32.5em"/></p>
+<p>图 7-4</p><p class="SimplePara">MakeCode 块将天气传感器数据发送到智能手机/平板电脑上运行的<em> <strong class="EmphasisTypeBoldItalic ">串行蓝牙终端</strong> </em>应用程序</p>
+
+
+Note
+<p class="Para FirstParaInFormalPara" id="Par42">编写的代码只发送温度。通过修改它，您也可以添加湿度和压力数据。但是你一次发送的数据越多，你遇到低带宽困难的机会就越大。如果我们想同时发送几个数据点，这种解决方案的可扩展性不好。</p>
+
+<p>在下载代码闪存到 micro:bit 之前，还有一件事要做:</p>
+<p><img alt="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig5_HTML.jpg" src="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig5_HTML.jpg" style="width:32.48em"/></p>
+<p>图 7-5</p><p class="SimplePara">蓝牙 UART 的配置设置</p>
+
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par44">进入<strong class="EmphasisTypeBold ">项目设置</strong>(点击页面右上角的<strong class="EmphasisTypeBold ">齿轮</strong>)。</p></li>
+<li><p class="Para" id="Par45">选择<strong class="EmphasisTypeBold ">无需配对:任何人都可以通过蓝牙</strong>选项(<strong class="EmphasisTypeBold ">图</strong><a href="#Fig5">T5】7-5</a>)连接。</p></li>
+<li><p class="Para" id="Par46">点击<strong class="EmphasisTypeBold ">保存</strong>保存新设置并返回编辑器。</p></li>
+</ul>
+
+<p class="Para" id="Par47">现在编译你的程序，并将其闪存到你的 micro:bit 上。重置您的 micro:bit 并保持通电。</p>
+<p class="Para" id="Par48">启动安装在智能手机/平板电脑上的<strong class="EmphasisTypeBold ">串行蓝牙终端</strong>应用，从菜单(左上角)选择<strong class="EmphasisTypeBold ">设备➤蓝牙 LE </strong>。然后从列表中选择您的 micro:bit 的名称。该应用程序将连接到您的 micro:bit。同时，字母“C”将显示在 micro:bit 5X5 LED 矩阵上。之后，温度数据会显示在 app 的终端(<strong class="EmphasisTypeBold ">图</strong> <a href="#Fig6"> <strong class="EmphasisTypeBold "> 7-6 </strong> </a>)。</p>
+Note
+<p class="Para FirstParaInFormalPara" id="Par49">有时，您的应用程序可能无法在第一次尝试时连接到 micro:bit。多试几次，如果还是解决不了问题，重启 app/micro:bit。如果几次后还是不行，那就试试 Wi-Fi，我们将在第<strong class="EmphasisTypeBold ">章</strong> <a href="09.html"> <strong class="EmphasisTypeBold "> 9 </strong> </a>中讨论。</p>
+
+<p> 
+</p>
+<p><img alt="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig6_HTML.jpg" src="../images/486852_1_En_7_Chapter/486852_1_En_7_Fig6_HTML.jpg" style="width:22.5em"/></p>
+<p>图 7-6</p><p class="SimplePara">传感器数据显示在应用程序的终端</p>
+
+
+<p class="Para" id="Par50">我们已经成功地从微型钻头中无线提取数据。您用来查看此数据的应用程序中可用的工具现在可用。</p>
+<p class="Para" id="Par51">关闭应用程序将断开智能手机/平板电脑和 micro:bit 之间的 BLE 连接。</p>
+
+<h2 class="Heading">7.7 BLE 在 micro:bit 上的其他选项</h2>
+<p class="Para" id="Par52">对 BLE 的支持在 MicroPython 中不可用，并且在 MakeCode 中受到限制，但是有许多其他方法来编码 micro:bit:有可能在诸如 ArduinoIDE 或 mBed 的平台中开发应用程序，从而开放所能实现的东西。我们的网站包括一个应用程序，我们使用 ArduinoIDE 为 micro:bit 构建了一个支持 BLE 的气象站，可以连接到物联网。</p>
+<p class="Para" id="Par53">这个例子开始显示 BLE 在 micro:bit 上的真正潜力，但是它复杂而冗长，不适合学习者或初学者，而且比其他潜在的解决方案要复杂得多，我们将在后面的章节中开始讨论。</p>
+
+<h2 class="Heading">7.8 摘要</h2>
+<p class="Para" id="Par54">micro:bit ( <strong class="EmphasisTypeBold "> BLE </strong>)上可用的蓝牙版本提供了一些工具，这些工具有可能对我们的数据科学工作非常有用。如果我们需要的只是微比特本身的数据，或者有限的数据是可以接受的，或者有线解决方案是足够的，那么 ble 可以提供很多。但这些限制让人感觉受到了限制，而且 BLE 没有让我们免费轻松地访问物联网或云。</p>
+<p class="Para" id="Par55">在这一章的开始，我们着手确定一种从 micro:bit 无线提取数据的方法；虽然 BLE 有一些非常有趣和有用的应用，但它也有局限性。</p>
+<p class="Para" id="Par56">我们将把 BLE 加入我们的工具包，但我们将继续寻找无线解决方案。BLE 可以提供很多东西，是一项非常有前途的技术，但只要我们使用 micro:bit 作为数据收集工具的核心，这些局限性就会限制我们的能力。</p>
+
+<aside aria-label="Footnotes" class="FootnoteSection" epub:type="footnotes">Footnotes
+<a href="#Fn1_source">1</a><p class="Para" id="Par27">BLE 是一个非常安全的协议。在一台 BLE 设备与另一台 BLE 设备共享数据之前，它们会经历一个相互审查的过程，这被称为配对。</p>
+
+ 
+
+</aside>
+
+
+</body>
+</html>

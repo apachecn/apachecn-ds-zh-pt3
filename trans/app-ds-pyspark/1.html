@@ -1,0 +1,647 @@
+<html lang="en">
+<head><title>Setting Up the PySpark Environment</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">1.设置 PySpark 环境</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">本章的目标是让您快速设置 PySpark 环境。讨论了多种选择，因此由读者选择他们最喜欢的。已经准备好环境的人可以跳到本章后面的“基本操作”部分。</p>
+<p>在本章中，我们将讨论以下主题:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par4">使用 Anaconda 的本地安装</p></li>
+<li><p class="Para" id="Par5">基于 Docker 的安装</p></li>
+<li><p class="Para" id="Par6">Databricks 社区版</p></li>
+</ul>
+
+<h2 class="Heading">使用 Anaconda 的本地安装</h2>
+<h3 class="Heading">步骤 1:安装 Anaconda</h3>
+<p class="Para" id="Par7">第一步，在这里下载 Anaconda:<a href="https://www.anaconda.com/pricing"><code>https://www.anaconda.com/pricing</code></a>。个人可以下载个人版(免费)。我们建议使用最新版本的 Python (Python 3.7)，因为我们在所有示例中都使用这个版本。如果您安装了替代版本，请确保相应地更改您的代码。一旦安装了 Anaconda，就可以在 Terminal/Anaconda 提示符下运行以下命令来确保安装完成。</p>
+Note
+<p class="Para FirstParaInFormalPara" id="Par8">Windows 用户应该使用 Anaconda 提示符，而不是命令提示符。安装 Anaconda 后，此选项将可用。</p>
+
+<p>
+ 
+</p>
+<pre>conda info
+
+</pre>
+<p class="Para" id="Par10">输出应该如下所示。</p>
+<p><em class="EmphasisTypeItalic ">输出显示在终端/ </em> <em class="EmphasisTypeItalic ">的 Anaconda 提示符下</em></p>
+<pre>(base) ramcharankakarla@Ramcharans-MacBook-Pro % conda info
+
+     active environment : base
+    active env location : /Applications/anaconda3
+            shell level : 1
+       user config file : /Users/ramcharankakarla/.condarc
+ populated config files : /Users/ramcharankakarla/.condarc
+          conda version : 4.8.3
+    conda-build version : 3.18.11
+         python version : 3.8.3.final.0
+       virtual packages : __osx=10.15.5
+       base environment : /Applications/anaconda3  (read only)
+           channel URLs : https://repo.anaconda.com/pkgs/main/osx-64
+                          https://repo.anaconda.com/pkgs/main/noarch
+                          https://repo.anaconda.com/pkgs/r/osx-64
+                          https://repo.anaconda.com/pkgs/r/noarch
+          package cache : /Applications/anaconda3/pkgs
+                          /Users/ramcharankakarla/.conda/pkgs
+       envs directories : /Users/ramcharankakarla/.conda/envs
+                          /Applications/anaconda3/envs
+               platform : osx-64
+             user-agent : conda/4.8.3 requests/2.24.0 CPython/3.8.3 Darwin/19.5.0 OSX/10.15.5
+                UID:GID : 501:20
+             netrc file : None
+           offline mode : False
+
+</pre>
+Note
+<p class="Para FirstParaInFormalPara" id="Par12">每个<code>conda</code>操作都以关键字<code>conda</code>开始。</p>
+
+<p class="Para" id="Par13">有关<code>conda</code>操作的更多信息，您可以在网上搜索“康达备忘单”，并遵循此处提供的文档:<a href="https://docs.conda.io/"> <code>https://docs.conda.io/</code> </a>。</p>
+
+<h3 class="Heading">步骤 2: Conda 环境创建</h3>
+<p class="Para" id="Par14">一般来说，编程语言都有不同的版本。当我们在一个特定的版本上创建一个程序，并尝试在另一个版本上运行相同的程序时，程序成功运行的机会可能会有所不同，这取决于版本之间所做的更改。这可能很烦人。由于依赖性，在旧版本上开发的程序可能无法在新版本上很好地运行。这就是虚拟环境变得有用的地方。这些环境将这些依赖关系保存在单独的沙箱中。这使得在相应的环境中运行程序或应用程序变得更加容易。Anaconda 工具是一个开源平台，您可以在其中管理和运行您的 Python 程序和环境。您可以拥有多个使用不同版本的环境。您可以在不同的环境之间切换。在执行任何程序或应用程序之前，检查您当前所处的环境是一个很好的做法。</p>
+<p class="Para" id="Par15">我们想把重点放在<code>conda</code>环境创建备忘单中的一个特定命令上。这里提供了语法:</p>
+<p>
+ 
+</p>
+<pre>conda create -–name ENVNAME python=3.7
+
+</pre>
+<p>在我们创建环境之前，我们将看看另一个<code>conda</code>命令。我们保证以后会明白为什么我们现在需要查看这个命令。</p>
+<pre>conda env list
+
+</pre>
+<p class="Para" id="Par18">运行该命令后，您会得到以下输出。</p>
+<p><em class="EmphasisTypeItalic ">创建前的环境列表</em></p>
+<pre># conda environments:
+#
+base                  *  /Applications/anaconda3
+
+</pre>
+<p class="Para" id="Par20">Anaconda 中默认存在<em class="EmphasisTypeItalic ">基础</em>环境。目前，<em class="EmphasisTypeItalic ">基地</em>是活动环境，由它右边的小星号(*)表示。这是什么意思？这意味着我们现在执行的任何<code>conda</code>操作都将在默认的基础环境中执行。任何软件包的安装、更新或移除都将发生在<em class="EmphasisTypeItalic ">库</em>中。</p>
+<p class="Para" id="Par21">现在我们已经清楚地了解了<em class="EmphasisTypeItalic ">基地</em>的环境，让我们继续创建我们自己的 PySpark 环境。在这里，我们将把<code>ENVNAME</code>替换为一个我们希望称之为环境的名称(<code>pyspark_env</code>)。</p>
+<p>
+ 
+</p>
+<pre>conda create --name pyspark_env python=3.7
+
+</pre>
+<p class="Para" id="Par23">当它提示用户输入时，键入<code>y</code>并按下<em class="EmphasisTypeItalic ">回车</em>。良好的做法是键入这些代码，而不是从文本中复制它们，因为连字符会产生一个问题，即<em class="EmphasisTypeItalic ">“CondaValueError:目标前缀是基本前缀。中止"</em>或<em class="EmphasisTypeItalic "> "conda:错误:无法识别的参数:-–name "。</em>命令成功执行后，我们将再次执行<code>conda</code>环境列表。这一次，我们的输出略有不同。</p>
+<p><em class="EmphasisTypeItalic ">刚创建后的康达环境</em></p>
+<pre># conda environments:
+#
+base                  *  /Applications/anaconda3
+pyspark_env              /Users/ramcharankakarla/.conda/envs/pyspark_env
+
+</pre>
+<p class="Para" id="Par25">我们注意到一个新的环境<em class="EmphasisTypeItalic "> pyspark_env </em>被创建。尽管如此，<em class="EmphasisTypeItalic ">基地的</em>还是活跃的环境。让我们使用下面的命令激活我们的新环境<em class="EmphasisTypeItalic "> pyspark_env </em>。</p>
+<p><em class="EmphasisTypeItalic ">变更后的康达环境</em></p>
+<pre>conda activate pyspark_env
+ # conda environments:
+#
+base                     /Applications/anaconda3
+pyspark_env           *  /Users/ramcharankakarla/.conda/envs/pyspark_env
+
+</pre>
+<p class="Para" id="Par27">今后，所有的<code>conda</code>操作都将在新的 PySpark 环境中执行。接下来，我们将继续进行火花安装。注意“*”表示当前环境。</p>
+
+<h3 class="Heading">步骤 3:下载并解压缩 Apache Spark</h3>
+<p>你可以在<a href="https://spark.apache.org/downloads.html"> <code>https://spark.apache.org/downloads.html</code> </a>下载最新版本的 Apache Spark。对于这整本书，我们将使用 Spark 3.0.1。一旦你访问了这个站点，你可以选择一个 Spark 版本并下载这个文件(图<a href="#Fig1"> 1-1 </a>)。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig1_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig1_HTML.jpg" style="width:43.12em"/></p>
+<p>图 1-1</p><p class="SimplePara">Spark 下载</p>
+
+
+<p class="Para" id="Par29">解压它，你可以选择把它移动到一个指定的文件夹。</p>
+<p><em class="EmphasisTypeItalic "> Mac/Linux 用户</em></p>
+<pre>tar -xzf spark-3.0.1-bin-hadoop2.7.tgz
+mv spark-3.0.1-bin-hadoop2.7 /opt/spark-3.0.1
+
+</pre>
+<p><em class="EmphasisTypeItalic "> Windows 用户</em></p>
+<pre>tar -xzf spark-3.0.1-bin-hadoop2.7.tgz
+move spark-3.0.1-bin-hadoop2.7 C:\Users\username\spark-3.0.1
+
+</pre>
+
+<h3 class="Heading">步骤 4:安装 Java 8 或更高版本</h3>
+<p class="Para" id="Par32">您可以通过在 Terminal/Anaconda 提示符下键入以下命令来检查系统中是否存在 Java 版本。</p>
+<p><em class="EmphasisTypeItalic "> Java 版本检查</em></p>
+<pre>java -version
+ java version "14.0.2" 2020-07-14
+Java(TM) SE Runtime Environment (build 14.0.2+12-46)
+Java HotSpot(TM) 64-Bit Server VM (build 14.0.2+12-46, mixed mode, sharing)
+
+</pre>
+<p class="Para" id="Par34">您需要确保 Java 版本是 8 或更高版本。您可以随时在<a href="https://www.oracle.com/java/technologies/javase-downloads.html"> <code>https://www.oracle.com/java/technologies/javase-downloads.html</code> </a>下载最新版本。建议使用 Java 8 JDK。当您使用高于 8 的 Java 版本时，您可能会在启动 PySpark 时收到以下警告。可以忽略这些警告。</p>
+<p>
+ 
+</p>
+<pre>WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.apache.spark.unsafe.Platform (file:/opt/spark-3.0.1/jars/spark-unsafe_2.12-3.0.1.jar) to method java.nio.Bits.unaligned()
+WARNING: Please consider reporting this to the maintainers of org.apache.spark.unsafe.Platform
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+
+</pre>
+<p class="Para" id="Par36">Mac/Linux 用户现在可以进入步骤 5，Windows 用户可以从这里跳到步骤 6。</p>
+
+<h3 class="Heading">第五步:Mac 和 Linux 用户</h3>
+<p class="Para" id="Par37">在第 3 步中，我们完成了 Spark 下载。现在，我们必须更新<em class="EmphasisTypeItalic "> ~/。bash_profile </em>或者<em class="EmphasisTypeItalic "> ~/。bashrc </em>文件找到 Spark 安装。让我们在这里的例子中使用<em class="EmphasisTypeItalic "> bash_profile </em>文件。在“终端”中，键入以下代码以打开文件:</p>
+<p>
+ 
+</p>
+<pre>vi ~/.bash_profile
+
+</pre>
+<p class="Para" id="Par39">进入文件后，键入<code>i</code>通过添加以下几行来插入/配置环境变量:</p>
+<p>
+ 
+</p>
+<pre>export SPARK_HOME=/opt/spark-3.0.1
+export PATH=$SPARK_HOME/bin:$PATH
+export PYSPARK_PYTHON=python3
+
+</pre>
+<p class="Para" id="Par41">添加完这些配置后，按下<em class="EmphasisTypeItalic "> ESC </em>，然后按下<code>:wq!</code>，按下<em class="EmphasisTypeItalic "> Enter </em>保存文件。在终端中运行以下命令，在我们的<em class="EmphasisTypeItalic "> pyspark_env </em>环境中应用这些更改:</p>
+<p>
+ 
+</p>
+<pre>source ~/.bash_profile
+
+</pre>
+<p class="Para" id="Par43">如果您重启您的终端，确保将<code>conda</code>环境更改为<em class="EmphasisTypeItalic "> pyspark_env </em>来运行 pyspark。您现在可以跳过第 6 步，跳到第 7 步。</p>
+
+<h3 class="Heading">第六步:Windows 用户</h3>
+<p class="Para" id="Par44">在第 3 步中，我们完成了 Spark 下载。现在，我们需要做一些事情来确保我们的 PySpark 安装按预期工作。目前，如果您在步骤 3 中选择了移动选项，那么您的 Spark 文件夹应该位于此处提供的路径中:</p>
+<p>
+ 
+</p>
+<pre>C:\Users\username\spark-3.0.1
+
+</pre>
+<p class="Para" id="Par46">通过 Anaconda 提示符导航到该路径，并运行以下代码:</p>
+<p>
+ 
+</p>
+<pre>cd C:\Users\username\spark-3.0.1
+mkdir hadoop\bin
+
+</pre>
+<p class="Para" id="Par48">一旦创建了目录，我们需要下载<em class="EmphasisTypeItalic ">winutils.exe</em>文件并将其添加到我们的 Spark 安装中。为什么是 winutils.exe 的<em class="EmphasisTypeItalic "/>？如果没有该文件，当您调用 PySpark 时，可能会出现以下错误:</p>
+<p>
+ 
+</p>
+<pre>"ERROR Shell: Failed to locate the winutils binary in the hadoop binary path....."
+
+</pre>
+<p>此外，当您尝试使用 spark-submit 实用程序时，将来可能会出现错误。为了克服这些错误，我们将下载 winutils.exe<em class="EmphasisTypeItalic ">的</em>文件:<a href="https://github.com/steveloughran/winutils"> <code>https://github.com/steveloughran/winutils</code> </a>。根据您在步骤 3 中安装的 hadoop 版本，您可能必须在此链接中选择适当的路径。导航到路径内的<code>bin</code>文件夹，点击<em class="EmphasisTypeItalic ">winutils.exe</em>下载文件(图<a href="#Fig2"> 1-2 </a>)。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig2_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig2_HTML.jpg" style="width:43.12em"/></p>
+<p>图 1-2</p><p class="SimplePara">Winutils.exe</p>
+
+
+<p>正在使用 2.7 hadoop 版本的乡亲们可以直接从这里下载【winutils.exe】的<em class="EmphasisTypeItalic ">文件:<a href="https://github.com/steveloughran/winutils/blob/master/hadoop-2.7.1/bin/winutils.exe"> <code>https://github.com/steveloughran/winutils/blob/master/hadoop-2.7.1/bin/winutils.exe</code> </a>。将下载的文件放在我们之前创建的<code>hadoop\bin</code>路径中。或者，您可以使用以下命令来执行相同的操作:</em></p>
+<pre>move C:\Users\username\Downloads\winutils.exe C:\Users\username\spark-3.0.1\hadoop\bin
+
+</pre>
+<p>就是这样。我们差不多完成了。最后一步是配置环境变量。您可以在 Windows search 中搜索“<em class="EmphasisTypeItalic ">环境变量”</em>，也可以在<em class="EmphasisTypeItalic ">系统属性➤高级➤环境变量</em>中找到。这里，我们将在<em class="EmphasisTypeItalic ">用户变量</em>选项卡中添加一些变量。点击<em class="EmphasisTypeItalic ">新建</em>，您应该会看到如图<a href="#Fig3"> 1-3 </a>所示的选项。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig3_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig3_HTML.jpg" style="width:43.12em"/></p>
+<p>图 1-3</p><p class="SimplePara">添加新的用户变量</p>
+
+
+<p class="Para" id="Par53">我们需要添加三样东西:<code>SPARK_HOME</code> <em class="EmphasisTypeItalic ">、</em> <code>HADOOP_HOME</code> <em class="EmphasisTypeItalic ">、</em> <code>PATH</code>。</p>
+<p><em class="EmphasisTypeItalic "> SPARK_HOME </em></p>
+<pre>Variable name – SPARK_HOME
+Variable value – C:\Users\username\spark-3.0.1
+
+</pre>
+<p><em class="EmphasisTypeItalic "> HADOOP_HOME </em></p>
+<pre>Variable name – HADOOP_HOME
+Variable value – C:\Users\username\spark-3.0.1\hadoop
+
+</pre>
+<p>如果在<em class="EmphasisTypeItalic ">用户变量</em>选项卡中有一个现有的<code>PATH</code>变量，那么点击编辑并添加以下内容:</p>
+<pre>C:\Users\username\spark-3.0.1\bin
+
+</pre>
+<p class="Para" id="Par57">嗯，就这些。您现在可以运行 PySpark 了。要应用所有这些环境更改，您需要重启 Anaconda 提示符，并将<code>conda</code>环境更改为<em class="EmphasisTypeItalic "> pyspark_env </em>。</p>
+
+<h3 class="Heading">第七步:运行 PySpark</h3>
+<p class="Para" id="Par58">你现在都准备好了。在调用<code>pyspark</code>之前，你需要确保<code>conda</code>环境是<em class="EmphasisTypeItalic "> pyspark_env </em>。只需在终端/Anaconda 提示符下调用<code>pyspark</code>。您应该会看到以下弹出窗口。</p>
+<p><em class="EmphasisTypeItalic ">在终端/Anaconda 提示符下运行 Pyspark</em></p>
+<pre>Python 3.7.9 (default, Aug 31 2020, 07:22:35)
+[Clang 10.0.0 ] :: Anaconda, Inc. on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.apache.spark.unsafe.Platform (file:/opt/spark-3.0.1/jars/spark-unsafe_2.12-3.0.1.jar) to constructor java.nio.DirectByteBuffer(long,int)
+WARNING: Please consider reporting this to the maintainers of org.apache.spark.unsafe.Platform
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+20/09/11 22:02:30 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /__ / .__/\_,_/_/ /_/\_\   version 3.0.1
+      /_/
+
+Using Python version 3.7.9 (default, Aug 31 2020 07:22:35)
+SparkSession available as 'spark'.
+&gt;&gt;&gt;
+
+</pre>
+<p class="Para" id="Par60">酷！我们希望进一步扩展设置，以便与 Jupyter IDE 一起工作。</p>
+
+<h3 class="Heading">第八步:Jupyter 笔记本扩展</h3>
+<p class="Para" id="Par61">为此，您可能需要在您的<em class="EmphasisTypeItalic "> pyspark_env </em>环境中安装 Jupyter。让我们使用下面的代码来执行操作。</p>
+<p><em class="EmphasisTypeItalic "> Mac/Linux 用户</em></p>
+<pre>conda install jupyter
+
+</pre>
+<p class="Para" id="Par63">您需要在您的<em class="EmphasisTypeItalic "> ~/中添加以下两行代码。bash_profile </em>或者<em class="EmphasisTypeItalic "> ~/。bashrc </em>设置:</p>
+<p>
+ 
+</p>
+<pre>export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS="notebook"
+
+</pre>
+<p class="Para" id="Par65">就是这样。确保使用适当的代码在环境中应用当前的更改:</p>
+<p>
+ 
+</p>
+<pre>source ~/.bash_profile
+source ~/.bashrc
+
+</pre>
+<p class="Para" id="Par67">接下来，每当您调用<code>pyspark</code>，它应该会自动调用一个 Jupyter 笔记本会话。如果浏览器没有自动打开，您可以复制链接并将其粘贴到浏览器中。</p>
+<p>jupyter 调用</p>
+<pre>[I 22:11:33.938 NotebookApp] Writing notebook server cookie secret to /Users/ramcharankakarla/Library/Jupyter/runtime/notebook_cookie_secret
+[I 22:11:34.309 NotebookApp] Serving notebooks from local directory: /Applications
+[I 22:11:34.309 NotebookApp] Jupyter Notebook 6.1.1 is running at:
+[I 22:11:34.309 NotebookApp] http://localhost:8888/?token=2e2d4e2c7a881de7223ea48aed4e696264ef9084c2d36ccf
+[I 22:11:34.310 NotebookApp]  or http://127.0.0.1:8888/?token=2e2d4e2c7a881de7223ea48aed4e696264ef9084c2d36ccf
+[I 22:11:34.310 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 22:11:34.320 NotebookApp]
+
+    To access the notebook, open this file in a browser:
+
+ file:///Users/ramcharankakarla/Library/Jupyter/runtime/nbserver-45444-open.html
+
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=2e2d4e2c7a881de7223ea48aed4e696264ef9084c2d36ccf
+
+</pre>
+<p class="Para ParaOneEmphasisChild" id="Par69"><em class="EmphasisTypeItalic "> Windows 用户</em></p>
+<p class="Para" id="Par70">您需要使用 Anaconda 提示符来安装一个包:</p>
+<p>
+ 
+</p>
+<pre>python -m pip install findspark
+
+</pre>
+<p class="Para" id="Par72">就是这样。今后，每当您从 Anaconda 提示符调用<code>Jupyter Notebook</code>时，它应该会自动调用 Jupyter 笔记本会话。如果浏览器没有自动打开，可以复制链接并粘贴到浏览器中，如图<a href="#Fig10"> 1-10 </a>所示。在浏览器中，你需要选择一个<em class="EmphasisTypeItalic ">新的 Python 3 </em>笔记本。要在 Windows 中测试 PySpark 安装，请在 Jupyter 中运行以下代码:</p>
+<p>
+ 
+</p>
+<pre>## Initial check
+import findspark
+findspark.init()
+
+## Run these codes when the initial check is successful
+import pyspark
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+df = spark.sql("select 'spark' as hello ")
+df.show()
+
+</pre>
+<p class="Para" id="Par74">好吧，这就是我们的计划。现在，您可以跳到本章后面的“基本操作”一节。</p>
+
+
+<h2 class="Heading">基于 Docker 的安装</h2>
+<p class="Para" id="Par75">信不信由你，与本地安装相比，基于 Docker 的安装非常简单。一些读者可能只是刚刚开始使用 Docker，而少数人可能已经很熟练了。无论哪种情况，都无关紧要。本节将向读者介绍 Docker，并向您展示如何将 PySpark 与 Docker 结合使用。在我们继续深入之前，有一件事我们想弄清楚:Docker 本身就是一个巨大的资源，本书不可能涵盖所有内容。你可以阅读网上的文章或者买一本单独的书来教你关于 Docker 的知识。在这里，我们将介绍使用 Docker 时需要了解的基本知识。请放心，一旦您掌握了 Docker 的窍门，您将会更喜欢使用它。熟练用户可以直接跳到本节稍后讨论的 Docker 镜像安装。</p>
+<h3 class="Heading">为什么我们需要使用 Docker？</h3>
+<p class="Para" id="Par76">想象一个场景，您刚刚使用 Python 2.7 创建了一个应用程序。突然，你的大学/公司的管理员说他们要转到 Python 3.5 或更高版本。现在，您必须从头开始测试您的代码与新 Python 版本的兼容性，或者您可能必须创建一个单独的环境来独立运行您的应用程序。嗯，考虑到你需要花费大量的时间让你的应用程序照常运行，这将是令人沮丧和麻烦的。Docker 在这种情况下就派上了用场。一旦创建了 Docker 映像，外部环境发生的变化就无关紧要了。您的应用程序可以在 Docker 存在的任何地方工作。这使得 Docker 非常强大，它成为数据科学的一个关键应用程序。作为一名数据科学家，您可能会遇到需要在生产中开发和部署模型的场景。如果生产环境中发生了一点小小的变化，就有可能破坏您的代码和应用程序。因此，使用 Docker 会让你的生活更美好。</p>
+
+<h3 class="Heading">Docker 是什么？</h3>
+<p>Docker 是一个平台即服务(PaaS)产品。您可以创建自己的平台来运行您的应用程序。一旦 Docker 平台被创建，它可以被托管在任何有 Docker 的地方。Docker 位于主机操作系统(Mac/Windows/Linux 等)之上。).安装 Docker 应用程序后，您可以创建图像，这些图像称为 Docker 图像。从这些图像中，您可以创建一个容器，它是一个隔离的系统。在容器中，您托管您的应用程序并为您的应用程序安装所有的依赖项(<em class="EmphasisTypeItalic ">bin/libs</em>)。如图<a href="#Fig4"> 1-4 </a>所示。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig4_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig4_HTML.jpg" style="width:26.58em"/></p>
+<p>图 1-4</p><p class="SimplePara">码头工人</p>
+
+
+<p class="Para" id="Par78">等一下！听起来和虚拟机差不多。嗯，不是的。Docker 的内部工作机制不同。每个虚拟机都需要一个独立的操作系统，而在 Docker 中，操作系统是可以共享的。此外，与 Docker 相比，虚拟机使用更多的磁盘空间，并且具有更高的开销利用率。让我们学习如何创建一个简单的 Docker 图像。</p>
+
+<h3 class="Heading">创建一个简单的 Docker 图像</h3>
+<p>创建映像之前，请打开 Docker 帐户，如下所示:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par80">在<a href="https://hub.docker.com/signup"> <code>https://hub.docker.com/signup</code> </a>创建一个<em class="EmphasisTypeItalic "> Docker Hub </em>账户。</p></li>
+<li><p class="Para" id="Par81">从<a href="https://www.docker.com/get-started"> <code>https://www.docker.com/get-started</code> </a>下载<em class="EmphasisTypeItalic "> Docker 桌面</em>。</p></li>
+<li><p class="Para" id="Par82">安装<em class="EmphasisTypeItalic "> Docker 桌面</em>并使用<em class="EmphasisTypeItalic "> Docker Hub </em>用户 ID/密码登录。</p></li>
+</ul>
+
+<p class="Para" id="Par83">要创建一个 Docker 镜像，你需要一个<code>Dockerfile.</code><code>Dockerfile</code>命令，这里有:<a href="https://docs.docker.com/engine/reference/builder/"> <code>https://docs.docker.com/engine/reference/builder/</code> </a>。为了进行试验，我们将创建一个基本的 Python 映像，并在其中运行一个应用程序。让我们开始吧。使用文本编辑器，打开一个名为<code>Dockerfile</code>的新文件，复制/粘贴以下命令:</p>
+<p>
+ 
+</p>
+<pre>FROM python:3.7-slim
+COPY test_script.py /
+RUN pip install jupyter
+CMD ["python", "./test_script.py"]
+
+</pre>
+<p class="Para" id="Par85"><em class="EmphasisTypeItalic "> test_script.py </em>文件包含以下命令。这个文件应该存在于与<code>Dockerfile</code>相同的位置，这样代码才能工作:</p>
+<p>
+ 
+</p>
+<pre>import time
+print("Hello world!")
+print("The current time is - ", time.time())
+
+</pre>
+<p class="Para" id="Par87">这里发生了什么事？我们使用的是一个基本映像，它是 Python 3.7 的精简版。接下来，我们将本地文件<em class="EmphasisTypeItalic "> test_script.py </em>复制到 Docker。此外，我们展示了在 Docker 实例中安装包的快速方法，最后我们执行了<em class="EmphasisTypeItalic "> test_script.py </em>文件。仅此而已。我们现在可以使用 Docker 命令创建 Docker 映像。这里提供了所有的 Docker 命令:<a href="https://docs.docker.com/engine/reference/commandline/docker/"> <code>https://docs.docker.com/engine/reference/commandline/docker/</code> </a>。对于这个简单的映像创建，我们将查看两个命令，如下所示:</p>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par89"><code>docker build</code>–创建图像</p></li>
+<li><p class="Para" id="Par90"><code>docker run</code>–运行图像</p></li>
+</ul>
+
+<p class="Para" id="Par91">在终端/命令提示符下，导航到<em class="EmphasisTypeItalic "> Dockerfile </em>所在的文件夹，并运行以下命令:</p>
+<p>
+ 
+</p>
+<pre>docker build -t username/test_image .
+docker run username/test_image
+
+</pre>
+<p class="Para" id="Par93">第一个命令创建图像。<code>-t</code>用于为图像分配一个标签。您可以将用户名替换为您的 Docker Hub 用户名。确保在标签名称后包含<code>period (.)</code>。这将自动消耗<code>Dockerfile</code>中的位置来创建图像。第二个命令用于运行映像。当执行时，您应该得到一个输出，说<em class="EmphasisTypeItalic ">“Hello world！。现在是——废话。废话。”</em></p>
+<p class="Para" id="Par94">我们现在对 Docker 有了基本的了解，所以让我们继续下载 PySpark Docker。</p>
+
+<h3 class="Heading">下载 PySpark 坞站</h3>
+<p>
+ 
+ 
+</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig5_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig5_HTML.jpg" style="width:43.12em"/></p>
+<p>图 1-5</p><p class="SimplePara">PySpark 图像</p>
+
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par96">前往<a href="https://hub.docker.com/"> <code>https://hub.docker.com/</code> </a>，搜索<em class="EmphasisTypeItalic "> PySpark </em>图片。</p></li>
+<li><p class="Para" id="Par97">导航至图<a href="#Fig5"> 1-5 </a>所示的图像。</p></li>
+</ul>
+
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par99">在终端/命令提示符下，键入以下代码，然后按<em class="EmphasisTypeItalic ">键输入</em>:</p></li>
+</ul>
+
+<p>jupyter/pyspark 坞站拉式笔记本电脑</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par101">一旦映像完全下载完毕，您就可以运行下面的代码来确保映像存在。这里需要注意的一点是，有一个<em class="EmphasisTypeItalic ">最新的</em>标签与这个图像相关联。如果您有多个同名的图像，标签可以用来区分这些图像的版本。</p></li>
+</ul>
+
+<p>
+ 
+</p>
+<pre>docker images
+
+</pre>
+
+<h3 class="Heading">逐步了解 Docker PySpark run 命令</h3>
+<p>
+ 
+</p>
+<ol><li class="ListItem"><p class="Para" id="Par104">让我们从基本的 Docker <code>run</code>命令开始。</p>
+ </li>
+</ol>
+
+<p>
+ 
+</p>
+<pre>docker run jupyter/pyspark-notebook:latest
+
+(base) ramcharankakarla@Ramcharans-MacBook-Pro ~ % docker run jupyter/pyspark-notebook:latest
+Executing the command: jupyter notebook
+[I 02:19:50.508 NotebookApp] Writing notebook server cookie secret to /home/jovyan/.local/share/jupyter/runtime/notebook_cookie_secret
+[I 02:19:53.064 NotebookApp] JupyterLab extension loaded from /opt/conda/lib/python3.8/site-packages/jupyterlab
+[I 02:19:53.064 NotebookApp] JupyterLab application directory is /opt/conda/share/jupyter/lab
+[I 02:19:53.068 NotebookApp] Serving notebooks from local directory: /home/jovyan
+[I 02:19:53.069 NotebookApp] The Jupyter Notebook is running at:
+[I 02:19:53.069 NotebookApp] http://b8206282a9f7:8888/?token=1607408740dd46b6e3233fa9d45d3a0b278fd282e72d8242
+[I 02:19:53.069 NotebookApp]  or http://127.0.0.1:8888/?token=1607408740dd46b6e3233fa9d45d3a0b278fd282e72d8242
+[I 02:19:53.069 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 02:19:53.074 NotebookApp]
+
+    To access the notebook, open this file in a browser:
+
+        file:///home/jovyan/.local/share/jupyter/runtime/nbserver-7-open.html
+
+    Or copy and paste one of these URLs:
+        http://b8206282a9f7:8888/?token=1607408740dd46b6e3233fa9d45d3a0b278fd282e72d8242
+     or http://127.0.0.1:8888/?token=1607408740dd46b6e3233fa9d45d3a0b278fd282e72d8242
+
+Listing 1-1Docker run base
+
+
+</pre>
+<p>当您在浏览器中复制并粘贴前面的链接时，您将看不到任何 Jupyter 会话。这是因为 Docker 与外界没有建立联系。在下一步中，我们将使用端口建立连接。</p>
+<ol><li class="ListItem"><p class="Para" id="Par107">可以使用以下命令建立端口:</p>
+ </li>
+</ol>
+
+<p>
+ 
+</p>
+<pre>docker run -p 7777:8888 jupyter/pyspark-notebook:latest
+
+</pre>
+<p class="Para" id="Par109">出于解释的目的，我们在这里选择了两个不同的端口。在您执行这个命令之后，您将得到类似于清单<a href="#PC34"> 1-1 </a>中所示的输出。当您像以前一样复制和粘贴时，您将看不到任何会话。但是，如果您使用端口 7777，而不是使用端口 8888，它将工作。试试这个链接<code>http://localhost:7777/</code>，你应该能看到一个 Jupyter 会话。这里发生了什么事？</p>
+<p>在 Docker 内部，Jupyter 笔记本会话正在端口 8888 中运行。但是，我们在建立 Docker 连接的时候，明确提到了 Docker 要使用端口 7777 与外界通信。端口 7777 成为入口，这就是我们看到输出的原因。现在您已经清楚了端口语法，让我们为两端分配相同的端口，如下所示。这一次，显示的链接应该可以直接工作。</p>
+<ol><li class="ListItem"><p class="Para" id="Par111">如果你想在 Docker 中访问外部文件怎么办？这也是通过一个简单的命令来实现的:</p>
+ </li>
+</ol>
+
+<pre>docker run -p 8888:8888 jupyter/pyspark-notebook:latest
+
+</pre>
+<p>
+ 
+</p>
+<pre>docker run -p 8888:8888 -v /Users/ramcharankakarla/demo_data/:/home/jovyan/work/ jupyter/pyspark-notebook:latest
+
+</pre>
+<p>同样，Jupyter 笔记本可以在运行这段代码的链接中找到。然而，这里发生了一些事情。让我们深入研究一下这个命令。就像我们之前看到的端口映射一样，有左侧和右侧映射，这里后面跟一个符号<code>-v</code>。这是什么？<code>-v</code>表示调用<code>docker</code>命令时要挂载的卷。左侧是调用<code>docker</code>时要挂载的本地目录。这意味着本地目录<code>/Users/sundar/</code>中的任何文件和文件夹都可以在 Docker 路径<code>/home/work</code>中找到。事情是这样的:当你打开 Jupyter 会话时，你会看到<code>/work</code>目录，它基本上是空的，而不是<code>/home/work</code>。这没关系，因为我们不是在 interactive/bash 模式下调用它，我们将在下一步讨论这一点。</p>
+<ol><li class="ListItem"><p class="Para" id="Par114">如何在交互/bash 模式下调用？使用以下命令:</p>
+ </li>
+</ol>
+
+<p>
+ 
+</p>
+<pre>docker run -it -p 8888:8888 -v /Users/ramcharankakarla/demo_data/:/home/jovyan/work/ jupyter/pyspark-notebook:latest
+
+</pre>
+<p>好吧。您可以在命令中看到两处变化。第一个是<code>-it</code>标签，它表示将要调用的交互会话。第二个是<code>bash</code>命令。这将调用 shell。当您执行这个命令时，这次您不会看到 Jupyter 会话链接。相反，您将进入一个 Linux shell，在那里您可以执行更多的命令。这在很多方面都很有用。您可以像我们之前在 Linux 环境中所做的那样安装软件包。导航到我们之前映射的文件夹，然后使用以下命令调用 Jupyter 笔记本:</p>
+<pre>cd /home/work
+jupyter notebook
+
+</pre>
+<p>您应该能够在 Jupyter 会话中看到文件和文件夹。</p>
+<ol><li class="ListItem"><p class="Para" id="Par118">还有一些用于空间优化的附加标签。我们建议您在运行 Docker 时使用以下最终命令:</p>
+ </li>
+</ol>
+
+<p>
+ 
+</p>
+<pre>docker run -it -–rm -–shm-size=1g –-ulimit memlock=-1 -p 8888:8888 -v /Users/ramcharankakarla/demo_data/:/home/jovyan/work/ jupyter/pyspark-notebook:latest
+
+</pre>
+<p class="Para" id="Par120">标签用于在指定的任务完成后删除容器。这适用于短寿命容器。您明确地告诉 Docker 守护进程，一旦这个容器运行完毕，就清理并删除这些文件以节省磁盘空间。第二个标签<code>--shm-size,</code>用于增加/减少共享内存的大小。对于内存密集型容器，您可以使用该选项来指定共享内存大小，这有助于通过提供对已分配内存的额外访问来更快地运行容器。最后一个标签是<code>--ulimit memlock=-1</code>，它为容器提供了一个无限锁定的内存地址空间。这将在容器调用期间锁定最大可用共享内存。你不必使用所有这些选项；不过，了解他们还是不错的。现在，您已经与 Docker 进行了 PySpark 会话。</p>
+
+
+<h2 class="Heading">Databricks 社区版</h2>
+<p>这是为希望使用数据块的用户设计的。当我们在第 7 章中讨论 FL 流时，它也会派上用场。如果您已经在工作场所设置了 Databricks 环境，您可以联系您的管理员为您创建一个帐户。对于打算尝试自己安装这个的人，请使用此链接注册:<a href="https://databricks.com/try-databricks"> <code>https://databricks.com/try-databricks</code> </a>。创建账户后，你会看到如图<a href="#Fig6"> 1-6 </a>所示的几个选项。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig6_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig6_HTML.jpg" style="width:40.97em"/></p>
+<p>图 1-6</p><p class="SimplePara">数据块选项</p>
+
+
+<p class="Para" id="Par122">现在，您应该可以使用社区版了。一旦您点击<em class="EmphasisTypeItalic ">开始，</em>您应该能够根据电子邮件中的说明进行导航。</p>
+<h3 class="Heading">创建数据块帐户</h3>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par124">在这里创建账户:<a href="https://databricks.com/try-databricks"> <code>https://databricks.com/try-databricks</code> </a></p></li>
+<li><p class="Para" id="Par125">您可能需要通过电子邮件进行身份验证。一旦完成了身份验证，就可以使用数据块了。</p></li>
+</ul>
+
+
+<h3 class="Heading">创建新的集群</h3>
+<p>您需要提供一个集群名(<em class="EmphasisTypeItalic "> pyspark_env </em>)，然后选择一个 Databricks 运行时版本(图<a href="#Fig8"> 1-8 </a>)。我们用于数据科学演示的包在 ML 运行时版本中可用。让我们继续为我们的任务选择最新的 2.4.5 版本 6.6 ML，并创建集群。要了解更多关于集群运行时版本的信息，可以访问这里:<a href="https://docs.databricks.com/release-notes/runtime/releases.html"> <code>https://docs.databricks.com/release-notes/runtime/releases.html</code> </a>。可选地，您也可以使用 ML 的 GPU 版本，但这不是必需的。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig8_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig8_HTML.jpg" style="width:41.32em"/></p>
+<p>图 1-8</p><p class="SimplePara">集群创建</p>
+
+
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig7_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig7_HTML.jpg" style="width:43.12em"/></p>
+<p>图 1-7</p><p class="SimplePara">数据块集群</p>
+
+
+You need to provide a cluster name (<p>单击创建集群后，需要一些时间来构建集群。创建集群后，您就可以开始使用笔记本电脑了。这应该在您指定的集群名称前用一个绿点表示(图<a href="#Fig9"> 1-9 </a>)。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig9_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig9_HTML.jpg" style="width:41.32em"/></p>
+<p>图 1-9</p><p class="SimplePara">集群创建完成</p>
+
+
+
+<h3 class="Heading">创建笔记本</h3>
+<p>点击左上角的数据块图标，导航至欢迎页面(图<a href="#Fig7"> 1-7 </a>)。在那里，您可以点击常见任务部分的<em class="EmphasisTypeItalic ">新笔记本</em>并创建一个笔记本。您需要确保指定在上一任务中创建的集群名称。如图<a href="#Fig10"> 1-10 </a>所示。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig10_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig10_HTML.jpg" style="width:26.58em"/></p>
+<p>图 1-10</p><p class="SimplePara">数据砖笔记本</p>
+
+
+<p class="Para" id="Par130">您可以在笔记本上键入以下代码进行测试，然后按下<em class="EmphasisTypeItalic "> Shift + Enter </em>或使用单元格<em class="EmphasisTypeItalic ">右上角的<em class="EmphasisTypeItalic ">运行单元格</em>选项。</em></p>
+<p class="Para" id="Par131">现在，您可以在 Databricks 中运行 PySpark 笔记本了。很简单，对吧？但是在我们结束这部分之前，你还需要知道一件事。如何将数据导入 Databricks 环境？我们接下来会看到。</p>
+
+<h3 class="Heading">如何将数据文件导入 Databricks 环境？</h3>
+<p>选择左侧面板中的<em class="EmphasisTypeItalic ">数据</em>选项卡。点击<em class="EmphasisTypeItalic ">添加数据</em>。</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig11_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig11_HTML.jpg" style="width:23.62em"/></p>
+<p>图 1-11</p><p class="SimplePara">创建新表</p>
+
+
+<p class="Para" id="Par133">最简单的选项是<em class="EmphasisTypeItalic ">上传文件</em>选项，我们将在本书中使用最多(图<a href="#Fig11"> 1-11 </a>)。让我们创建一个简单的 csv 文件，并尝试上传该文件。</p>
+<p>
+ 
+</p>
+<pre>movie,year
+The Godfather,1972
+The Shawshank Redemption, 1994
+Pulp Fiction, 1994
+
+</pre>
+<p>您现在可以上传文件并选择<em class="EmphasisTypeItalic "> Create Table with UI </em>选项，然后选择我们之前创建的集群(<em class="EmphasisTypeItalic "> pyspark_env </em>)。点击<em class="EmphasisTypeItalic ">预览表格。</em></p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig12_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig12_HTML.jpg" style="width:35.45em"/></p>
+<p>图 1-12</p><p class="SimplePara">预览表格</p>
+
+
+<p class="Para" id="Par136">这里发生了很多事情。Databricks 将自动检测文件的分隔符；然而，如果失败了，你还有一个选择。接下来，你需要通过勾选复选框明确提到<em class="EmphasisTypeItalic ">第一行是表头</em>(图<a href="#Fig12"> 1-12 </a>)。如果未选中此选项，则列名将成为表的一部分。最后，在创建表之前，要确保数据类型是合适的。列<em class="EmphasisTypeItalic ">年份</em>是整数数据类型(<code>INT</code>)。因此，你需要相应地改变它。默认情况下，Databricks 选择<code>STRING</code>数据类型。一旦指定了所有的表属性，您可以点击<em class="EmphasisTypeItalic ">创建表</em>选项。您会注意到，它在默认的数据库中创建了一个新表。</p>
+<p class="Para" id="Par137">让我们使用左侧面板上的<em class="EmphasisTypeItalic ">工作区</em>选项返回笔记本，并尝试访问这些数据。通常，当您使用 PySpark SQL 选项访问表时，它会创建一个 PySpark 数据帧。我们稍后会详细讨论这一点。现在，让我们使用下面的代码来访问数据:</p>
+<p>
+ 
+</p>
+<pre>import pyspark
+df = sqlContext.sql("select * from movies_csv")
+df.show()
+
+</pre>
+<p>您应该得到以下输出(图<a href="#Fig13"> 1-13 </a>):</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig13_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig13_HTML.jpg" style="width:11.8em"/></p>
+<p>图 1-13</p><p class="SimplePara">数据块 PySpark 输出</p>
+
+
+<p class="Para" id="Par140">很酷，对吧？您已经准备好使用 Databricks 版本。</p>
+
+
+<h2 class="Heading">基本操作</h2>
+<p class="Para" id="Par141">祝贺您设置了 PySpark 环境。在本节中，我们将使用一些玩具代码来玩您刚刚创建的环境。不管您之前选择的设置选项是什么，下面显示的所有演示都应该可以工作。</p>
+<h3 class="Heading">上传数据</h3>
+<p class="Para" id="Par142">本节面向选择本地安装或基于 Docker 安装的用户。Databricks 用户可以跳过这一步，继续下一步操作。调用 Jupyter 笔记本后，您可以选择将数据直接上传到您的环境中(图<a href="#Fig14"> 1-14 </a>)。让我们创建一个简单的 csv 文件，并将其命名为<em class="EmphasisTypeItalic "> movies.csv. </em></p>
+<p>
+ 
+ 
+</p>
+<p><img alt="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig14_HTML.jpg" src="../images/500182_1_En_1_Chapter/500182_1_En_1_Fig14_HTML.jpg" style="width:10.33em"/></p>
+<p>图 1-14</p><p class="SimplePara">上传文件</p>
+
+
+<pre>movie,year
+The Godfather,1972
+The Shawshank Redemption, 1994
+Pulp Fiction, 1994
+
+</pre>
+
+<h3 class="Heading">存取数据</h3>
+<p>文件上传后，跳转到您的 PySpark 笔记本并运行以下代码:</p>
+<pre>from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+df = spark.read.csv("movies.csv", header=True, sep=',')
+df.show()
+
+</pre>
+<p class="Para" id="Par145">您应该会看到类似于图<a href="2.html#Fig1"> 2-1 </a>中的输出。</p>
+
+<h3 class="Heading">计算圆周率</h3>
+<p>这是一个你在网上或课本上看到的常见例子。我们将使用 1 亿个样本来测试 PySpark 操作，从而计算圆周率的值。一旦操作完成，它将为您提供圆周率的值。使用以下代码:</p>
+<pre>import random
+NUM_SAMPLES = 100000000
+def inside(p):
+    x, y = random.random(), random.random()
+    return x*x + y*y &lt; 1
+
+count = sc.parallelize(range(0, NUM_SAMPLES)).filter(inside).count()
+pi = 4 * count / NUM_SAMPLES
+print("Pi is roughly", pi)
+
+</pre>
+
+
+<h2 class="Heading">摘要</h2>
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par148">我们刚刚创建了我们自己的 PySpark 实例，它包含以下内容之一:使用 Anaconda 的本地安装、基于 Docker 的安装或 Databrick community edition。</p></li>
+<li><p class="Para" id="Par149">我们知道在笔记本环境中访问本地文件的步骤。</p></li>
+<li><p class="Para" id="Par150">我们使用一个<em class="EmphasisTypeItalic "> movies.csv </em>文件创建了一个 PySpark 数据帧，并打印了输出。</p></li>
+<li><p class="Para" id="Par151">我们运行了一个小的 PySpark 命令来计算圆周率的值。</p></li>
+</ul>
+
+<p class="Para" id="Par152">干得好！在下一章，我们将更深入地研究 PySpark 操作，并带您了解一些有趣的主题，如特征工程和可视化。继续学习，敬请关注。</p>
+
+
+
+</body>
+</html>

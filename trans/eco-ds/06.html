@@ -1,0 +1,386 @@
+<html lang="en">
+<head><title>Finding Hidden Patterns in World Economy and Growth</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">6.发现世界经济和增长的隐藏模式</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">本章介绍使用隐马尔可夫模型(HMM)进行决策。具体来说，它侧重于高斯混合模型，这是一种用于时间序列数据的无监督机器学习隐马尔可夫模型。这个模型的美妙之处在于它对非平稳数据缺乏敏感性。读完这一章，你会更好地理解高斯混合模型是如何工作的，并知道如何开发一个。请注意，HMM 是一个无监督的学习器，这意味着您可以在没有任何预先确定的研究假设的情况下执行调查。</p>
+<p class="Para" id="Par3">本章假设有两类状态，在马尔可夫决策中称为<em class="EmphasisTypeItalic ">状态</em>。一个系列包含连续的值，有时，您会想要对该系列进行分类。例如，您可以将一个系列分类为“上升趋势”或“下降趋势”，其中状态<code>0</code>表示上升趋势，状态<code>1</code>表示下降趋势。这就是马尔可夫建模的用武之地。马尔可夫建模包括对当前和先前状态的顺序识别，然后建模以预测未来状态。尽管这是一种发现序列中隐藏状态的有用方法，但评估模型的指标还不够，最多只能得到每个状态的平均值和协方差。</p>
+<p class="Para" id="Par4">在继续之前，确保您的环境中安装了<code>hmmlearn</code>库。要在 Python 环境中安装<code>hmmlearn</code>库，请使用<code>pip install hmmlearn</code>。同样，要在 Conda 环境中安装库，使用<code>conda install -c conda-forge hmmlearn</code>。</p>
+<h2 class="Heading">应用隐马尔可夫模型</h2>
+<p class="Para" id="Par5">隐马尔可夫模型确定前面的隐状态，并预测一系列未来的隐状态。对于本书，我们将隐藏状态视为类。前一章介绍了利用时间序列处理序列问题的方法。此外，还简要介绍了二元分类和线性回归。本章开发了一个高斯混合模型来预测两种状态(世界 GDP 增长下降和世界 GDP 增长上升)。默认情况下，高斯混合对数据进行假设。每当你遇到“高斯”这个词，就想到<em class="EmphasisTypeItalic ">常态</em>(在真实平均值附近饱和的变量)。该方法将高斯分布分成两半，然后确定某个值落入某个状态的概率。这个过程是逐渐发生的。</p>
+<p>总之，这个例子调查了世界国内生产总值增长的隐藏模式(作为年度百分比)，无论是下降还是上升。然后，它应用这一模型来预测某一年世界国内生产总值的增长和下降。见清单<a href="#PC1"> 6-1 </a>和表格<a href="#Tab1"> 6-1 </a>。</p>
+<p>表 6-1</p><p class="SimplePara">世界经济增长数据</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">日期</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">gdp _ 增长</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2020-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">-3.593456</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2019-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.335558</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2018-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.034061</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2017-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.281329</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">2016-01-01</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">2.605572</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>import wbdata
+country  = ["WLD"]
+indicators = {"NY.GDP.MKTP.KD.ZG":"gdp_growth"}
+df = wbdata.get_dataframe(indicators, country=country, convert_date=True)
+df["gdp_growth"] = df["gdp_growth"].fillna(df["gdp_growth"].mean())
+df.head()
+
+Listing 6-1Loading World GDP Growth Data
+
+
+</pre>
+
+<h2 class="Heading">描述统计学</h2>
+<p>图<a href="#Fig1"> 6-1 </a>使用清单<a href="#PC2"> 6-2 </a>中的代码显示了世界 GDP 增长数据的分布。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig1_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig1_HTML.png" style="width:43.12em"/></p>
+<p>图 6-1</p><p class="SimplePara">世界 GDP 增长分布和异常值检测</p>
+
+
+<pre>df.plot(kind="box",color="green")
+plt.title("World GDP growth (annual %) distribution")
+plt.ylabel("Values")
+plt.show()
+
+Listing 6-2World Economic Growth Distribution and Outlier Detection
+
+
+</pre>
+<p>图<a href="#Fig1"> 6-1 </a>显示世界 GDP 增长数据的分布(以年百分比表示)呈正态分布，但在负轴存在异常值。清单<a href="#PC3"> 6-3 </a>返回图<a href="#Fig2"> 6-2 </a>，也显示了这个分布。另请参见清单<a href="#PC4"> 6-4 </a>。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig2_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig2_HTML.png" style="width:43.12em"/></p>
+<p>图 6-2</p><p class="SimplePara">世界国内生产总值增长分布</p>
+
+
+<pre>df.plot(kind="hist", color="green")
+plt.title("World GDP growth (annual %)")
+plt.xlabel("GDP growth (annual %)")
+plt.show()
+
+Listing 6-4World GDP Growth Distribution
+
+
+</pre>
+<pre>import numpy as np
+df['gdp_growth'] = np.where((df["gdp_growth"] &lt; -1),df["gdp_growth"].mean(),df["gdp_growth"])
+
+Listing 6-3Outlier Removal
+
+
+</pre>
+<p>图<a href="#Fig2"> 6-2 </a>证实了这种正态分布。表<a href="#Tab2"> 6-2 </a>概述了使用清单<a href="#PC5"> 6-5 </a>中的命令对集中趋势和分散的估计。</p>
+<p>表 6-2</p><p class="SimplePara">世界 GDP 增长描述性统计</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">可变的</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">gdp _ 增长</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">数数</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">61.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">平均</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.566094</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">标准</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.410267</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">福建话</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.532137</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">25%</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2.605572</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">50%</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">3.430696</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">75%</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">4.367087</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">最大</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">6.710726</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>df.describe()
+
+Listing 6-5World GDP Growth Descriptive Statistics
+
+
+</pre>
+<p>表<a href="#Tab2"> 6-2 </a>显示，世界 GDP 增长的平均值为 3.566094，独立观察值与平均值相差 1.410267。同样，世界经济生产的最小变化是 0.532137，最大值是 6.710726。图<a href="#Fig3"> 6-3 </a>根据清单<a href="#PC6"> 6-6 </a>中的代码绘制了世界 GDP 增长率。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig3_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig3_HTML.png" style="width:43.12em"/></p>
+<p>图 6-3</p><p class="SimplePara">世界 GDP 增长线图</p>
+
+
+<pre>df.plot(color="green",lw=4)
+plt.title("World GDP growth (annual %) line plot")
+plt.xlabel("Date")
+plt.ylabel("GDP growth (annual %)")
+plt.show()
+
+Listing 6-6World GDP Growth Line Plot
+
+
+</pre>
+<p>图<a href="#Fig3"> 6-3 </a>说明了世界 GDP 增长的不稳定性。我们在 1963 年经历了最高的 GDP 增长(6.713557)，在 1982 年经历了最低的 GDP 增长(0.423812)。图<a href="#Fig4"> 6-4 </a>使用清单<a href="#PC7"> 6-7 </a>中的代码显示了对数 GDP 增长。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig4_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig4_HTML.png" style="width:43.12em"/></p>
+<p>图 6-4</p><p class="SimplePara">世界对数 GDP 增长线图</p>
+
+
+<pre>import pandas as pd
+log_df = np.log(df)
+log_df = pd.DataFrame(log_df)
+log_df.plot(color="green",lw=4)
+plt.title("World log GDP growth (annual %) line plot")
+plt.xlabel("Date")
+plt.ylabel("GDP growth (annual %)")
+plt.show()
+
+Listing 6-7World Log GDP Growth Line Plot
+
+
+</pre>
+
+<h2 class="Heading">高斯混合模型开发</h2>
+<p>列出高斯混合模型的<a href="#PC8"> 6-8 </a>代码。它假设数据来自正态分布。</p>
+<pre>old_log_df= pd.DataFrame(log_df)
+log_df = log_df.values
+x = np.column_stack([log_df])
+from hmmlearn import hmm
+model = hmm.GaussianHMM(n_components=2, tol=0.0001, n_iter=10)
+model.fit(x)
+
+Listing 6-8Model Development
+
+
+</pre>
+<p>清单<a href="#PC9"> 6-9 </a>中的代码生成序列中的隐藏状态(见表<a href="#Tab3"> 6-3 </a>)。</p>
+<p>表 6-3</p><p class="SimplePara">隐藏状态</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">日期</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">隐藏状态</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2020-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2019-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2018-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">2017-01-01</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">2016-01-01</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>hidden_states = pd.DataFrame(model.predict(x), columns = ["hidden_states"])
+hidden_states.index = old_log_df.index
+hidden_states.head()
+
+Listing 6-9Generate Hidden States
+
+
+</pre>
+
+<h2 class="Heading">用图形表示隐藏状态</h2>
+<p>为了理解表<a href="#Tab3"> 6-3 </a>，参见图<a href="#Fig5"> 6-5 </a>。这个过程的代码如清单<a href="#PC10"> 6-10 </a>所示。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig5_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig5_HTML.png" style="width:43.12em"/></p>
+<p>图 6-5</p><p class="SimplePara">世界 GDP 增长隐藏状态</p>
+
+
+<pre>increasing_gdp = hidden_states.loc[hidden_states.values == 0]
+decreasing_gdp = hidden_states.loc[hidden_states.values == 1]
+fig, ax = plt.subplots()
+plt.plot(increasing_gdp.index,increasing_gdp.values,".",linestyle="none",color= "navy",label = "Increasing GDP growth")
+plt.plot(decreasing_gdp.index, decreasing_gdp.values,".",linestyle="none",color = "red",label = "Decreasing GDP growth")
+plt.title("World GDP growth (annual %) states")
+plt.xlabel("Date")
+plt.ylabel("State")
+plt.legend(loc="best")
+plt.show()
+
+Listing 6-10World GDP Growth States
+
+
+</pre>
+<p>清单<a href="#PC11"> 6-11 </a>返回一个散点图，展示隐藏状态的分散(见图<a href="#Fig6"> 6-6 </a>)。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig6_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig6_HTML.png" style="width:43.12em"/></p>
+<p>图 6-6</p><p class="SimplePara">世界 GDP 增长状态分散</p>
+
+
+<pre>mk_data = old_log_df.join(hidden_states,how = "inner")
+mk_data = mk_data[["gdp_growth","hidden_states"]]
+up = pd.Series()
+down = pd.Series()
+mid = pd.Series()
+for tuple in mk_data.itertuples():
+    if tuple.hidden_states == 0:
+        x = pd.Series(tuple.gdp_growth,index = [tuple.Index])
+        up = up.append(x)
+    else:
+        x = pd.Series(tuple.gdp_growth,index = [tuple.Index])
+        down = down.append(x)
+        up = up.sort_index()
+        down = down.sort_index()
+fig, ax = plt.subplots()
+plt.plot(up.index, up.values, ".", c = "navy",label = "Increasing GDP growth")
+plt.plot(down.index, down.values,".",c = "red",label = "Decreasing GDP growth")
+plt.title("World GDP growth (annual %) overall")
+plt.xlabel("Date")
+plt.ylabel("State")
+plt.legend(loc="best")
+plt.show()
+
+Listing 6-11World GDP Growth States Scatter
+
+
+</pre>
+<p>清单<a href="#PC12"> 6-12 </a>统计序列中的隐藏状态，并以饼图的形式显示出来(见图<a href="#Fig7"> 6-7 </a>)。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig7_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig7_HTML.png" style="width:37.5em"/></p>
+<p>图 6-7</p><p class="SimplePara">世界 GDP 增长隐藏状态饼图</p>
+
+
+<pre>binarized_markov = pd.DataFrame(mk_data["hidden_states"])
+binarized_markov["hidden_states"]
+binarized_markov_data = binarized_markov.replace({0: "Increasing GDP",1: "Decreasing GDP"})
+binarized_markov_data = binarized_markov_data.reset_index()
+class_series = binarized_markov_data.groupby("hidden_states").size()
+class_series.name = "Count"
+class_series.plot.pie(autopct="%2.f",cmap="RdBu")
+plt.title("Hidden states pie chart")
+plt.show()
+
+Listing 6-12Hidden States Count
+
+
+</pre>
+<p>图<a href="#Fig7"> 6-7 </a>显示，15%的预测值是增加 GDP 增长，85%是减少。清单<a href="#PC13"> 6-13 </a>绘制了随机生成样本的隐藏状态(图<a href="#Fig8"> 6-8 </a>)。</p>
+<p><img alt="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig8_HTML.png" src="../images/516940_1_En_6_Chapter/516940_1_En_6_Fig8_HTML.png" style="width:43.12em"/></p>
+<p>图 6-8</p><p class="SimplePara">样本间的隐藏状态</p>
+
+
+<pre>num_sample = 1000
+sample, _ = model.sample(num_sample)
+plt.plot(np.arange(num_sample), sample[:,0],color="green")
+plt.title("Hidden states across samples")
+plt.xlabel("Samples")
+plt.ylabel("States")
+plt.show()
+
+Listing 6-13Hidden States Across Samples
+
+
+</pre>
+<p class="Para" id="Par18">要理解这些结果，您需要更仔细地查看组件。清单<a href="#PC14"> 6-14 </a>调查每个订单的平均值和方差。</p>
+
+<h2 class="Heading">排序隐藏状态</h2>
+<p>
+ 
+</p>
+<pre>for i in range(model.n_components):
+    print("{0} order hidden state".format(i))
+    print"mean =", model.means_[i])
+    print"var =", np.diag(model.covars_[i]))
+    print()
+
+0 order hidden state
+0 order hidden state
+mean =  [0.58952373]
+var =  [0.30547955]
+
+1 order hidden state
+mean =  [1.33696442]
+var =  [0.0882703]
+
+Listing 6-14Markov Components
+
+
+</pre>
+<p class="Para" id="Par20">在<code>0</code>阶隐状态下，均值为 0.58952373，方差为 0.30547955。在<code>1</code>阶隐状态下，均值为 1.33696442，方差为 0.0882703。</p>
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par21">本章介绍了高斯混合模型，这是一种隐马尔可夫模型(HMM)。假设有预定数量的状态(其中<code>0</code>表示第一个状态，<code>1</code>表示第二个状态)，它使用两个组件来探索模型。然后应用该模型预测世界国内生产总值增长系列数据的未来状态(以年度百分比表示)。</p>
+
+
+
+</body>
+</html>

@@ -1,0 +1,948 @@
+<html lang="en">
+<head><title>Solving Economic Problems Applying Artificial Neural Networks</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">8.应用人工神经网络解决经济问题</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">深度学习通过使用人工神经网络来操作一组预测变量并预测未来的响应变量，从而扩展了机器学习。人工神经网络是一组节点，它们在输入层接收输入值，并在随后的隐藏层(介于输入层和输出层之间的层)中对它们进行转换。该隐藏层转换节点，并分配不同的<em class="EmphasisTypeItalic ">权重</em>(确定输入值对输出值的影响程度的向量参数)和<em class="EmphasisTypeItalic ">偏差</em>(不变为 1 的平衡值)。接下来，它们通过应用激活函数在输出层生成一组输出值。人工神经网络是深度学习的一部分，它通过构建模型和复制人类神经活动作为基础来推进机器学习。<em class="EmphasisTypeItalic ">传播</em>是训练网络的过程(通常通过反向传播，涉及从输出层更新储备中的权重)。</p>
+<p class="Para" id="Par3">传统的机器学习模型最适合小数据。数据量的增加带来了新的问题，因为传统模型的计算成本很高。大多数集成模型(那些解决回归和分类问题的模型)在训练的开始阶段过于乐观，并且大多数预测都是正确的。例如，梯度起初看起来很小，然后随着数据的增加而扩大——这种现象被称为<em class="EmphasisTypeItalic ">消失梯度问题</em>。梯度下降算法解决了这个问题，形成了构建网络的基础。</p>
+<p class="Para" id="Par4">在继续之前，请确保您的环境中安装了<code>tensorflow</code>库。要在 Python 环境中安装<code>tensorflow</code>库，请使用<code>pip install tensorflow</code>。同样，要在 Conda 环境中安装库，使用<code>conda install -c conda-forge tensorflow</code>。也安装 Keras 库。在 Python 环境中，使用<code>pip install keras</code>，在 Conda 环境中，使用<code>conda install -c conda-forge keras</code>。</p>
+<h2 class="Heading">本章的背景</h2>
+<p>本章通过应用一系列经济指标——城市人口、人均国民总收入、阿特拉斯法(以现值美元计)和国内生产总值增长率(以年百分比计),预测了南非出生时预期寿命的变化。表<a href="#Tab1"> 8-1 </a>概述了本章研究的南非宏观经济指标。</p>
+<p>表 8-1</p><p class="SimplePara">本章南非宏观经济指标</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">身份</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">指示器</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>SP.URB.TOTL</code></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">南非的城市人口</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>NY.GNP.PCAP.CD</code></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">南非人均国民总收入，阿特拉斯法(现值美元)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>NY.GDP.MKTP.KD.ZG</code></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">南非的国内生产总值增长率(年百分比)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><code>SP.DYN.LE00.IN</code></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">南非出生时的预期寿命(年)</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h2 class="Heading">理论框架</h2>
+<p>图<a href="#Fig1"> 8-1 </a>说明了本章的假设框架。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig1_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig1_HTML.png" style="width:43.22em"/></p>
+<p>图 8-1</p><p class="SimplePara">理论框架</p>
+
+
+<p>清单<a href="#PC1"> 8-1 </a>中的代码执行数据操作任务。</p>
+<pre>country = ["ZAF"]
+indicator = {"SP.URB.TOTL":"urban_pop",
+             "NY.GNP.PCAP.CD":"gni_per_capita",
+             "NY.GDP.MKTP.KD.ZG":"gdp_growth",
+             "SP.DYN.LE00.IN":"life_exp"}
+df = wbdata.get_dataframe(indicator, country=country, convert_date=True)
+df["urban_pop"] = df["urban_pop"].fillna(df["urban_pop"].mean())
+df["gni_per_capita"] = df["gni_per_capita"].fillna(df["gni_per_capita"].mean())
+df["gdp_growth"] = df["gdp_growth"].fillna(df["gdp_growth"].mean())
+df["life_exp"] = df["life_exp"].fillna(df["life_exp"].mean())
+df['gni_per_capita'] = np.where((df["gni_per_capita"] &gt; 5000),df["gni_per_capita"].mean(),df["gni_per_capita"])
+df['pct_change'] = df["life_exp"].pct_change()
+df = df.dropna()
+df['direction'] = np.sign(df['pct_change']).astype(int)
+df["direction"] = pd.get_dummies(df["direction"])
+df['pct_change'] = df["life_exp"].pct_change()
+df = df.dropna()
+df['direction'] = np.sign(df['pct_change']).astype(int)
+df["direction"] = pd.get_dummies(df["direction"])
+del df["pct_change"]
+del df["life_exp"]
+from sklearn.preprocessing import StandardScaler
+x = df.iloc[::,0:3]
+scaler = StandardScaler()
+x= scaler.fit_transform(x)
+y = df.iloc[::,-1]
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2,random_state=0)
+
+Listing 8-1Data Preprocessing
+
+
+</pre>
+
+<h2 class="Heading">受限玻尔兹曼机器分类器</h2>
+<p>受限波尔兹曼机器分类器是一个简单的人工神经网络，由一个隐藏层和一个可见层组成。图<a href="#Fig2"> 8-2 </a>显示了受限波尔兹曼机分级机的结构。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig2_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig2_HTML.png" style="width:43.22em"/></p>
+<p>图 8-2</p><p class="SimplePara">受限玻尔兹曼机器结构</p>
+
+
+<p class="Para" id="Par9">图<a href="#Fig2"> 8-2 </a>显示隐藏层中的每个节点自动检索输入值，通过应用激活函数对检索到的输入数据进行转换，并将数据传输到可见层。受限玻尔兹曼机器分类器估计从左到右的梯度——这个学习过程被称为<em class="EmphasisTypeItalic ">正向传播</em>过程。</p>
+
+<h2 class="Heading">受限玻尔兹曼机器分类器的开发</h2>
+<p>清单<a href="#PC2"> 8-2 </a>是受限玻尔兹曼机器开发分类器，应用默认超参数。请注意，它应用了<code>Pipeline()</code>方法来设置最终分类器的参数，包括受限波尔兹曼机和逻辑回归分类器的参数。</p>
+<pre>from sklearn.neural_network import BernoulliRBM
+from sklearn.linear_model import LogisticRegression
+rbm = BernoulliRBM()
+logreg = LogisticRegression()
+from sklearn.pipeline import Pipeline
+rbmclassifier = Pipeline(steps=[("rbm",rbm),("logreg",logreg)])
+rbmclassifier.fit(x_train,y_train)
+
+Listing 8-2Restricted Boltzmann Machine Classifier Development
+
+
+</pre>
+<h3 class="Heading">受限玻尔兹曼机混淆矩阵</h3>
+<p>列表<a href="#PC3"> 8-3 </a>调查受限波尔兹曼机分级机的性能(见表<a href="#Tab2"> 8-2 </a>)。</p>
+<p>表 8-2</p><p class="SimplePara">受限玻尔兹曼机器分类器混淆矩阵</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">预测:预期寿命下降</strong></p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">预测:预期寿命增加</strong></p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">实际:预期寿命减少</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">实际:预期寿命增加</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Ten</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>from sklearn import metrics
+y_predrbmclassifier = rbmclassifier.predict(x_test)
+cmatrbmclassifier = pd.DataFrame(metrics.confusion_matrix(y_test,y_predrbmclassifier),
+                                 index=["Actual: Decreasing life expectancy",
+                                     "Actual: Increasing life expectancy"],
+                         columns = ("Predicted: Decreasing life expectancy",
+                                   Predicted: Increasing life expectancy"))
+cmatrbmclassifier
+
+Listing 8-3Restricted Boltzmann Machine Confusion Matrix
+
+
+</pre>
+<p>表<a href="#Tab3"> 8-3 </a>解释了受限玻尔兹曼机分类器的混淆矩阵(见表<a href="#Tab2"> 8-2 </a>)。</p>
+<p>表 8-3</p><p class="SimplePara">受限玻尔兹曼机器分类器混淆矩阵解释</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公制的</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">解释</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确肯定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">当南非的预期寿命确实在下降时，受限的波尔兹曼机器分类器并没有预测到预期寿命的下降。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确否定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">当南非的预期寿命增加(两倍)时，受限玻尔兹曼机器分类器预测预期寿命增加。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确肯定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">当南非的预期寿命增加时，受限的波尔兹曼机器分类器没有预测到预期寿命的减少。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">假阴性</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">当南非的预期寿命实际上在下降(十倍)时，受限玻尔兹曼机器分类器预测寿命在增加。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 class="Heading">受限玻尔兹曼机器分类报告</h3>
+<p>清单<a href="#PC4"> 8-4 </a>中的代码检索关于受限波尔兹曼机器分类器性能的详细报告(见表<a href="#Tab4"> 8-4 </a>)。</p>
+<pre>creportrbmclassifier = pd.DataFrame(metrics.classification_report(y_test,y_predrbmclassifier,output_dict=True))
+creportrbmclassifier
+
+Listing 8-4Restricted Boltzmann Machine Classification Report
+
+
+</pre>
+<p>表<a href="#Tab4"> 8-4 </a>显示，RBM 分类器的准确率为 83%,在预测南非预期寿命的增加和减少时，准确率为 83%。</p>
+<p>表 8-4</p><p class="SimplePara">受限玻尔兹曼机分类报告</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">准确</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Avg 宏</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加权平均值</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.416667</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.694444</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回忆</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.500000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">f1-分数</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.909091</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.454545</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.757576</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">支持</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">10.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">12.000000</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">12.000000</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 class="Heading">受限玻尔兹曼机器分类器 ROC 曲线</h3>
+<p>列表<a href="#PC5"> 8-5 </a>估计了当受限波尔兹曼机器分类器区分南非预期寿命的增加和减少时，灵敏度(FPR)和特异性(TPR)之间的权衡(见图<a href="#Fig3"> 8-3 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig3_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig3_HTML.png" style="width:43.12em"/></p>
+<p>图 8-3</p><p class="SimplePara">受限玻尔兹曼机器分类器 ROC 曲线</p>
+
+
+<pre>y_predrbmclassifier_proba = rbmclassifier.predict_proba(x_test)[::,1]
+fprrbmclassifier, tprrbmclassifier, _ = metrics.roc_curve(y_test,y_predrbmclassifier_proba)
+aucrbmclassifier = metrics.roc_auc_score(y_test,y_predrbmclassifier_proba)
+fig, ax = plt.subplots()
+plt.plot(fprrbmclassifier, tprrbmclassifier,label="auc: "+str(aucrbmclassifier),color="navy",lw=4)
+plt.plot([0,1],[0,1],color="red",lw=4)
+plt.xlim([0.00,1.01])
+plt.ylim([0.00,1.01])
+plt.title("RBM classifier ROC curve")
+plt.xlabel("Sensitivity")
+plt.ylabel("Specificity")
+plt.legend(loc=4)
+plt.show()
+
+Listing 8-5Restricted Boltzmann Machine Classifier ROC Curve
+
+
+</pre>
+<p class="Para" id="Par16">图<a href="#Fig3"> 8-3 </a>显示，平均而言，在区分南非出生时预期寿命的增加和减少时，受限波尔兹曼机器分类器的准确率为 60%。</p>
+
+<h3 class="Heading">受限波尔兹曼机器分类器精度-召回曲线</h3>
+<p>清单<a href="#PC6"> 8-6 </a>估计了在特定阈值范围内精确度和召回率之间的权衡，因为受限波尔兹曼机器分类器在南非区分增加和减少的预期寿命(见图<a href="#Fig4"> 8-4 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig4_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig4_HTML.png" style="width:43.12em"/></p>
+<p>图 8-4</p><p class="SimplePara">受限波尔兹曼机器分类器精度-召回曲线</p>
+
+
+<pre>precisionrbmclassifier, recallrbmclassifier, thresholdrbmclassifier = metrics.precision_recall_curve(y_test,y_predrbmclassifier)
+apsrbmclassifier = metrics.average_precision_score(y_test,y_predrbmclassifier)
+fig, ax = plt.subplots()
+plt.plot(precisionrbmclassifier, recallrbmclassifier,label="aps: " +str(apsrbmclassifier),color="navy",lw=4)
+plt.axhline(y=0.5, color="red",lw=4)
+plt.title("RBM classifier precision-recall curve")
+plt.ylabel("Precision")
+plt.xlabel("Recall")
+plt.legend(loc=4)
+plt.show()
+
+Listing 8-6Restricted Boltzmann Machine Classifier Precision-Recall Curve
+
+
+</pre>
+<p class="Para" id="Par18">图<a href="#Fig4"> 8-4 </a>显示，平均而言，受限波尔兹曼机器分类器在区分南非预期寿命增加和减少时的准确率为 83%。</p>
+
+<h3 class="Heading">受限波尔兹曼机器分类器学习曲线</h3>
+<p>清单<a href="#PC7"> 8-7 </a>展示了受限玻尔兹曼机器分类器如何学习正确区分南非出生时预期寿命的增加和减少(见图<a href="#Fig5"> 8-5 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig5_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig5_HTML.png" style="width:43.12em"/></p>
+<p>图 8-5</p><p class="SimplePara">受限波尔兹曼机器分类器学习曲线</p>
+
+
+<pre>from sklearn.model_selection import learning_curve
+from sklearn.model_selection import learning_curve
+trainsizerbmclassifier, trainscorerbmclassifier, testscorerbmclassifier = learning_curve(rbmclassifier, x, y, cv=5, n_jobs=-1, scoring="accuracy", train_sizes=np.linspace(0.1,1.0,50))
+trainscorerbmclassifier_mean = np.mean(trainscorerbmclassifier,axis=1)
+trainscorerbmclassifier_std = np.std(trainscorerbmclassifier,axis=1)
+testscorerbmclassifier_mean = np.mean(testscorerbmclassifier,axis=1)
+testscorerbmclassifier_std = np.std(testscorerbmclassifier,axis=1)
+fig, ax = plt.subplots()
+plt.plot(trainsizerbmclassifier, trainscorerbmclassifier_mean, color="red", label="Training accuracy score",lw=4)
+plt.plot(trainsizerbmclassifier, testscorerbmclassifier_mean,color="navy",label="Cross validation accuracy score",lw=4)
+plt.title("RBM classifier learning curve")
+plt.xlabel("Training set size")
+plt.ylabel("Accuracy")
+plt.legend(loc="best")
+plt.show()
+
+Listing 8-7Restricted Boltzmann Machine Classifier Learning Curve
+
+
+</pre>
+<p class="Para" id="Par20">图<a href="#Fig5"> 8-5 </a>显示，对于前十个数据点，交叉验证准确度得分高于训练得分。此后，训练分数超过交叉验证准确度分数，直到第 30 个数据点。在第 36 个数据点，交叉验证分数急剧下降。</p>
+
+
+<h2 class="Heading">多层感知机(MLP)分类器</h2>
+<p>本节涵盖多层感知器分类器——受限玻尔兹曼机器分类器的扩展，也称为<em class="EmphasisTypeItalic ">香草模型</em>。这是一个具有一个以上隐藏层的受限波尔兹曼机器分类器。它由三层组成(见图<a href="#Fig6"> 8-6 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig6_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig6_HTML.png" style="width:43.22em"/></p>
+<p>图 8-6</p><p class="SimplePara">多层感知器分类器示例</p>
+
+
+<p class="Para" id="Par22">图<a href="#Fig6"> 8-6 </a>显示模型包括输入层，该层检索输入值并将其传输到第一个隐藏层。该隐藏层接收这些值，并通过应用函数(在本例中为 Sigmoid 函数)对它们进行转换。输出值被传输到第二隐藏层，第二隐藏层接收传输的值并处理它们(它转换这些值并将它们传输到输出层。).</p>
+<h3 class="Heading">多层感知器(MLP)分类器模型开发</h3>
+<p>清单<a href="#PC8"> 8-8 </a>通过应用默认的超参数开发了多层感知器分类器。</p>
+<pre>from sklearn.neural_network import MLPClassifier
+mlp = MLPClassifier()
+mlp.fit(x_train,y_train)
+
+Listing 8-8Multilayer Perceptron Classifier Model Development
+
+
+</pre>
+<p>清单<a href="#PC9"> 8-9 </a>检索多层感知器分类器的混淆矩阵(见表<a href="#Tab5"> 8-5 </a>)。</p>
+<p>表 8-5</p><p class="SimplePara">多层感知器混淆矩阵</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">预测:预期寿命下降</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">预测:预期寿命增加</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">实际:预期寿命减少</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">实际:预期寿命增加</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">Ten</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>y_predmlp = mlp.predict(x_test)
+cmatmlp = pd.DataFrame(metrics.confusion_matrix(y_test,y_predmlp), index=["Actual: Decreasing life expectancy", "Actual: Increasing life expectancy"],
+                        columns = ("Predicted: Decreasing life expectancy",
+                                  "Predicted: Increasing life expectancy"))
+cmatmlp
+
+Listing 8-9Construct a Multilayer Perceptron Confusion Matrix
+
+
+</pre>
+<p>表<a href="#Tab6"> 8-6 </a>解释多层感知器分类器的混淆矩阵(见表<a href="#Tab5"> 8-5 </a>)。</p>
+<p>表 8-6</p><p class="SimplePara">多层感知器混淆矩阵解释</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公制的</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">解释</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确肯定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">多层感知器分类器没有预测到预期寿命的下降，而实际上南非的预期寿命在下降。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确否定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">多层感知器分类器预测出生时预期寿命增加，而实际上南非的预期寿命增加了两倍。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确肯定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">多层感知器分类器没有预测预期寿命的下降，而在南非，出生时的预期寿命实际上是在增加的。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">假阴性</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">多层感知器分类器预测预期寿命增加，而实际上南非的预期寿命在下降(十倍)。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 class="Heading">多层感知器分类报告</h3>
+<p>表<a href="#Tab7"> 8-7 </a>概述了由清单<a href="#PC10"> 8-10 </a>中的代码创建的多层感知器分类报告。</p>
+<p>表 8-7</p><p class="SimplePara">多层感知器分类报告</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">准确</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Avg 宏</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加权平均值</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.416667</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.694444</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回忆</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">1.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.500000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">f1-分数</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.909091</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.454545</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.757576</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">支持</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">10.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.833333</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">12.000000</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">12.000000</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>creportmlp = pd.DataFrame(metrics.classification_report(y_test,y_predmlp,output_dict=True))
+creportmlp
+
+Listing 8-10Multilayer Perceptron Classification Report
+
+
+</pre>
+<p class="Para" id="Par27">表<a href="#Tab7"> 8-7 </a>显示，多层感知器分类器预测南非出生时预期寿命降低的准确率为 83%,预测预期寿命降低的准确率为 83%。此外，当它区分南非预期寿命的增加和减少时，它的准确率为 92%。</p>
+
+<h3 class="Heading">多层感知器摇摆曲线</h3>
+<p>清单<a href="#PC11"> 8-11 </a>估计了多层感知器分类器区分南非预期寿命增加和减少时灵敏度(FPR)和特异性(TPR)之间的权衡(见图<a href="#Fig7"> 8-7 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig7_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig7_HTML.png" style="width:43.12em"/></p>
+<p>图 8-7</p><p class="SimplePara">多层感知器分类器 ROC 曲线</p>
+
+
+<pre>y_predmlp_proba = mlp.predict_proba(x_test)[::,1]
+fprmlp, tprmlp, _ = metrics.roc_curve(y_test,y_predmlp_proba)
+aucmlp = metrics.roc_auc_score(y_test,y_predmlp_proba)
+fig, ax = plt.subplots()
+plt.plot(fprmlp, tprmlp,label="auc: "+str(aucmlp),color="navy",lw=4)
+plt.plot([0,1],[0,1],color="red",lw=4)
+plt.xlim([0.00,1.01])
+plt.ylim([0.00,1.01])
+plt.title("MLP classifier ROC curve")
+plt.xlabel("Sensitivity")
+plt.ylabel("Specificity")
+plt.legend(loc=4)
+plt.show()
+
+Listing 8-11Multilayer Perceptron ROC Curve
+
+
+</pre>
+<p class="Para" id="Par29">图<a href="#Fig7"> 8-7 </a>显示，平均而言，多层感知器分类器在区分南非预期寿命增加和减少时是 100%准确的。</p>
+
+<h3 class="Heading">多层感知器分类器精确召回曲线</h3>
+<p>清单<a href="#PC12"> 8-12 </a>估计了多层感知器分类器在南非区分增加和减少的预期寿命时，不同阈值之间的精确度和召回率之间的权衡(见图<a href="#Fig8"> 8-8 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig8_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig8_HTML.png" style="width:43.12em"/></p>
+<p>图 8-8</p><p class="SimplePara">多层感知器分类器精确召回曲线</p>
+
+
+<pre>precisionmlp, recallmlp, thresholdmlp = metrics.precision_recall_curve(y_test,y_predmlp)
+apsmlp = metrics.average_precision_score(y_test,y_predmlp)
+fig, ax = plt.subplots()
+plt.plot(precisionmlp, recallmlp,label="aps: " +str(apsmlp),color="navy",lw=4)
+plt.axhline(y=0.5, color="red",lw=4)
+plt.title("MLP classifier precision-recall curve")
+plt.ylabel("Precision")
+plt.xlabel("Recall")
+plt.legend(loc=4)
+plt.show()
+
+Listing 8-12Multilayer Perceptron Classifier Precision Recall Curve
+
+
+</pre>
+<p class="Para" id="Par31">图<a href="#Fig8"> 8-8 </a>表明，平均而言，多层感知器分类器在区分南非预期寿命增加和减少时的准确率为 83%。</p>
+
+<h3 class="Heading">多层感知器分类器学习曲线</h3>
+<p>清单<a href="#PC13"> 8-13 </a>展示了随着训练测试规模的增加，多层感知器分类器如何学习正确区分南非出生时预期寿命的增加和减少(见图<a href="#Fig9"> 8-9 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig9_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig9_HTML.png" style="width:43.12em"/></p>
+<p>图 8-9</p><p class="SimplePara">多层感知器分类器学习曲线</p>
+
+
+<pre>trainsizemlp, trainscoremlp, testscoremlp = learning_curve(mlp, x, y, cv=5, n_jobs=-1, scoring="accuracy", train_sizes=np.linspace(0.1,1.0,50))
+trainscoremlp_mean = np.mean(trainscoremlp,axis=1)
+trainscoremlp_std = np.std(trainscoremlp,axis=1)
+testscoremlp_mean = np.mean(testscoremlp,axis=1)
+testscoremlp_std = np.std(testscoremlp,axis=1)
+fig, ax = plt.subplots()
+plt.plot(trainsizemlp, trainscoremlp_mean, color="red",lw=4,label="Training accuracy score")
+plt.plot(trainsizemlp, testscoremlp_mean,color="navy",lw=4,label="Cross validation accuracy score")
+plt.title("MLP classifier learning curve")
+plt.xlabel("Training set size")
+plt.ylabel("Accuracy")
+plt.legend(loc="best")
+plt.show()
+
+Listing 8-13MLP Classifier Learning Curve
+
+
+</pre>
+<p class="Para" id="Par33">图<a href="#Fig9"> 8-9 </a>显示在整个训练过程中，训练准确度得分高于交叉验证准确度得分。交叉验证分数在第 12 个数据点后急剧下降，在第 20 个数据点时上升。</p>
+
+
+<h2 class="Heading">使用 Keras 的人工神经网络原型</h2>
+<p>清单<a href="#PC14"> 8-14 </a>重新处理数据。该过程类似于上一节中应用的过程。不同之处在于，这个过程进一步将数据分解为验证数据。</p>
+<pre>from sklearn.preprocessing import StandardScaler
+x = df.iloc[::,0:3]
+scaler = StandardScaler()
+x= scaler.fit_transform(x)
+y = df.iloc[::,-1]
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2,random_state=0)
+x_train, x_val, y_train, y_val = train_test_split(x_train,y_train,test_size=0.1,random_state=0)
+
+Listing 8-14Data Reprocessing
+
+
+</pre>
+<p>列表<a href="#PC15"> 8-15 </a>训练神经网络。它首先从<code>keras</code>库中导入<code>Sequential</code>、<code>Dense</code>和<code>KerasClassifier</code>(参见清单<a href="#PC15"> 8-15 </a>)。</p>
+<pre>from keras import Sequential
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasClassifier
+
+Listing 8-15Import Dependencies
+
+
+</pre>
+
+<h2 class="Heading">人工神经网络结构</h2>
+<p>清单<a href="#PC16"> 8-16 </a>构建一个函数来创建神经网络的架构。输入层的激活函数是 ReLu。这意味着模型将对变量(城市人口、人均国民总收入、地图集法(以现值美元计)和国内生产总值增长率(以年百分比计))进行操作，并生成输出。清单<a href="#PC16"> 8-16 </a>在输入层包含了一个额外的节点。在输出层中，网络应用南非的 sigmoid(它对这些预测变量进行运算，并生成减少或增加的预期寿命)。应用于训练的损失函数是<code>binary_crossentropy</code>。指定这个损失函数通知神经网络它将处理一个分类变量。用于评估神经网络的指标是<code>accuracy</code>，我们应用<code>adam</code>优化器来随机选择变量。我们还探讨了消失梯度问题，加快了训练过程。</p>
+<pre>def create_dnn_model():
+    model = Sequential()
+    model.add(Dense(4, input_dim=3, activation="relu"))
+    model.add(Dense(1, activation="sigmoid"))
+    model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+    return model
+
+Listing 8-16Build Network Architecture
+
+
+</pre>
+<h3 class="Heading">网络包装</h3>
+<p>清单<a href="#PC17"> 8-17 </a>包装了分类器，所以我们应用了<code>scikit-learn</code>库功能。</p>
+<pre>model = KerasClassifier(build_fn=create_dnn_model)
+
+Listing 8-17Wrap Keras Classifier
+
+
+</pre>
+<p>清单<a href="#PC18"> 8-18 </a>在 64 个时期上训练神经网络，应用 15 的批量大小。请注意，您可以通过尝试其他批量大小和时期来调整设置(它们通常会给出不同的模型性能结果)。</p>
+<pre>history = model.fit(x_train, y_train, validation_data=(x_val, y_val), epochs=64, batch_size=15)
+history
+
+Listing 8-18Train Neural Network
+
+
+</pre>
+
+<h3 class="Heading">Keras 分类器混淆矩阵</h3>
+<p>列表<a href="#PC19"> 8-19 </a>创建一个混淆矩阵(见表<a href="#Tab8"> 8-8 </a>)。</p>
+<p>表 8-8</p><p class="SimplePara">Keras 分类器混淆矩阵</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">预测:预期寿命下降</strong></p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">预测:预期寿命增加</strong></p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">实际:预期寿命减少</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">实际:预期寿命增加</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">nine</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>y_predkeras = model.predict(x_test)
+cmatkeras = pd.DataFrame(metrics.confusion_matrix(y_test,y_predkeras),
+                         index=["Actual: Decreasing life expectancy",
+                                "Actual: Increasing life expectancy"],
+                         columns = ("Predicted: Decreasing life expectancy",
+                                    "Predicted: Increasing life expectancy"))
+cmatkeras
+
+Listing 8-19Keras Classifier Confusion Matrix
+
+
+</pre>
+<p>表<a href="#Tab9"> 8-9 </a>解释了 Keras 分类器的混淆矩阵(见表<a href="#Tab8"> 8-8 </a>)。</p>
+<p>表 8-9</p><p class="SimplePara">Keras 分类器混淆矩阵解释</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">公制的</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">解释</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确肯定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">当南非时代的预期寿命确实在下降时，Keras 分类器并没有预测到预期寿命的下降。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确否定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">当南非的预期寿命实际上在增加(两倍)时，Keras 分类器预测预期寿命在增加。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">正确肯定</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">当南非的预期寿命实际上在增加时，Keras 分类器预测预期寿命在减少。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">假阴性</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">当南非的预期寿命实际上在下降(9 倍)时，Keras 分类器预测预期寿命在上升。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 class="Heading">Keras 分类报告</h3>
+<p>列表<a href="#PC20"> 8-20 </a>生成分类报告(见表<a href="#Tab10"> 8-10 </a>)。</p>
+<p>表 8-10</p><p class="SimplePara">Keras 分类报告</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+<col class="tcol6 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">准确</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Avg 宏</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">加权平均值</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.818182</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven five</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.409091</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.681818</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回忆</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.900000</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven five</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.450000</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.750000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">f1-分数</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.857143</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven five</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.428571</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.714286</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">支持</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">10.000000</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero point seven five</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">12.000000</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">12.000000</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>creportkeras = pd.DataFrame(metrics.classification_report(y_test,y_predkeras,output_dict=True))
+creportkeras
+
+Listing 8-20Keras Classification Report
+
+
+</pre>
+<p class="Para" id="Par42">表<a href="#Tab10"> 8-10 </a>显示，Keras 分类器预测南非预期寿命下降的准确率为 41.33%，预测预期寿命下降的准确率为 81.0%。此外，当它区分预期寿命增加和减少时，它的准确度为 0%。</p>
+
+<h3 class="Heading">Keras 分类器 ROC 曲线</h3>
+<p>列表<a href="#PC21"> 8-21 </a>确定了 Keras 分类器在南非区分增加和减少的预期寿命时各种阈值的精确度和召回率之间的权衡(见图<a href="#Fig10"> 8-10 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig10_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig10_HTML.png" style="width:43.12em"/></p>
+<p>图 8-10</p><p class="SimplePara">Keras 分类器 ROC 曲线</p>
+
+
+<pre>y_predkeras_proba = model.predict_proba(x_test)[::,1]
+fprkeras, tprkeras, _ = metrics.roc_curve(y_test,y_predkeras_proba)
+auckeras = metrics.roc_auc_score(y_test,y_predkeras_proba)
+fig, ax = plt.subplots()
+plt.plot(fprkeras, tprkeras,label="auc: "+str(auckeras),color="navy",lw=4)
+plt.plot([0,1],[0,1],color="red",lw=4)
+plt.xlim([0.00,1.01])
+plt.ylim([0.00,1.01])
+plt.title("Keras classifier ROC curve")
+plt.xlabel("Sensitivity")
+plt.ylabel("Specificity")
+plt.legend(loc=4)
+plt.show()
+
+Listing 8-21Keras Classifier ROC Curve
+
+
+</pre>
+<p class="Para" id="Par44">图<a href="#Fig10"> 8-10 </a>显示，平均而言，Keras 分类器在区分南非预期寿命增加和减少时的准确率为 55%。</p>
+
+<h3 class="Heading">Keras 分类器精度-召回曲线</h3>
+<p>列表<a href="#PC22"> 8-22 </a>估计了 Keras 分类器在南非区分预期寿命增加和减少时，不同阈值的精确度和召回率之间的权衡(见图<a href="#Fig11"> 8-11 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig11_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig11_HTML.png" style="width:43.12em"/></p>
+<p>图 8-11</p><p class="SimplePara">Keras 分类器精度-召回曲线</p>
+
+
+<pre>precisionkeras, recallkeras, thresholdkeras = metrics.precision_recall_curve(y_test,y_predkeras)
+apskeras = metrics.average_precision_score(y_test,y_predkeras)
+fig, ax = plt.subplots()
+plt.plot(precisionkeras, recallkeras,label="aps: " +str(apskeras),color="navy",lw=4)
+plt.axhline(y=0.5, color="red",lw=4)
+plt.title("Keras classifier precision-recall curve")
+plt.ylabel("Precision")
+plt.xlabel("Recall")
+plt.legend(loc=4)
+plt.show()
+
+Listing 8-22Keras Classifier Precision-Recall Curve
+
+
+</pre>
+<p class="Para" id="Par46">图<a href="#Fig11"> 8-11 </a>显示，平均而言，Keras 分类器在区分南非预期寿命增加和减少时的准确率为 83%。</p>
+
+
+<h2 class="Heading">跨时代的训练损失和交叉验证损失</h2>
+<p>列表<a href="#PC23"> 8-23 </a>确定跨时段的损耗，其中时段在 x 轴，损耗在 y 轴(见图<a href="#Fig12"> 8-12 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig12_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig12_HTML.png" style="width:43.12em"/></p>
+<p>图 8-12</p><p class="SimplePara">跨时代的训练损失和交叉验证损失</p>
+
+
+<pre>plt.plot(history.history["loss"], color="red",lw=4, label="Training loss")
+plt.plot(history.history["val_loss"], color="navy",lw=4, label="Cross validation loss")
+plt.title("Training loss and cross validation loss across epochs")
+plt.xlabel("Loss")
+plt.ylabel("Epochs")
+plt.legend(loc="best")
+plt.show()
+
+Listing 8-23Training Loss and Cross-Validation Loss Across Epochs
+
+
+</pre>
+<p class="Para" id="Par48">图<a href="#Fig12"> 8-12 </a>表明，从第一个时期开始，训练损失和交叉验证损失逐渐下降，直到在第 65 个时期达到最低点。</p>
+
+<h2 class="Heading">跨时期的训练损失和交叉验证损失准确性</h2>
+<p>清单<a href="#PC24"> 8-24 </a>估计跨时期的精度(见图<a href="#Fig13"> 8-13 </a>)。</p>
+<p><img alt="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig13_HTML.png" src="../images/516940_1_En_8_Chapter/516940_1_En_8_Fig13_HTML.png" style="width:43.12em"/></p>
+<p>图 8-13</p><p class="SimplePara">训练损失和交叉验证损失准确性时期</p>
+
+
+<pre>plt.plot(history.history["accuracy"], color="red",lw=4, label="Training accuracy")
+plt.plot(history.history["val_accuracy"], color="navy",lw=4,label="Cross validation accuracy")
+plt.title("Training loss and cross validation loss accuracy epochs")
+plt.xlabel("Loss")
+plt.ylabel("Epochs")
+plt.legend(loc="best")
+plt.show()
+
+Listing 8-24Training Loss and Cross-Validation Loss Accuracy Epochs
+
+
+</pre>
+<p class="Para" id="Par50">图<a href="#Fig13"> 8-13 </a>表明，从第一个历元开始，交叉验证精度高于训练精度。另外，在第 45 个历元之前，交叉验证精度急剧下降，然后变得低于训练精度</p>
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par51">这一章讲述了深度学习。它解开了基本的深度学习概念。它介绍了使用<code>scikit-learn</code>库开发人工神经网络的技术。您学习了如何开发和评估一个称为受限玻尔兹曼机器的浅层人工神经网络，包括一个多层感知器。基于这些发现，通过应用<code>scikit-learn</code>库开发的多层感知器分类器优于所有网络。此外，它展示了通过应用<code>keras</code>库为顺序模型开发基本网络架构的方法。</p>
+
+
+
+</body>
+</html>

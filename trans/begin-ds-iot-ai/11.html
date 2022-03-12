@@ -1,0 +1,718 @@
+<html lang="en">
+<head><title>Using ML Services</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">11.使用 ML 服务</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">在第<strong class="EmphasisTypeBold ">章</strong> <a href="09.html"> <strong class="EmphasisTypeBold "> 9 </strong> </a>中，我们看到了如何将我们的微比特气象站连接到物联网平台，以增强我们的数据科学工具包。在第<strong class="EmphasisTypeBold ">章</strong> <a href="10.html"> <strong class="EmphasisTypeBold "> 10 </strong> </a>中，我们考虑了 AI/ML 可以给我们的数据科学实验带来的潜在价值，它如何将我们从过程的元素中解放出来，并允许我们最大限度地利用时间来锻炼我们的好奇心和直觉——这是不可替代的人类特征，是数据科学的真正大脑。</p>
+<p class="Para" id="Par3">在这一章中，我们将把这两者结合在一起，看看如何将一个在线免费使用的 ML 服务添加到我们不断发展的气象站项目中:我们将建立一个真正的“人工智能驱动的预测气象站”</p>
+<h2 class="Heading">11.1 定义我们的物联网应用</h2>
+<p>什么是“人工智能驱动的预测气象站”？我们到底要建什么？这些要求很容易描述:</p>
+<ol><li class="ListItem"><p class="Para" id="Par5">它包括一个边缘设备:一个记录温度和湿度数据并将其发送到物联网平台的微型位。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par6">它将使用人工智能(特别是人工智能)来分析这些数据，并根据这些数据预测下雨的可能性。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par7">预测将显示在 micro:bit 5x5 LED 显示屏上。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par8">我们现在已经熟悉了列表中的第 1 项和第 3 项；在这一章中，我们将关注 2:如何将一个 ML 服务集成到我们的气象站中。这个过程并不简单:我们将不得不构建一个<strong class="EmphasisTypeBold ">物联网应用</strong>。</p>
+<p class="Para" id="Par9">术语<strong class="EmphasisTypeBold ">物联网应用</strong>在本章中用于统称我们设置和使用的所有不同物联网服务以及它们共同提供的功能。称之为应用程序是恰当的:我们正在做的是使用一系列模块(“服务”)并配置它们以交付一个结果。这类似于使用几个不同的代码块来制作一个程序，或者将几个电子元件连接在一起来制作一个数字仪器。在许多方面，我们在这里构建的天气预测示例是 Hello World！物理计算的 ML。</p>
+<p class="Para" id="Par10">本章着重于构建物联网应用程序。我们构建的边缘设备——我们的气象站仪器——包含在第<strong class="EmphasisTypeBold ">章</strong> <a href="12.html"> <strong class="EmphasisTypeBold "> 12 </strong> </a>中。请记住，您可以从任何可行的来源向物联网应用程序发送数据，而不仅仅是我们将在下一章构建的来源。</p>
+
+<h2 class="Heading">11.2 选择物联网服务提供商</h2>
+<p class="Para" id="Par11">我们正在构建的物联网应用的一个基本组件是 ML 引擎，它将为我们的预测模型提供动力。在开始构建我们的应用程序之前，我们需要找到一个合适的 ML 服务来使用。</p>
+<p>我们将使用微软 Azure。我们选择使用 Azure，而不是扩展我们在第<strong class="EmphasisTypeBold ">章</strong> <a href="09.html"> <strong class="EmphasisTypeBold "> 9 </strong> </a>中构建的 IBM 物联网平台，原因如下:</p>
+<ol><li class="ListItem"><p class="Para" id="Par13">多样化。知道如何使用两家领先的物联网服务提供商比只使用一家要好。也许有一个被屏蔽了或者不适合你。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par14">每个提供商的物联网平台设置略有不同。一旦你建立了 IBM 和 Azure 平台，你应该对建立任何物联网平台更有信心。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par15">通过 Azure，我们可以访问范围广泛且不断增长的服务，以添加到我们的工具包中。</p>
+<p class="Para" id="Par16">一旦你完成了这一章，我们鼓励你回到你的 IBM 物联网平台，看看它是如何与 IBM Watson AI 服务集成的。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par17">设置 Azure 的过程相当漫长和繁重，但一旦完成，你可以重用大部分功能，并切换出你发送的数据和你使用的 ML 服务。虽然我们关注的是气象站，但是你应该能够使用相同的过程将不同的边缘设备与 Azure 提供的各种 ML 服务集成在一起。</p>
+
+<h2 class="Heading">11.3 设置 Microsoft Azure:云计算服务</h2>
+<p class="Para" id="Par18">你需要的第一件事是订阅 Azure 如果你没有，你应该可以创建一个<strong class="EmphasisTypeBold ">30 天免费</strong>账户，它将授权你使用这里使用的所有服务。</p>
+<p>开始工作有两个步骤:</p>
+<ol><li class="ListItem"><p class="Para" id="Par20">设置 Microsoft Azure 帐户:在线搜索“设置 Azure 帐户”以了解如何在您所在的位置设置一个帐户。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par21">一旦您设置了 Azure 帐户，请确保您可以访问 Azure Machine Learning Studio(<a href="https://studio.azureml.net/"><code>https://studio.azureml.net/</code></a>)。</p>
+ </li>
+</ol>
+
+
+<h2 class="Heading">11.4 使用 Azure 门户创建物联网中心</h2>
+<p class="Para" id="Par22">本节描述如何使用 Azure 门户创建一个<strong class="EmphasisTypeBold ">物联网中心</strong>。</p>
+<p class="Para" id="Par23">一个<strong class="EmphasisTypeBold ">物联网中心</strong>是一个服务的名称，它将边缘设备(在这种情况下是我们的气象站，但我们可以有多个设备)与物联网应用程序链接起来。它控制设备对物联网应用的访问。</p>
+<p>要设置中心，您需要执行以下操作:</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">订阅:</strong></p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">选择用于您的 hub 的套餐(例如，<em class="EmphasisTypeItalic ">现收现付</em>)。</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">资源组:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">选择<strong class="EmphasisTypeBold ">创建新的</strong>并填写您想要使用的名称(如<em class="EmphasisTypeItalic ">物联网中心</em>，然后选择<strong class="EmphasisTypeBold ">确定</strong>。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">地区:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">从列表中选择您希望中心所在的地区。选择离您最近的位置，但是如果您所在的区域不可用，请使用显示的默认位置。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">物联网枢纽名称:</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">输入枢纽的名称(例如，<em class="EmphasisTypeItalic "> your-iot-hub </em>)。该名称必须是全局唯一的。如果您输入的名称可用，则会出现一个绿色勾号。为了保持唯一性，我们使用了本书的 ISBN-13 号，即 978-1484243565。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par25">登录 Azure 门户(<a href="https://portal.azure.com/"> <code>https://portal.azure.com/</code> </a>)。</p></li>
+<li><p class="Para" id="Par26">从 Azure 主页中，选择<strong class="EmphasisTypeBold "> +创建资源</strong>按钮。</p></li>
+<li><p class="Para" id="Par27">在<strong class="EmphasisTypeBold ">搜索市场</strong>字段中输入<strong class="EmphasisTypeBold ">物联网中心</strong>。</p></li>
+<li><p class="Para" id="Par28">在<strong class="EmphasisTypeBold ">市场</strong>页面，从搜索结果中选择<strong class="EmphasisTypeBold ">物联网中心</strong>。</p></li>
+<li><p class="Para" id="Par29">在<strong class="EmphasisTypeBold ">物联网中枢</strong>页面中，选择<strong class="EmphasisTypeBold ">创建</strong>。</p></li>
+<li><p class="Para" id="Par30">在<strong class="EmphasisTypeBold ">基本信息</strong>选项卡上，完成以下字段:</p></li>
+</ul>
+
+<p>
+ 
+ 
+</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">定价和规模层级:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">选择 F1:自由层</p>
+<p class="SimplePara"><em class="EmphasisTypeItalic ">注意:免费物联网中心每次订购仅限一个。</em></p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">物联网枢纽单位:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold "> Azure 安全中心:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">离开</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">高级设置&gt;设备到云分区:</strong></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">保持默认值 4</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="UnorderedListMarkBullet"><li>Once completed, your <strong class="EmphasisTypeBold ">Basics</strong> tab should look something like this (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig1"><strong class="EmphasisTypeBold ">11-1</strong></a>)
+
+
+
+. 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig1_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig1_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-1</p><p class="SimplePara">配置基本选项卡</p>
+
+
+</li>
+<li><p class="Para" id="Par33">选择<strong class="EmphasisTypeBold "> Next: Size and scale </strong>继续创建您的中枢。在<strong class="EmphasisTypeBold ">尺寸和比例</strong>选项卡上，完成如下字段:</p></li>
+</ul>
+
+<p>一旦完成，你的<strong class="EmphasisTypeBold ">尺寸和比例</strong>标签应该看起来像这样(<strong class="EmphasisTypeBold ">图</strong> <a href="#Fig2"> <strong class="EmphasisTypeBold "> 11-2 </strong> </a>)。</p>
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig2_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig2_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-2</p><p class="SimplePara">配置大小和比例选项卡</p>
+
+
+<p>
+ 
+ 
+</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">名称:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">部门</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">值:</strong></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">数据科学</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par36">选择<strong class="EmphasisTypeBold "> Next: Tags </strong>继续创建您的中枢。在<strong class="EmphasisTypeBold ">标签</strong>标签上，填写如下字段:</p></li>
+</ul>
+
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li>Once completed, your <strong class="EmphasisTypeBold ">Tags</strong> tab should look something like this (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig3"><strong class="EmphasisTypeBold ">11-3</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig3_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig3_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-3</p><p class="SimplePara">配置标签选项卡</p>
+
+
+</li>
+<li>Select <strong class="EmphasisTypeBold ">Next: Review + create</strong> to continue creating your hub. Your <strong class="EmphasisTypeBold ">Review + create</strong> tab should look something like this (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig4"><strong class="EmphasisTypeBold ">11-4</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig4_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig4_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-4</p><p class="SimplePara">审阅+创建选项卡</p>
+
+
+</li>
+<li><p class="Para" id="Par40">选择<strong class="EmphasisTypeBold ">创建</strong>来创建您的新中枢。创建中心可能需要几分钟时间。</p></li>
+</ul>
+
+<p class="Para" id="Par41">创建物联网中心后，我们将深入研究 Azure 机器学习工作室，并将建立一个 Azure Logic 应用程序。在创建逻辑应用程序时，您需要提供<strong class="EmphasisTypeBold ">物联网中心</strong>和<strong class="EmphasisTypeBold ">资源组</strong>的名称，因此请确保您拥有这些详细信息。</p>
+
+<h2 class="Heading">11.5 在 Azure Machine Learning Studio 中设置天气预测模型</h2>
+<p>要使用天气预测模型，我们首先选择一个:有几个选项可用。然后我们必须将选择的“天气预测实验”导入到我们的 Azure 机器学习工作室项目中:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par43">打开 ML Studio–检查您是否已登录。</p></li>
+<li>In a separate tab in the same browser, go to this URL (<a href="https://gallery.azure.ai/Experiment/Weather-prediction-model-1"><code>https://gallery.azure.ai/Experiment/Weather-prediction-model-1</code></a>) to locate the weather prediction AI “experiment” that we use. <em class="EmphasisTypeItalic ">There are several available that you could also try, as well as loads of other experiments to play with.</em> 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig5_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig5_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-5</p><p class="SimplePara">Azure AI Gallery 实验:天气预测模型</p>
+
+
+</li>
+<li><p class="Para" id="Par45">点击<strong class="EmphasisTypeBold ">打开工作室</strong>。然后会弹出一个模态窗口，提示您选择一个区域:保留默认选项并单击勾号继续。</p></li>
+<li>Once the experiment has imported, the ML Studio interface should look something like this (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig6"><strong class="EmphasisTypeBold ">11-6</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig6_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig6_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-6</p><p class="SimplePara">天气预测模型</p>
+
+
+</li>
+<li><p class="Para" id="Par47">点击<strong class="EmphasisTypeBold ">运行</strong>(在屏幕底部的菜单中)确认步骤。</p></li>
+<li><p class="Para" id="Par48">随着流程中的每一步的运行，它也会进行验证，并且您会看到每成功验证一次，就会添加一个绿色勾号。不应该有任何错误。验证完所有步骤后，它应该会停止运行，这可能需要一分钟左右的时间。</p></li>
+<li><p class="Para" id="Par49">点击<strong class="EmphasisTypeBold ">设置网络服务➤预测网络服务。</strong>这可以在<strong class="EmphasisTypeBold ">运行</strong>旁边的底部菜单中找到。</p></li>
+</ul>
+
+Note
+<p class="Para FirstParaInFormalPara" id="Par50">除非系统已经在前面的步骤中运行了所有的验证过程，否则设置 WEB 服务选项将不可选择。完成后，所有步骤都应该显示绿色小勾号。</p>
+
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par52">在您点击设置 web 服务之后，您的视图会随着模型的新版本的生成而更新:我们将使用的<strong class="EmphasisTypeBold ">预测实验，</strong>。一旦完成，应该有两个标签:训练实验和预测实验。</p></li>
+<li><p class="Para" id="Par53">我们将移动<strong class="EmphasisTypeBold "> Web 服务输入块</strong>。这个块告诉实验将来自 web 服务的数据(例如，来自我们气象站的仪器)注入到模型中的位置。</p></li>
+<li><p class="Para" id="Par54">点击连接<strong class="EmphasisTypeBold "> Web 服务输入</strong>到<strong class="EmphasisTypeBold ">天气数据集</strong>的线(点击它连接<strong class="EmphasisTypeBold "> Web 服务输入</strong>块的地方)——这将断开它们的连接。</p></li>
+<li>Now connect the line to the <strong class="EmphasisTypeBold ">Score Model</strong> block as shown in <strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig7"><strong class="EmphasisTypeBold ">11-7</strong></a>. 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig7_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig7_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-7</p><p class="SimplePara">将“Web 服务输入”连接到“评分模型”</p>
+
+
+</li>
+<li><p class="Para" id="Par56">一旦你完成了这些，点击<strong class="EmphasisTypeBold ">运行</strong>让新模型生效。请记住等待它完成。</p></li>
+<li><p class="Para" id="Par57">点击<strong class="EmphasisTypeBold ">部署 web 服务</strong>将模型部署为 WEB 服务。</p></li>
+</ul>
+
+<p>您现在已经构建了一个<strong class="EmphasisTypeBold ">实验</strong>，您可以通过点击左侧菜单上的<strong class="EmphasisTypeBold ">实验</strong>列表来查看。您还创建了一个<strong class="EmphasisTypeBold "> Web 服务</strong>对象，我们将从 Azure 链接到该对象:我们将向该 Web 服务传递数据。为此，我们需要注意几个细节(URI 和 API 键):</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par59">点击左侧菜单上的<strong class="EmphasisTypeBold "> Web 服务</strong>链接。您将看到一个列表，显示至少一个 web 服务。</p></li>
+<li>Click the name of the web service we just created – by default it will be named <strong class="EmphasisTypeBold ">Weather prediction model (Predictive Exp) (</strong><strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig8"><strong class="EmphasisTypeBold ">11-8</strong></a><strong class="EmphasisTypeBold ">)</strong>. 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig8_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig8_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-8</p><p class="SimplePara">用于访问 web 服务详细信息的链接</p>
+
+
+</li>
+<li>In the <strong class="EmphasisTypeBold ">weather prediction model [predictive exp.]</strong> page, make a note of your API Key listed (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig9"><strong class="EmphasisTypeBold ">11-9</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig9_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig9_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-9</p><p class="SimplePara">Web 服务身份验证的 API 密钥</p>
+
+
+</li>
+<li><p class="Para" id="Par62">在<strong class="EmphasisTypeBold ">天气预测模型【预测表达式。】</strong>页面，点击<strong class="EmphasisTypeBold ">请求/响应</strong>链接(见左下方<strong class="EmphasisTypeBold ">图</strong> <a href="#Fig9"> <strong class="EmphasisTypeBold "> 11-9 </strong> </a>)。</p></li>
+<li>A new tab should open with a page titled <strong class="EmphasisTypeBold ">Request Response API Documentation for Weather prediction model [Predictive Exp.]</strong>. This has the final detail we’ll need to use in Azure: make note of the <strong class="EmphasisTypeBold ">Request URI</strong> from this page (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig10"><strong class="EmphasisTypeBold ">11-10</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig10_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig10_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-10</p><p class="SimplePara">请求 URI 提供天气预测模型</p>
+
+
+</li>
+<li>Now switch to the <strong class="EmphasisTypeBold ">weather prediction model [predictive exp.]</strong> page (in a separate tab) again. Then test the web service by clicking the <strong class="EmphasisTypeBold ">Test</strong> button (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig11"><strong class="EmphasisTypeBold ">11-11</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig11_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig11_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-11</p><p class="SimplePara">web 服务的测试链接</p>
+
+
+</li>
+<li>You should be prompted to add dummy variables for temperature and humidity: enter some values and then click the <strong class="EmphasisTypeBold ">OK</strong> button (tick) (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig12"><strong class="EmphasisTypeBold ">11-12</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig12_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig12_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-12</p><p class="SimplePara">用于手动输入温度和湿度值的输入模式框</p>
+
+
+</li>
+<li>The predicted result will display just above the bottom menu. Click <strong class="EmphasisTypeBold ">DETAILS</strong> to view the full result. It should look similar to <strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig13"><strong class="EmphasisTypeBold ">11-13</strong></a>. 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig13_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig13_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-13</p><p class="SimplePara">响应结果</p>
+
+
+</li>
+</ul>
+
+<p><strong class="EmphasisTypeBold ">响应结果</strong>显示了处理您输入的测试变量时 ML 服务将返回的数据。结果(数组)中有四个关键数据点:</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Thirty-two</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">温度值(提供的测试值)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Seventy</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">湿度值(提供的测试值)</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">是</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">下雨的二元概率:如果指数大于 0.5，则为是；如果小于 0.5，则为否</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.641514122486115</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">下雨概率指数</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par69"><strong class="EmphasisTypeBold ">关闭</strong>结果部分。</p><p class="Para" id="Par70">测试应该工作正常。如果没有，请尝试删除 web 服务并再次部署，或者再次导入实验。</p></li>
+</ul>
+
+<p class="Para" id="Par71">Azure 机器学习工作室搭建完毕，蓄势待发。在我们的物联网应用程序完成之前，我们需要定义我们正在使用的服务将如何协同工作，以及数据将如何从应用程序的每个组件传递到下一个组件:我们需要设置<strong class="EmphasisTypeBold ">工作流</strong>。</p>
+
+<h2 class="Heading">11.6 使用 Azure Logic 应用程序创建工作流</h2>
+<p class="Para" id="Par72">让我们总结一下我们迄今为止所做的工作:</p>
+<p>
+ 
+</p>
+<ol><li class="ListItem"><p class="Para" id="Par74">我们在 Azure 上注册了一个账户，以访问它的云服务。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par75">我们配置了一个<strong class="EmphasisTypeBold ">物联网中心</strong>，这样我们就可以在 Azure 和我们的气象站之间交流数据。</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par76">我们启动了<strong class="EmphasisTypeBold "> Azure ML Studio </strong>，选择了一个天气预测模型，然后设置好就可以使用了。</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par77">到目前为止，我们需要三个独立的组件/服务来协同工作:我们的气象站仪器、我们的物联网中心和 ML Studio 模型/实验。比这更复杂的实验可能有多个数据源，并且可能使用各种服务/附加组件。工作流工具被用来帮助管理具有许多移动部分的复杂项目:本质上，它们确保步骤以正确的顺序进行。</p>
+<p class="Para" id="Par78">在本节中，我们使用<strong class="EmphasisTypeBold "> Azure Logic Apps </strong>构建一个工作流。这个应用程序将定期检查，看看数据是否是从我们的气象站发送。当检测到新数据时，该应用程序通过 web 服务将其发送到天气预测模型(托管在 Azure ML Studio 上)。它还将接收来自 ML 服务的响应，将它们转换(<strong class="EmphasisTypeBold ">解析</strong>)为我们指定的格式，然后将结果发送回我们的气象站设备。</p>
+<p>按照此处列出的步骤创建新的逻辑应用程序:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par80">从 Azure 主页的<strong class="EmphasisTypeBold "> Azure services </strong>下，点击<strong class="EmphasisTypeBold ">创建资源</strong>。</p></li>
+<li>On the <strong class="EmphasisTypeBold ">New</strong> page, under <strong class="EmphasisTypeBold ">Azure Marketplace</strong>, click <strong class="EmphasisTypeBold ">Integration</strong> and then click <strong class="EmphasisTypeBold ">Logic App</strong> (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig14"><strong class="EmphasisTypeBold ">11-14</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig14_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig14_HTML.jpg" style="width:25em"/></p>
+<p>图 11-14</p><p class="SimplePara">选择逻辑应用程序资源</p>
+
+
+</li>
+<li>On the <strong class="EmphasisTypeBold ">Logic App</strong> pane, provide details about your logic app as shown in <strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig15"><strong class="EmphasisTypeBold ">11-15</strong></a>. After you’re done, click <strong class="EmphasisTypeBold ">Review + Create</strong> to validate your details. 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig15_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig15_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-15</p><p class="SimplePara">基本选项卡的详细信息</p>
+
+
+</li>
+<li><p class="Para" id="Par83">如果您提供的信息正确，请点击<strong class="EmphasisTypeBold ">创建</strong>。这将开始部署您的逻辑应用程序。这可能需要一些时间。</p></li>
+<li>Click <strong class="EmphasisTypeBold ">Go to resource</strong> for your deployed logic app (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig16"><strong class="EmphasisTypeBold ">11-16</strong></a>).
+ 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig16_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig16_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-16</p><p class="SimplePara">部署确认消息</p>
+
+
+</li>
+</ul>
+
+Tip
+<p class="Para FirstParaInFormalPara" id="Par85">您也可以通过在搜索框中键入名称来查找和选择您的 logic 应用程序。</p>
+
+<p>
+ 
+</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par87"><strong class="EmphasisTypeBold ">逻辑应用设计器</strong>打开并显示一个带有介绍视频和常用触发器的页面。</p></li>
+<li><p class="Para" id="Par88">向下滚动页面。在<strong class="EmphasisTypeBold ">模板</strong>下，点击<strong class="EmphasisTypeBold ">空白逻辑 App </strong>。</p></li>
+</ul>
+
+
+<h2 class="Heading">11.7 设置工作流程</h2>
+<p class="Para" id="Par89">我们现在将查看我们刚刚创建的工作流，并确保每个步骤都配置正确。</p>
+<p>有五个基本动作/步骤/事件由 Azure Logic 应用程序管理，它们是工作流的关键；无论您使用什么服务来实现 ML，这些步骤中的每一个都有对应的步骤:</p>
+<ol><li class="ListItem"><p class="Para" id="Par91">从气象站仪器发送数据</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par92">将数据传递给 ML 服务</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par93">解释(“解析”)来自 ML 服务的结果</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par94">设置变量以存储来自 ML 服务的数据</p>
+ </li>
+<li class="ListItem"><p class="Para" id="Par95">管理这些数据并将其发送回气象站仪器</p>
+ </li>
+</ol>
+
+<p class="Para" id="Par96">我们将更详细地回顾这些步骤。</p>
+<h3 class="Heading">步骤 1:从气象站仪器发送数据</h3>
+<p class="Para" id="Par97">当气象站仪器发送数据时，工作流开始/触发。当收到 http 请求时，这一步骤被称为 Azure Logic 应用程序中的触发器。</p>
+<p>要设置工作流程的这一部分:</p><ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par99">在<strong class="EmphasisTypeBold ">逻辑 App 设计器</strong>中，在<strong class="EmphasisTypeBold ">搜索框</strong>下，选择<strong class="EmphasisTypeBold ">全部</strong>。</p></li>
+<li><p class="Para" id="Par100">在搜索框中，输入<strong class="EmphasisTypeBold "> http </strong>来查找 http 触发器。</p></li>
+<li>From the <strong class="EmphasisTypeBold ">Triggers</strong> list, click <strong class="EmphasisTypeBold ">When a http request is received</strong> trigger (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig17"><strong class="EmphasisTypeBold ">11-17</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig17_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig17_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-17</p><p class="SimplePara">选择“收到 HTTP 请求时”触发</p>
+
+
+</li>
+<li>Provide the information for the <strong class="EmphasisTypeBold ">When a http request is received</strong> trigger as shown in <strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig18"><strong class="EmphasisTypeBold ">11-18</strong></a>. 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig18_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig18_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-18</p><p class="SimplePara">“收到 http 请求时”触发详细信息</p>
+
+
+</li>
+<li><p class="Para" id="Par103">以下是可以在<strong class="EmphasisTypeBold ">请求体 JSON </strong> <sup> <a epub:type="noteref" href="#Fn1" id="Fn1_source" role="doc-noteref"> 1 </a> </sup> <strong class="EmphasisTypeBold ">模式</strong>文本框中直接复制的<strong class="EmphasisTypeBold ">模式</strong>的完整列表:</p></li>
+</ul>
+
+
+<p>
+ 
+</p>
+<pre>{
+  "properties":
+  {    "humidity":
+       {    "type": "integer"
+       },
+       "temperature":
+       {    "type": "integer"
+       }
+  },
+  "type": "object"
+}
+
+</pre>
+
+<h3 class="Heading">步骤 2:将数据传递给 ML 服务</h3>
+<p>工作流的下一步是将温度和湿度值传递给我们在<strong class="EmphasisTypeBold ">第 11.2 节</strong>中设置的 Azure ML web 服务。</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+</colgroup>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">方法:</strong></p>
+</td>
+<td colspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">邮政</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">uri:</p>
+</td>
+<td colspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">请求 URI 复制自“天气预测模型的请求响应 API 文档[预测实验]”。]".–参见第 11.5 节。</p>
+</td>
+</tr>
+<tr><td rowspan="3" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">标题:</strong></p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">接受</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">应用程序/json</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">批准</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">从“天气预测模型的请求响应 API 文档”中复制的 API 密钥。]".–参见第 11.5 节。</p>
+<p class="SimplePara">注意确保在<strong class="EmphasisTypeBold ">载体</strong>和<strong class="EmphasisTypeBold "> API 键</strong>之间添加一个空格。</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">内容类型</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">应用程序/json</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">查询:</strong></p>
+</td>
+<td colspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">保持空白</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">正文:</strong></p>
+</td>
+<td colspan="2" style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">{</p>
+<p class="SimplePara">"全局参数":{}，</p>
+<p class="SimplePara">“输入”:{</p>
+<p class="SimplePara">"输入 1": {</p>
+<p class="SimplePara">"列名":[</p>
+<p class="SimplePara">“温度”，</p>
+<p class="SimplePara">“湿度”</p>
+<p class="SimplePara">],</p>
+<p class="SimplePara">"值":[</p>
+<p class="SimplePara">[</p>
+<p class="SimplePara">“价值”，</p>
+<p class="SimplePara">“价值”</p>
+<p class="SimplePara">]</p>
+<p class="SimplePara">]</p>
+<p class="SimplePara">}</p>
+<p class="SimplePara">}</p>
+<p class="SimplePara">}</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">饼干:</strong></p>
+</td>
+<td colspan="2" style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">保持空白</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="UnorderedListMarkBullet"><li>In the designer view click <strong class="EmphasisTypeBold ">+ New step</strong> (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig19"><strong class="EmphasisTypeBold ">11-19</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig19_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig19_HTML.jpg" style="width:27.52em"/></p>
+<p>图 11-19</p><p class="SimplePara">添加新步骤</p>
+
+
+</li>
+<li>In the search box type <strong class="EmphasisTypeBold ">HTTP</strong>. From the results select <strong class="EmphasisTypeBold ">HTTP</strong> actions group (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig20"><strong class="EmphasisTypeBold ">11-20</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig20_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig20_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-20</p><p class="SimplePara">搜索“HTTP”操作组</p>
+
+
+</li>
+<li>This will expand to a few actions. From the <strong class="EmphasisTypeBold ">Actions</strong> list
+
+
+
+, select <strong class="EmphasisTypeBold ">HTTP</strong> action (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig21"><strong class="EmphasisTypeBold ">11-21</strong></a>).
+ 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig21_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig21_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-21</p><p class="SimplePara">选择“HTTP”操作</p>
+
+
+</li>
+<li><p class="Para" id="Par110">为 HTTP 操作提供以下信息:</p></li>
+</ul>
+
+<p>现在在<strong class="EmphasisTypeBold ">主体</strong>中，将<strong class="EmphasisTypeBold ">温度</strong>和<strong class="EmphasisTypeBold ">湿度</strong>的值替换为<strong class="EmphasisTypeBold ">动态内容</strong>。</p>
+<ul class="UnorderedListMarkBullet"><li>Highlight the first occurrence of the <strong class="EmphasisTypeBold ">“value”</strong> (including the double quotes) and then select <strong class="EmphasisTypeBold ">temperature</strong> from the <strong class="EmphasisTypeBold ">Dynamic content</strong> pane (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig22"><strong class="EmphasisTypeBold ">11-22</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig22_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig22_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-22</p><p class="SimplePara">插入动态内容(步骤 1)</p>
+
+
+</li>
+<li><p class="Para" id="Par113">接下来，用动态内容<strong class="EmphasisTypeBold ">“湿度”</strong>替换第二次出现的<strong class="EmphasisTypeBold ">“值”</strong>。</p></li>
+</ul>
+
+<p>现在你的<strong class="EmphasisTypeBold "> JSON 体</strong>应该是这样的(<strong class="EmphasisTypeBold ">图</strong><a href="#Fig23">T5】11-23</a>)。</p>
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig23_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig23_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-23</p><p class="SimplePara">插入动态内容(步骤 2)。在这种情况下，温度和湿度</p>
+
+
+<p>一旦完成了<strong class="EmphasisTypeBold "> HTTP </strong>模板应该是这样的(<strong class="EmphasisTypeBold ">图</strong><a href="#Fig24">T5】11-24</a>)。</p>
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig24_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig24_HTML.jpg" style="width:30em"/></p>
+<p>图 11-24</p><p class="SimplePara">“HTTP”操作详细信息</p>
+
+
+
+<h3 class="Heading">步骤 3:解释来自 ML 服务的结果(“解析 JSON”)</h3>
+<p>数据通过 web 服务作为<strong class="EmphasisTypeBold ">请求</strong>传递到 Azure ML 模型，ML 模型将结果作为<strong class="EmphasisTypeBold ">响应</strong>发回。响应是一个<strong class="EmphasisTypeBold "> JSON 对象</strong>(即一个 JSON 格式的“文件”)，我们需要解析它来提取我们需要的值。为此，我们将添加名为<strong class="EmphasisTypeBold "> Parse JSON </strong>的动作。</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">内容:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">单击内容框，然后从动态内容中的 HTTP 下选择正文。</p>
+<p class="SimplePara"><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Figa_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Figa_HTML.jpg" style="width:25em"/></p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">模式:</strong></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">{</p>
+<p class="SimplePara">"属性":{</p>
+<p class="SimplePara">"结果":{</p>
+<p class="SimplePara">"属性":{</p>
+<p class="SimplePara">"输出 1": {</p>
+<p class="SimplePara">"属性":{</p>
+<p class="SimplePara">"类型":{</p>
+<p class="SimplePara">"类型":"字符串"</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"值":{</p>
+<p class="SimplePara">"属性":{</p>
+<p class="SimplePara">"列名":{</p>
+<p class="SimplePara">"项目":{</p>
+<p class="SimplePara">"类型":"字符串"</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"类型":"数组"</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"列类型":{</p>
+<p class="SimplePara">"项目":{</p>
+<p class="SimplePara">"类型":"字符串"</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"类型":"数组"</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"值":{</p>
+<p class="SimplePara">"项目":{</p>
+<p class="SimplePara">"项目":{}，</p>
+<p class="SimplePara">"类型":"数组"</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"类型":"数组"</p>
+<p class="SimplePara">}</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"类型":"对象"</p>
+<p class="SimplePara">}</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"类型":"对象"</p>
+<p class="SimplePara">}</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"类型":"对象"</p>
+<p class="SimplePara">}</p>
+<p class="SimplePara">},</p>
+<p class="SimplePara">"类型":"对象"</p>
+<p class="SimplePara">}</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par117">在设计器视图中选择<strong class="EmphasisTypeBold "> +新步骤</strong>。</p></li>
+<li>In the search box type <strong class="EmphasisTypeBold ">Parse JSON</strong>. From the <strong class="EmphasisTypeBold ">Actions</strong> list, select <strong class="EmphasisTypeBold ">Parse JSON</strong> (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig25"><strong class="EmphasisTypeBold ">11-25</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig25_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig25_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-25</p><p class="SimplePara">搜索并选择“解析 JSON”操作</p>
+
+
+</li>
+<li><p class="Para" id="Par119">为<strong class="EmphasisTypeBold ">解析 JSON </strong>操作提供此信息，如下所示:</p></li>
+</ul>
+
+<p>一旦完成了<strong class="EmphasisTypeBold ">解析 JSON </strong>模板应该是这样的(<strong class="EmphasisTypeBold ">图</strong><a href="#Fig26">T5】11-26</a>)。</p>
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig26_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig26_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-26</p><p class="SimplePara">“解析 JSON”操作详细信息</p>
+
+
+
+<h3 class="Heading">步骤 4:设置一个变量来存储来自 ML 服务的数据</h3>
+<p>现在，我们需要将我们要从 JSON 对象中提取(解析)的降雨预测分数(“是”或“否”)分配给 String 类型的变量。为此，我们将添加名为<strong class="EmphasisTypeBold ">的动作，初始化变量</strong>。</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">名称:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">得分</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">类型:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">线</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">值:</strong></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">我们将使用一个公式来获得二维数组中的“得分标签”:</p>
+<p class="SimplePara">body ('Parse_JSON ')？['结果']？['output1']？['值']？['值']？[0]?[2]</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par122">在设计器视图中选择<strong class="EmphasisTypeBold "> +新步骤</strong>。</p></li>
+<li>In the search box type <strong class="EmphasisTypeBold ">Initialize variable</strong>. From the <strong class="EmphasisTypeBold ">Actions</strong> list, select <strong class="EmphasisTypeBold ">Initialize variable</strong> (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig27"><strong class="EmphasisTypeBold ">11-27</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig27_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig27_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-27</p><p class="SimplePara">搜索并选择“初始化变量”操作</p>
+
+
+</li>
+<li><p class="Para" id="Par124">为<strong class="EmphasisTypeBold ">初始化变量</strong>动作提供此信息，如下所示:</p></li>
+</ul>
+
+<p>一旦完成了<strong class="EmphasisTypeBold ">初始化变量</strong>模板应该是这样的(<strong class="EmphasisTypeBold ">图</strong><a href="#Fig28">T5】11-28</a>)。</p>
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig28_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig28_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-28</p><p class="SimplePara">“初始化变量”操作详细信息</p>
+
+
+
+<h3 class="Heading">步骤 5:将数据发送回气象站仪器</h3>
+<p>最后，我们将变量<strong class="EmphasisTypeBold ">得分</strong>发送到 micro:bit，以显示在 5X5 LED 矩阵上。</p>
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+</colgroup>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">状态代码:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Two hundred</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">标题:</strong></p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">保持空白</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara"><strong class="EmphasisTypeBold ">正文:</strong></p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">在<strong class="EmphasisTypeBold ">变量</strong>类别下的<strong class="EmphasisTypeBold ">动态内容</strong>窗格中插入动态变量<strong class="EmphasisTypeBold ">分数</strong>。</p>
+<p class="SimplePara"><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Figb_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Figb_HTML.jpg" style="width:25em"/></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par127">在设计器视图中选择<strong class="EmphasisTypeBold "> +新步骤</strong>。</p></li>
+<li>In the search box type <strong class="EmphasisTypeBold ">Response</strong>. Wait for the search results. Then in the <strong class="EmphasisTypeBold ">Actions</strong> list, select <strong class="EmphasisTypeBold ">Response</strong> (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig29"><strong class="EmphasisTypeBold ">11-29</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig29_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig29_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-29</p><p class="SimplePara">搜索并选择“响应”操作</p>
+
+
+</li>
+<li><p class="Para" id="Par129">提供此处显示的<strong class="EmphasisTypeBold ">响应</strong>动作的信息:</p></li>
+</ul>
+
+<p>一旦完成了<strong class="EmphasisTypeBold ">响应</strong>模板应该是这样的(<strong class="EmphasisTypeBold ">图</strong><a href="#Fig30">T5】11-30</a>)。</p>
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig30_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig30_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-30</p><p class="SimplePara">“响应”活动详细信息</p>
+
+
+<p class="Para" id="Par131">我们完了！保存你的逻辑 app:在<strong class="EmphasisTypeBold ">设计器</strong>工具栏上，点击<strong class="EmphasisTypeBold ">保存</strong>。这可能需要一些时间。</p>
+
+
+<h2 class="Heading">11.8 测试工作流程</h2>
+<p>现在，我们将手动启动我们的逻辑应用程序来测试它:</p>
+<ul class="UnorderedListMarkBullet"><li>Run your logic app – on the <strong class="EmphasisTypeBold ">designer</strong> toolbar, select <strong class="EmphasisTypeBold ">Run</strong>. It may take a few moments to check your workflow. Once completed you will get a notification at the top-right corner of the page saying it has successfully checked the trigger of our logic app, and it should look something like this (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig31"><strong class="EmphasisTypeBold ">11-31</strong></a>). 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig31_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig31_HTML.jpg" style="width:24.98em"/></p>
+<p>图 11-31</p><p class="SimplePara">触发器检查成功的通知</p>
+
+
+</li>
+<li>Your workflow will display again in <strong class="EmphasisTypeBold ">RUN mode</strong>
+
+
+
+ (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig32"><strong class="EmphasisTypeBold ">11-32</strong></a>). A tick icon (white tick on a green circle) will be added at the top-right corner of the title bars if the tests succeeded. 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig32_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig32_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-32</p><p class="SimplePara">手动触发工作流</p>
+
+
+</li>
+<li>The <strong class="EmphasisTypeBold ">Response</strong> action has a cross icon (cross on the gray background) on its title bar to indicate that the test was unsuccessful. To view the Response action’s output details, click inside the Response action’s title bar. You should see the message (<strong class="EmphasisTypeBold ">Figure</strong> <a href="#Fig33"><strong class="EmphasisTypeBold ">11-33</strong></a>): “ActionResponseSkipped”. This is because the workflow did not receive any data from the hardware. That’s OK for now: it will all work fine once we’ve hooked up the weather station.
+ 
+<p><img alt="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig33_HTML.jpg" src="../images/486852_1_En_11_Chapter/486852_1_En_11_Fig33_HTML.jpg" style="width:35.62em"/></p>
+<p>图 11-33</p><p class="SimplePara">响应触发器显示 ActionResponseSkipped 消息</p>
+
+
+</li>
+<li><p class="Para" id="Par136">在设计器工具栏上，选择<strong class="EmphasisTypeBold ">设计器</strong>返回到设计器视图。</p></li>
+</ul>
+
+<p class="Para" id="Par137">我们现在已经完成了物联网应用的设置和测试，我们的 ML 供电预测气象站已经准备就绪。我们只需要开始输入数据。</p>
+
+<h2 class="Heading">11.9 摘要</h2>
+<p class="Para" id="Par138">使用 ML 服务的过程在概念上非常简单:您传入一些数据，ML 服务执行它的黑盒技巧，然后返回一个值。它不应该采取大量的步骤和无穷无尽的选项来设置和使用；但确实如此。</p>
+<p class="Para" id="Par139">在本章中，我们已经设置和配置了构建 ML 供电的预测气象站所需的物联网基础设施。我们已经构建了一个包含 ML 服务的物联网应用:来自我们数字仪器的数据将由该服务和生成的预测数据进行处理。这些数据然后被送回我们的仪器，并显示在屏幕上。</p>
+<p class="Para" id="Par140">在下一章中，我们将构建气象站数字仪器，并将其连接到我们的物联网应用。</p>
+
+<aside aria-label="Footnotes" class="FootnoteSection" epub:type="footnotes">Footnotes
+<a href="#Fn1_source">1</a><p class="Para" id="Par104">这种格式是 JSON (JavaScript Object Notation):一种常用于数据通信的格式。在物联网中，JSON 往往比 csv 文件使用得更广泛，因为它非常灵活，易于扩展/适应。</p>
+
+ 
+
+</aside>
+
+
+</body>
+</html>

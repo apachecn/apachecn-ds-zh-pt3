@@ -1,0 +1,205 @@
+<html lang="en">
+<head><title>Custom Types</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body epub:type="chapter">
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">4.自定义类型</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">第 2 章“数据类型和结构”讨论了内置类型，包括容器。在本章中，我们将学习如何创建用户定义的类型。</p>
+<p class="Para ParaTypeImportant" id="Par3"><img alt="../images/477168_1_En_4_Chapter/477168_1_En_4_Figa_HTML.gif" src="../images/477168_1_En_4_Chapter/477168_1_En_4_Figa_HTML.gif" style="width:1.69em"/> <em class="EmphasisTypeItalic ">类型与结构</em></p>
+<p class="Para ParaTypeImportant" id="Par4">让我们在 Julia 语言环境中澄清这两个术语。</p>
+<p class="Para ParaTypeImportant" id="Par5">一个对象的<em class="EmphasisTypeItalic ">类型</em>，说白了就是指描述该对象的一组特征。例如，一个类型为<em class="EmphasisTypeItalic "> sheet </em>的对象可以用它的尺寸、重量、大小或颜色来描述。</p>
+<p class="Para ParaTypeImportant" id="Par6">Julia 中的所有值都是属于给定类型的真实对象(它们是给定类型的单个“实例”)。</p>
+<p class="Para ParaTypeImportant" id="Par7">Julia 类型包括由固定数量的位组成的所谓的<em class="EmphasisTypeItalic ">原始类型</em>(像所有数字类型，如<code>Int64</code>、<code>Float64</code>和<code>Char</code>)和<em class="EmphasisTypeItalic ">复合类型</em>或<em class="EmphasisTypeItalic ">结构</em>，其中对象的特征使用多个字段和可变数量的位来描述。</p>
+<p class="Para ParaTypeImportant" id="Par8"><em class="EmphasisTypeItalic ">结构</em>和<em class="EmphasisTypeItalic ">原语类型</em>都可以是用户定义的，并且是分层组织的。<em class="EmphasisTypeItalic ">结构</em>大致对应于其他语言中所谓的<em class="EmphasisTypeItalic ">类</em>。</p>
+<p>使用类型时，两个运算符特别重要:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par10"><code>::</code>操作符用于约束一个给定类型的对象。例如，<code>a::B</code>表示“a 必须是 B 型”。</p></li>
+<li><p class="Para" id="Par11"><code>&lt;:</code>操作符有类似的意思，但是在对象可以是给定类型的任何子类型的意义上，它更宽松一些。例如，<code>A&lt;:B</code>表示“A 一定是 B 的子类型”，即 B 是“父”类型，A 是它的“子”类型。</p></li>
+</ul>
+
+<p class="Para" id="Par12">使用这些操作符的主要原因是为了确认程序按照预期的方式运行。在某些情况下，提供这些额外的信息也可以提高性能。</p>
+<h2 class="Heading">4.1 基本类型定义</h2>
+<p>用户定义的原语类型是用关键字<code>primitive type</code>及其名称和所需的位数定义的:</p>
+<pre>primitive type [name] [bits] end
+
+</pre>
+<p>例如:</p>
+<pre>primitive type My10KBBuffer 81920 end
+
+</pre>
+<p class="Para ParaTypeImportant" id="Par15">Julia 的一个(当前)限制是位数必须是 8388608 以下的 8 的倍数。</p>
+<p>或者，父类型可以指定如下:</p>
+<pre>primitive type [name] &lt;: [supertype] [bits] end
+
+</pre>
+<p class="Para" id="Par17">请注意，具有相同位数的两个用户定义类型的内部表示完全相同。唯一会改变的是它们的名称，但这是一个重要的区别:当这些类型的对象作为参数传递时，函数的行为方式发生了变化，即区别它们的是程序中命名类型的使用，而不是它们的实现。</p>
+
+<h2 class="Heading">4.2 结构定义</h2>
+<p>要定义一个结构，您可以使用关键字<code>mutable struct</code>，给该结构一个名称，指定字段，然后用关键字<code>end</code>结束定义:</p>
+<pre>mutable struct MyOwnType      JULIA
+  field1
+  field2::String
+  field3::Int64
+end
+
+</pre>
+<p>请注意，虽然您可以选择将每个单独的字段定义为给定的类型(例如，<code>field3::Int64</code>)，但是您不能将字段定义为给定类型的子类型(例如，<code>field3&lt;:Number</code>)。为此，您可以在结构定义中使用模板:</p>
+<pre>mutable struct MyOwnType{T&lt;:Number}      JULIA
+ field1
+ field2::String
+ field3::T
+end
+
+</pre>
+<p class="Para" id="Par20">使用模板，结构的定义是在第一次构造一个<code>field3</code>类型为<code>T</code>的对象时动态创建的。</p>
+<p class="Para" id="Par21">用来注释单个字段的类型可以是基元类型(就像前面的例子)，也可以是对另一个结构的引用(参见后面的例子)。</p>
+<p class="Para" id="Par22">还要注意，与其他高级语言(如 Python)不同，Julia 不能在定义结构后添加或删除字段。如果您需要这个功能，您必须使用字典来代替，但是请注意，您将会牺牲这个灵活性来换取更差的性能。</p>
+<p class="Para" id="Par23">相反，为了获得性能(但又牺牲了灵活性)，可以省略<code>struct</code>前面的<code>mutable</code>关键字。这样，一旦创建了该类型的对象，它的字段就不能再被改变(即，默认情况下结构是不可变的)。</p>
+<p class="Para" id="Par24">注意，可变对象——如数组——在不可变结构中也是可变的。</p>
+
+<h2 class="Heading">4.3 对象初始化和使用</h2>
+<p>定义自定义类型(基元或结构)后，可以从该类型初始化任意数量的对象:</p>
+<pre>myObject = MyOwnType("something","something",10)      JULIA
+a = myObject.field3 # 10
+myObject.field3 = 20 # only if myObject is a mutable struct
+
+</pre>
+<p>请注意，您必须使用与结构定义中指定的顺序相同的值来初始化对象。您不能通过名称初始化对象(相反，考虑一下命名元组):</p>
+<pre>MyOwnType(field3 = 10, field1 = "something", field2 = "something") # Error!
+
+</pre>
+<p class="Para" id="Par27">要访问对象字段或更改它们的值，可以像在大多数其他语言中一样使用<code>object.field</code>语法。</p>
+<p class="Para ParaTypeImportant" id="Par28"><img alt="../images/477168_1_En_4_Chapter/477168_1_En_4_Figc_HTML.gif" src="../images/477168_1_En_4_Chapter/477168_1_En_4_Figc_HTML.gif" style="width:1.44em"/> <em class="EmphasisTypeItalic ">功能和结构</em></p>
+<p class="Para ParaTypeImportant" id="Par29">请注意，处理对象的函数没有在类型定义中定义或声明，也就是说，它们不与特定的类型相关联。</p>
+<p class="Para ParaTypeImportant" id="Par30">这意味着在 Julia 中不是调用一个对象方法，比如<code>myobj.func(x,y)</code>，而是将对象作为一个参数传递，比如<code>func(myobj,x,y)</code>，不管它是作为第一个、第二个还是进一步的参数。</p>
+
+<h2 class="Heading">4.4 抽象类型和继承</h2>
+<p class="Para" id="Par31">您可以使用关键字<code>abstract type</code>创建抽象类型。抽象类型不允许保存任何字段，并且不能从它们实例化对象。相反，带有字段的具体类型可以被定义为它们的子类型以及从它们实例化的对象。一个允许抽象类实际持有字段的问题(见<a href="https://github.com/JuliaLang/julia/issues/4935"> <code>https://github.com/JuliaLang/julia/issues/4935</code> </a>)目前还未解决，可能会在 Julia 的下一个主要版本中实现。</p>
+<p>尽管目前不支持多重继承(当一个类型是多个类型的子类型时),但是您可以创建抽象类型的整个层次结构:</p>
+<pre>abstract type MyOwnGenericAbstractType end      JULIA
+abstract type MyOwnAbstractType1 &lt;: MyOwnGenericAbstractType end
+abstract type MyOwnAbstractType2 &lt;: MyOwnGenericAbstractType end
+mutable struct AConcreteType1 &lt;: MyOwnAbstractType1
+  f1::Int64
+  f2::Int64
+end
+mutable struct AConcreteType2 &lt;: MyOwnAbstractType1
+  f1::Float64
+end
+
+mutable struct AConcreteType3 &lt;: MyOwnAbstractType2
+  f1::String
+end
+
+</pre>
+<p class="Para ParaTypeImportant" id="Par33">你不能定义具体类型的子类型，只能定义抽象类型的子类型。</p>
+<p class="Para" id="Par34">如果抽象类型不能有字段，为什么还需要继承？这并不是为了节省一次定义跨多个类型的公共字段的时间(您可以使用<em class="EmphasisTypeItalic "> composition </em>来实现这一点，稍后讨论)。</p>
+<p class="Para" id="Par35">更确切地说，正是在程序中类型的<em class="EmphasisTypeItalic ">用法</em>中，它们的层次结构的定义变得有用。</p>
+<p>考虑以下对象:</p>
+<pre>o1 = AConcreteType1(2,10)      JULIA
+o2 = AConcreteType2(1.5)
+o3 = AConcreteType3("aa")
+
+</pre>
+<p>由于它们都是<code>MyOwnGenericAbstractType</code>的子类型，您可以定义一个函数为它们提供默认实现:</p>
+<pre>function foo(a :: MyOwnGenericAbstractType)      JULIA
+  println("Default implementation: $(a.f1)")
+end
+foo(o1) # Default implementation: 2
+foo(o2) # Default implementation: 1.5
+foo(o3) # Default implementation: aa
+
+</pre>
+<p>然后，您可以决定提供一个函数，为类型是<code>MyOwnAbstractType1</code>的子类型的所有对象提供一个更专门化的实现:</p>
+<pre>function foo(a :: MyOwnAbstractType1)      JULIA
+  println("A more specialised implementation: $(a.f1*4)")
+end
+foo(o1) # A more specialised implementation: 8
+foo(o2) # A more specialised implementation: 6.0
+foo(o3) # Default implementation: aa
+
+</pre>
+<p>这是可能的，感谢在第<a href="03.html"> 3 </a>章中讨论的<em class="EmphasisTypeItalic ">多重分派</em>机制。当一个函数的多个<em class="EmphasisTypeItalic ">方法</em>可用于分派一个函数调用时，Julia 将选择更严格的一个，即在精确参数类型或其更直接的<em class="EmphasisTypeItalic ">超类型</em>(父类型)上定义的方法:</p>
+<pre>function foo(a :: AConcreteType1)      JULIA
+     println("A even more specialised implementation: $(a.f1 + a.f2)")
+end
+foo(o1) # An even more specialized implementation: 12
+foo(o2) # A more specialized implementation: 6.0
+foo(o3) # Default implementation: aa
+
+</pre>
+<h3 class="Heading">4.4.1 在 Julia 中实现面向对象的范例</h3>
+<p class="Para" id="Par40">Julia 允许继承和组合模型，尽管支持程度不同。</p>
+<p class="Para" id="Par41"><em class="EmphasisTypeItalic ">继承</em>就是你刚刚看到的，当一个类型的层次结构被获得，声明一个类型为另一个类型的子类型。您还看到了在 Julia 中使用继承的局限性，只有行为(而不是结构)可以被继承。</p>
+<p class="Para" id="Par42">那么，如何在 Julia 中实现一个面向对象的模型呢？Julia 社区的偏好是使用复合而不是继承。</p>
+<p class="Para" id="Par43"><em class="EmphasisTypeItalic ">复合</em>是指将一个给定类型的字段声明为另一个复合类型的对象。通过这个(被引用的)对象，您可以访问其他类型的字段。</p>
+<p>考虑下面的例子，首先定义一个通用的<code>Person</code>结构，然后定义两个更具体的<code>Student</code>和<code>Employee</code>结构:</p>
+<pre>struct Shoes      JULIA
+   shoesType::String
+   colour::String
+end
+
+struct Person
+  myname::String
+  age::Int64
+end
+
+struct Student
+   p::Person
+   school::String
+   shoes::Shoes
+end
+
+struct Employee
+   p::Person
+   monthlyIncomes::Float64
+   company::String
+   shoes::Shoes
+end
+
+</pre>
+<p class="Para" id="Par45">不使用继承来声明<code>Student</code>和<code>Employee</code>作为<code>Person</code>的子类型，而是使用组合来为它们分配一个<code>Person</code>类型的字段<code>p</code>。正是因为有了这个字段，才不需要重复两者共有的字段。</p>
+<p class="Para ParaTypeImportant" id="Par46"><img alt="../images/477168_1_En_4_Chapter/477168_1_En_4_Fige_HTML.gif" src="../images/477168_1_En_4_Chapter/477168_1_En_4_Fige_HTML.gif" style="width:1.69em"/>类型必须先定义，然后才能用于引用对象。因此，<code>Shoes</code>定义必须在<code>Students</code>和<code>Employee</code>定义之前。</p>
+<p>然后，您可以创建专用类型的实例，方法是首先创建被引用的对象，或者在专用类型的构造函数中内联完成该操作:</p>
+<pre>gymShoes = Shoes("gym","white")      JULIA
+proShoes = Shoes("classical","brown")
+
+Marc = Student(Person("Marc",15),"Divine School",gymShoes)
+MrBrown = Employee(Person("Brown",45),3200.0,"ABC Corporation Inc.", proShoes)
+
+</pre>
+<p>最后，您可以使用多重分派来为专用类型提供定制的实现，并通过点(<code>.</code>)操作符的链式使用来访问被引用的对象和/或通用字段:</p>
+<pre>function printMyActivity(self::Student)      JULIA
+println("Hi! I am $(self.p.myname), I study at $(self.school) school, and I wear $(self.shoes.colour) shoes")
+end
+
+function printMyActivity(self::Employee)
+println("Good day. My name is $(self.p.myname), I work at $(self.company) company and I wear
+$(self.shoes.colour) shoes")
+end
+
+printMyActivity(Marc)      # Hi! I am Marc, ...
+printMyActivity(MrBrown)   # Good day. My name is MrBrown, ...
+
+</pre>
+<p class="Para" id="Par49">虽然明智地使用继承在实践中可以满足您可能遇到的许多建模设计情况，但 Julia 核心语言仍然缺少一些表达能力，因为您无法直接考虑和/或区分对象之间关系的不同概念，如专门化(例如，人→学生)、组合(例如，人→手臂)和弱关系(例如，人→鞋子)。</p>
+<p class="Para" id="Par50">为了解决这一不足，已经发布了几个第三方包(本书中没有讨论)来提高 Julia 在这一领域的灵活性，如 SimpleTraits ( <a href="https://github.com/mauro3/SimpleTraits.jl"> <code>https://github.com/mauro3/SimpleTraits.jl</code> </a>)包来模仿多重继承，或<code>OOPMacro.jl</code> ( <a href="https://github.com/ipod825/OOPMacro.jl"> <code>https://github.com/ipod825/OOPMacro.jl</code> </a>)包来自动将字段声明从父类型复制到子类型。</p>
+
+
+<h2 class="Heading">4.5 一些与类型相关的有用函数</h2>
+<p>为了完成关于用户定义类型的讨论，您可能会发现以下与类型相关的函数很有用:</p>
+<ul class="UnorderedListMarkBullet"><li><p class="Para" id="Par52"><code>supertype(MyType)</code>:返回一个类型的父类型</p></li>
+<li><p class="Para" id="Par53"><code>subtypes(MyType)</code>:列出一个类型的所有子类型</p></li>
+<li><p class="Para" id="Par54"><code>fieldnames(MyType)</code>:查询一个结构的所有字段</p></li>
+<li><p class="Para" id="Par55"><code>isa(obj,MyType)</code>:检查<code>obj</code>是否属于<code>MyType</code>类型</p></li>
+<li><p class="Para" id="Par56"><code>typeof(obj)</code>:返回<code>obj</code>的类型</p></li>
+<li><p class="Para" id="Par57"><code>eltype(obj)</code>:返回集合的内部类型，类似于数组的内部元素</p></li>
+</ul>
+
+
+
+</body>
+</html>

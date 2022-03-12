@@ -1,0 +1,440 @@
+<html lang="en">
+<head><title>Neural Networks with Scikit-Learn, Keras, and H2O</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<link href="../css/springer_epub.css" rel="styleSheet" type="text/css"/>
+</head>
+<body>
+ 
+<!--Begin Abstract--><h1 class="ChapterTitle" lang="en">7.具有 Scikit-Learn、Keras 和 H2O 的神经网络</h1>
+
+ 
+<!--End Abstract--><p class="Para" id="Par2">本章执行和评估非线性神经网络，以使用一组不同的综合 Python 框架(即 Scikit-Learn、Keras 和 H2O)来处理二元分类。</p>
+<h2 class="Heading">探索深度学习</h2>
+<p class="Para" id="Par3">深度学习方法超越了机器学习方法。它们通过包含大量隐藏层来处理模型和方法中的相当大的复杂性。机器学习方法通常类似于输入输出系统，其中目标函数接受输入值，并用目标函数转换它们以产生值。深度学习通过包括许多层来扩展处理活动，这些层包括重复和迭代处理数据的节点。深度学习的广泛认可与其可定制性有关；它使开发人员能够根据偏好定制方法。</p>
+
+<h2 class="Heading">多层感知器神经网络</h2>
+<p class="Para" id="Par4">顾名思义，多层感知器神经网络包含多个层。此外，基本结构保持不变；必须有一层用于接收输入值，一层用于生成输出值。对数据进行建模以分配不同权重和偏差的图层被视为隐藏图层。</p>
+<p>图<a href="#Fig1"> 7-1 </a>显示了本章使用的多层感知器神经网络。</p>
+<p><img alt="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig1_HTML.png" src="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig1_HTML.png" style="width:42.93em"/></p>
+<p>图 7-1</p><p class="SimplePara">多层感知器神经网络</p>
+
+
+
+<h2 class="Heading">预处理特征</h2>
+<p>本章操作在第<a href="06.html"> 6 </a>章中获得的数据，因此不详细描述预处理任务。清单<a href="#PC1"> 7-1 </a>执行所有的预处理任务。</p>
+<pre>import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+df = pd.read_csv(r"C:\Users\i5 lenov\Downloads\banking.csv")
+drop_column_names = df.columns[[8, 9, 10]]
+initial_data = df.drop(drop_column_names, axis="columns")
+initial_data.iloc[::, 1] = pd.get_dummies(initial_data.iloc[::, 1])
+initial_data.iloc[::, 2] = pd.get_dummies(initial_data.iloc[::, 2])
+initial_data.iloc[::, 3] = pd.get_dummies(initial_data.iloc[::, 3])
+initial_data.iloc[::, 4] = pd.get_dummies(initial_data.iloc[::, 4])
+initial_data.iloc[::, 5] = pd.get_dummies(initial_data.iloc[::, 5])
+initial_data.iloc[::, 6] = pd.get_dummies(initial_data.iloc[::, 6])
+initial_data.iloc[::, 7] = pd.get_dummies(initial_data.iloc[::, 7])
+initial_data.iloc[::, 11] = pd.get_dummies(initial_data.iloc[::, 11])
+initial_data = initial_data.dropna()
+x = np.array(initial_data.iloc[::,0:17])
+y = np.array(initial_data.iloc[::,-1])
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+sk_standard_scaler = StandardScaler()
+sk_standard_scaled_x_train = sk_standard_scaler.fit_transform(x_train)
+sk_standard_scaled_x_test = sk_standard_scaler.transform(x_test)
+
+Listing 7-1Preprocess Features
+
+
+</pre>
+
+<h2 class="Heading">sci kit-在行动中学习</h2>
+<p>本节使用 Scikit-Learn 框架执行和评估多层感知器方法。清单<a href="#PC2"> 7-2 </a>执行 Scikit-Learn 多层感知器神经网络。</p>
+<pre>from sklearn.neural_network import MLPClassifier
+sk_multilayer_perceptron_net = MLPClassifier()
+sk_multilayer_perceptron_net.fit(sk_standard_scaled_x_train, y_train)
+
+Listing 7-2Execute the Scikit-Learn Multilayer Perceptron Neural Network
+
+
+</pre>
+<p>列表<a href="#PC3"> 7-3 </a>排列 Scikit-Learn 多层感知器神经网络的分类报告(见表<a href="#Tab1"> 7-1 </a>)。</p>
+<p>表 7-1</p><p class="SimplePara">Scikit-Learn 多层感知器神经网络的分类报告</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回忆</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">f1-分数</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">支持</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.917062</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.976655</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.945921</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7325.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.608696</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.291347</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.394074</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">913.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">准确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.900704</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.900704</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.900704</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.900704</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Avg 宏</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.762879</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.634001</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.669998</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">8238.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">加权平均值</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.882886</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.900704</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.884761</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">8238.000000</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>from sklearn import metrics
+sk_yhat_multilayer_perceptron_net = sk_multilayer_perceptron_net.predict(sk_standard_scaled_x_test)
+sk_multilayer_perceptron_net_assessment = pd.DataFrame(metrics.classification_report(y_test, sk_yhat_multilayer_perceptron_net,
+                                             output_dict=True)).transpose()
+print(sk_multilayer_perceptron_net_assessment)
+
+Listing 7-3Arrange the Scikit-Learn Multilayer Perceptron Neural Network’s Classification Report
+
+
+</pre>
+<p>列表<a href="#PC4"> 7-4 </a>排列多层感知器神经网络的接收器工作特性曲线，浓缩了真阳性率和假阳性率的排列(见图<a href="#Fig2"> 7-2 </a>)。</p>
+<p><img alt="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig2_HTML.jpg" src="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig2_HTML.jpg" style="width:42.82em"/></p>
+<p>图 7-2</p><p class="SimplePara">用 Scikit-Learn 框架执行的多层感知器网络的接收器操作特性曲线</p>
+
+
+<pre>import matplotlib.pyplot as plt
+%matplotlib inline
+yhat_proba_sk_multilayer_perceptron_net = sk_multilayer_perceptron_net.predict_proba(sk_standard_scaled_x_test)[::,1]
+fpr_sk_multilayer_perceptron_net, tprr_sk_multilayer_perceptron_net, _ = metrics.roc_curve(y_test, yhat_proba_sk_multilayer_perceptron_net)
+area_under_curve_sk_multilayer_perceptron_net = metrics.roc_auc_score(y_test, yhat_proba_sk_multilayer_perceptron_net)
+plt.plot(fpr_sk_multilayer_perceptron_net, tprr_sk_multilayer_perceptron_net, label="AUC= "+ str(area_under_curve_sk_multilayer_perceptron_net))
+plt.xlabel("False Positive Rate (FPR)")
+plt.ylabel("True Positive Rate (TPR)")
+plt.legend(loc="best")
+plt.show()
+
+Listing 7-4Arrange a Receiver Operating Characteristics Curve for the Multilayer Perceptron Network (Executed with the Scikit-Learn Framework)
+
+
+</pre>
+<p>清单<a href="#PC5"> 7-5 </a>排列 Scikit-Learn 多层感知器神经网络的精度-召回曲线，以浓缩精度和召回的排列(见图<a href="#Fig3"> 7-3 </a>)。</p>
+<p><img alt="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig3_HTML.jpg" src="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig3_HTML.jpg" style="width:42.82em"/></p>
+<p>图 7-3</p><p class="SimplePara">Scikit-Learn 多层感知器神经网络的精确召回曲线</p>
+
+
+<pre>p_sk_multilayer_perceptron_net, r_sk_multilayer_perceptron_net, _ = metrics.precision_recall_curve(y_test, sk_yhat_multilayer_perceptron_net)
+weighted_ps_sk_multilayer_perceptron_net = metrics.roc_auc_score(y_test, sk_yhat_multilayer_perceptron_net)
+plt.plot(p_sk_multilayer_perceptron_net, r_sk_multilayer_perceptron_net,
+         label="WPR= " +str(weighted_ps_sk_multilayer_perceptron_net))
+plt.xlabel("Recall")
+plt.ylabel("Precision")
+plt.legend(loc="best")
+plt.show()
+
+Listing 7-5Precision-Recall Curve for the Scikit-Learn Multilayer Perceptron Neural Network
+
+
+</pre>
+<p>清单<a href="#PC6"> 7-6 </a>排列了 Scikit-Learn 多层感知器神经网络的学习曲线(见图<a href="#Fig4"> 7-4 </a>)。</p>
+<pre>from sklearn.model_selection import learning_curve
+train_port_sk_multilayer_perceptron_net, trainscore_sk_multilayer_perceptron_net, testscore_sk_multilayer_perceptron_net = learning_curve(sk_multilayer_perceptron_net, x, y,
+ cv=3, n_jobs=-5, train_sizes=np.linspace(0.1,1.0,50))
+trainscoresk_multilayer_perceptron_net_mean = np.mean(trainscore_sk_multilayer_perceptron_net, axis=1)
+testscoresk_multilayer_perceptron_net_mean = np.mean(testscore_sk_multilayer_perceptron_net, axis=1)
+plt.plot(train_port_sk_multilayer_perceptron_net, trainscoresk_multilayer_perceptron_net_mean, label="Weighted training accuracy")
+plt.plot(train_port_sk_multilayer_perceptron_net, testscoresk_multilayer_perceptron_net_mean, label="Weighted cv accuracy Score")
+plt.xlabel("Training values")
+plt.ylabel("Weighted accuracy score")
+plt.legend(loc="best")
+plt.show()
+
+Listing 7-6Arrange a Learning Curve for the Multilayer Perceptron Network Executed with the Scikit-Learn Framework
+
+
+</pre>
+<p> 
+</p>
+<p><img alt="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig4_HTML.jpg" src="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig4_HTML.jpg" style="width:42.82em"/></p>
+<p>图 7-4</p><p class="SimplePara">用 Scikit-Learn 框架执行的多层感知器网络的学习曲线</p>
+
+
+<h3 class="Heading">硬在行动</h3>
+<p>本节使用 Keras 框架执行和评估深度信念神经网络。清单<a href="#PC7"> 7-7 </a>对特征进行预处理。</p>
+<pre>x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+x_train, x_val, y_train, y_val = train_test_split(x_train,y_train,test_size=0.2,random_state=0)
+sk_standard_scaler = StandardScaler()
+sk_standard_scaled_x_train = sk_standard_scaler.fit_transform(x_train)
+sk_standard_scaled_x_test = sk_standard_scaler.transform(x_test)
+
+Listing 7-7Feature Preprocessing
+
+
+</pre>
+<p>清单<a href="#PC8"> 7-8 </a>使用<code>tensorflow</code>框架作为后端并安装 Keras 框架。</p>
+<pre>import tensorflow as tf
+from  tensorflow.keras import Sequential, regularizers
+from  tensorflow.keras.layers import Dense
+from  tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+
+Listing 7-8Employ the Tensorflow Framework as Backend and Install the Keras Framework
+
+
+</pre>
+<p>清单<a href="#PC9"> 7-9 </a>构建了一个多层感知器神经网络，有两个隐藏层，共有 17 个神经元。输入层包含一个比率为 0.001 的<code>"l1"</code>正则化器、<code>relu</code>激活函数以及<code>binary_crossentropy loss</code>和<code>accuracy</code>度量。</p>
+<pre>def keras_multilayer_perceptron_net(optimizer="adam"):
+    keras_multilayer_perceptron_net_model = Sequential()
+    keras_multilayer_perceptron_net_model.add(Dense(17, input_dim=17, activation="sigmoid",kernel_regularizer=regularizers.l1(0.001), bias_regularizer=regularizers.l1(0.01)))
+    keras_multilayer_perceptron_net_model.add(Dense(17, activation="relu"))
+    keras_multilayer_perceptron_net_model.add(Dense(17, activation="relu"))
+    keras_multilayer_perceptron_net_model.add(Dense(1, activation="relu"))
+    keras_multilayer_perceptron_net_model.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=["accuracy"])
+    return keras_multilayer_perceptron_net_model
+
+Listing 7-9Structure a Multilayer Perceptron with Keras
+
+
+</pre>
+<p>清单<a href="#PC10"> 7-10 </a>绑定多层感知器神经网络。</p>
+<pre>keras_multilayer_perceptron_net_model = KerasClassifier(build_fn=keras_multilayer_perceptron_net)
+
+Listing 7-10Bind the Multilayer Perceptron Neural Network
+
+
+</pre>
+<p>清单<a href="#PC11"> 7-11 </a>用 56 个时期和 14 的<code>batch_size</code>执行 Keras 多层感知器神经网络。</p>
+<pre>keras_multilayer_perceptron_net_model_history = keras_multilayer_perceptron_net_model.fit(sk_standard_scaled_x_train, y_train, validation_data=(x_val, y_.val), batch_size=14, epochs=56)
+print(keras_multilayer_perceptron_net_model_history)
+
+Listing 7-11Execute the Multilayer Perceptron Neural Network with the Keras Framework
+
+
+</pre>
+<p>清单<a href="#PC12"> 7-12 </a>为用<code>Keras</code>框架执行的多层感知器网络安排了一个分类报告(见表<a href="#Tab2"> 7-2 </a>)。</p>
+<p>表 7-2</p><p class="SimplePara">用 Keras 框架执行的多层感知器网络的分类报告</p>
+
+
+<table style="border-collapse: collapse;border-top: 0.5pt solid ; border-bottom: 0.5pt solid ; border-left: 0.5pt solid ; border-right: 0.5pt solid ; "><colgroup><col class="tcol1 align-left"/>
+<col class="tcol2 align-left"/>
+<col class="tcol3 align-left"/>
+<col class="tcol4 align-left"/>
+<col class="tcol5 align-left"/>
+</colgroup>
+<thead><tr><th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"> </th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">精确</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">回忆</p>
+</th>
+<th style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">f1-分数</p>
+</th>
+<th style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">支持</p>
+</th>
+</tr>
+</thead>
+<tbody><tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Zero</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.908443</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.991536</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.948172</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">7325.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">one</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.744856</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.198248</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.313149</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">913.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">准确</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.903617</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.903617</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.903617</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.903617</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">Avg 宏</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.826649</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.594892</p>
+</td>
+<td style="border-right: 0.5pt solid ; border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.630661</p>
+</td>
+<td style="border-bottom: 0.5pt solid ; text-align: left;"><p class="SimplePara">8238.000000</p>
+</td>
+</tr>
+<tr><td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">加权平均值</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.890313</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.903617</p>
+</td>
+<td style="border-right: 0.5pt solid ; text-align: left;"><p class="SimplePara">0.877794</p>
+</td>
+<td style="text-align: left;"><p class="SimplePara">8238.000000</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<pre>keras_multilayer_perceptron_net_model.predict(sk_standard_scaled_x_test)
+keras_multilayer_perceptron_net_model = pd.DataFrame(metrics.classification_report(y_test, keras_yhat_multilayer_perceptron_net,
+                                             output_dict=True)).transpose()
+print(keras_multilayer_perceptron_net_model)
+
+Listing 7-12Arrange a Classification Report for the Multilayer Perceptron Network Executed with the Keras Framework
+
+
+</pre>
+<p>清单<a href="#PC13"> 7-13 </a>安排了用 Keras 框架执行的多层感知器网络的训练和 CV 损失(见图<a href="#Fig5"> 7-5 </a>)。</p>
+<p><img alt="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig5_HTML.jpg" src="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig5_HTML.jpg" style="width:42.82em"/></p>
+<p>图 7-5</p><p class="SimplePara">基于 Keras 框架的多层感知器网络的训练和 CV 损失</p>
+
+
+<pre>plt.plot(keras_multilayer_perceptron_net_model_history.history["loss"], label="Training loss")
+plt.plot(keras_multilayer_perceptron_net_model_history.history["val_loss"], label="CV loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend(loc="best")
+plt.show()
+
+Listing 7-13Training and CV Loss for Multilayer Perceptron Network Executed by the Keras Framework
+
+
+</pre>
+<p>清单<a href="#PC14"> 7-14 </a>安排使用 Keras 框架执行的多层感知器网络的训练和 CV 精度(见图<a href="#Fig6"> 7-6 </a>)。</p>
+<p><img alt="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig6_HTML.jpg" src="../images/517508_1_En_7_Chapter/517508_1_En_7_Fig6_HTML.jpg" style="width:42.82em"/></p>
+<p>图 7-6</p><p class="SimplePara">用 Keras 框架执行的多层感知器网络的训练和 CV 精度</p>
+
+
+<pre>plt.plot(keras_multilayer_perceptron_net_model_history.history["accuracy"], label="Training accuracy score")
+plt.plot(keras_multilayer_perceptron_net_model_history.history["val_accuracy"], label="CV accuracy score")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.legend(loc="best")
+plt.show()
+
+Listing 7-14Arrange the Training and CV Accuracy for Multilayer Perceptron Network Executed with the Keras Framework
+
+
+</pre>
+
+<h3 class="Heading">深度信念网络</h3>
+<p class="Para" id="Par21">深度信念网络通过包含隐藏层超越了多层感知器神经网络。在生成输出值之前，网络必须重复对数据建模。</p>
+
+<h3 class="Heading">H2O 在行动</h3>
+<p class="Para" id="Par22">这个部分使用 H2O 框架执行深度信念神经网络。</p>
+<p>清单<a href="#PC15"> 7-15 </a>准备 H2O 框架。</p>
+<pre>import h2o as initialize_h2o
+initialize_h2o.init()
+
+Listing 7-15Prepare the H2O Framework
+
+
+</pre>
+<p>清单<a href="#PC16"> 7-16 </a>将<code>pandas</code>数据帧更改为 H2O 数据帧。</p>
+<pre>h2o_data = initialize_h2o.H2OFrame(initial_data)
+
+Listing 7-16Change the Pandas Dataframe to the H2O Dataframe
+
+
+</pre>
+<p>清单 7-17 概述了这些特性。</p>
+<pre>x_list = list(initial_data.iloc[::, 0:17].columns)
+y_list = str(initial_data.columns[-1])
+y = y_list
+x = h2o_data.col_names
+x.remove(y_list)
+
+Listing 7-17Outline the Features
+
+
+</pre>
+<p>清单<a href="#PC18"> 7-18 </a>随机划分数据。</p>
+<pre>h2o_training_data, h2o_validation_data, h2o_test_data = h2o_data.split_frame(ratios=[.8,.1])
+
+Listing 7-18Randomly Divide the Dataframe
+
+
+</pre>
+<p>清单<a href="#PC19"> 7-19 </a>执行 H2O 深度信念神经网络。</p>
+<pre>from h2o.estimators.deeplearning import H2ODeepLearningEstimator
+h2o_deep_belief_net = H2ODeepLearningEstimator(hidden=[5], epochs=56)
+h2o_deep_belief_net.train(x= x, y= y, training_frame = h2o_training_data, validation_frame = h2o_validation_data)h2o_training_data, validation_frame = h2o_validation_data)
+
+Listing 7-19Execute the H2O Deep Belief Neural Network
+
+
+</pre>
+
+
+<h2 class="Heading">结论</h2>
+<p class="Para" id="Par28">本章执行了三个关键的机器学习框架(Scikit-Learn、Keras 和 H2O)来对数据进行建模。它使用多层感知器和深度信念网络产生二进制结果。它还应用了<code>binary_crossentropy</code>损失函数(评估神经网络)和<code>adam</code>优化器(增强神经网络的性能)。</p>
+
+
+
+</body>
+</html>
