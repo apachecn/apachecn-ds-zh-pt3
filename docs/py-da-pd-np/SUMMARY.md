@@ -1,3 +1,4 @@
++   [Pandas、NumPy 和 Matplptlib 数据分析教程](README.md)
 +   [一、数据分析导论](01.md)
 +   [二、Python 世界简介](02.md)
 +   [三、NumPy 库](03.md)
@@ -12,4 +13,3 @@
 +   [十二、识别手写数字](12.md)
 +   [十三、NLTK 文本数据分析](13.md)
 +   [十四、OpenCV 图像分析和计算机视觉](14.md)
-+   [Python Pandas、NumPy 和 Matplptlib 数据分析教程](README.md)

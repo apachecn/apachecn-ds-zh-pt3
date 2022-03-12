@@ -1,3 +1,4 @@
++   [Pandas 思维](README.md)
 +   [一、简介](1.md)
 +   [二、基本数据访问和合并](2.md)
 +   [三、Pandas 如何在背后工作](3.md)
@@ -7,4 +8,3 @@
 +   [七、分组](7.md)
 +   [八、Pandas 之外的性能改进](8.md)
 +   [九、Pandas 的未来](9.md)
-+   [Pandas 思维](README.md)

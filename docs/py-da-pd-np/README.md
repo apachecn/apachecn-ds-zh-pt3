@@ -1,4 +1,4 @@
-# Python Pandas、NumPy 和 Matplptlib 数据分析教程
+# Pandas、NumPy 和 Matplptlib 数据分析教程
 
 > 原文：[Python Data Analytics With Pandas, NumPy](https://zh.book4you.org/book/3600518/b4352d)
 >
